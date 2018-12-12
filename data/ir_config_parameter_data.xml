@@ -7,10 +7,5 @@
             <field name="value">https://api.indexa.do/api/rates</field>
         </record>
 
-        <record id="api_indexa_token" model="ir.config_parameter">
-            <field name="key">indexa.api.token</field>
-            <field name="value">false</field>
-        </record>
-
     </data>
 </odoo>
