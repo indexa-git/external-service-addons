@@ -24,6 +24,10 @@
                             <field name="currency_base" class="oe_inline"/>
                         </div>
                         <div>
+                            <label for="rate_offset"/>
+                            <field name="rate_offset" class="oe_inline"/>
+                        </div>
+                        <div>
                             <label for="l10n_do_currency_next_execution_date"/>
                             <field name="l10n_do_currency_next_execution_date" class="oe_inline"/>
                         </div>

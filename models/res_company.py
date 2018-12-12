@@ -39,6 +39,7 @@ class ResCompany(models.Model):
         ('bpm', 'Banco Promerica'),
     ], default='bpd', string='Bank')
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
+    rate_offset = fields.Float('Offset', default=0)
     l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
 
     def get_currency_rates(self, params):
@@ -66,11 +67,16 @@ class ResCompany(models.Model):
                           'hash': self.env['ir.config_parameter'].sudo().get_param('indexa.api.token')}
 
                 rates_dict = self.get_currency_rates(params)
-                d = json.loads(rates_dict)
+                d = {}
+                try:
+                    d = json.loads(rates_dict)
+                except TypeError:
+                    _logger.warning(_('No serializable data from API response'))
+
                 if 'data' in d:
                     for currency in d['data']:
                         if str(currency['name']).endswith(company.currency_base or 'x'):
-                            inverse_rate = 1 / float(currency['rate'])
+                            inverse_rate = 1 / (float(currency['rate']) + company.rate_offset)
                             self.env['res.currency.rate'].create(
                                 {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
                                  'rate': inverse_rate, 'company_id': company.id})
