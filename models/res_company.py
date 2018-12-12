@@ -62,7 +62,7 @@ class ResCompany(models.Model):
                 params = {'bank': company.l10n_do_currency_provider,
                           'date': fields.Date.context_today(self),
                           'uuid': self.env['ir.config_parameter'].sudo().get_param('database.uuid'),
-                          'rnc': self.env.user.company_id.vat or '',
+                          'rnc': company.vat or '',
                           'username': self.env.user.partner_id.name,
                           'hash': self.env['ir.config_parameter'].sudo().get_param('indexa.api.token')}
 
