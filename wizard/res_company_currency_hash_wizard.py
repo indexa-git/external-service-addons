@@ -2,31 +2,19 @@
 #  Copyright (c) 2018 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo import models, fields, api
 
 
 class ResCompanyHashWizard(models.TransientModel):
     _name = 'res.company.hash.wizard'
+    _description = "Set Hash Wizard"
 
     def _get_default_hash_ids(self):
-        context = dict(self._context or {})
-        active_model = context.get('active_model')
-        active_ids = context.get('active_ids')
-        if active_model != 'res.company':
-            raise UserError(_("Programmation error: the expected model for this action is "
-                              "'res.company'. The provided one is '%s'.") % active_model)
-
-        company_ids = self.env['res.company'].browse(active_ids)
-        Line = self.env['res.company.hash.list']
-        lines = Line
-
-        print self.id
-
-        for company in company_ids:
-            lines += Line.create({'company_id': company.id, 'hash_wizard_id': self.id})
-
-        return [(4, line.id) for line in lines]
+        company_ids = self._context.get('active_model') == 'res.company' and self._context.get('active_ids') or []
+        return [
+            (0, 0, {'company_id': company.id, 'name': company.name})
+            for company in self.env['res.company'].browse(company_ids)
+        ]
 
     hash_ids = fields.One2many('res.company.hash.list', 'hash_wizard_id', string='Companies',
                                default=_get_default_hash_ids)
@@ -34,15 +22,14 @@ class ResCompanyHashWizard(models.TransientModel):
     @api.multi
     def set_company_hash(self):
         self.ensure_one()
-        for rec in self.env['res.company.hash.list'].search([('hash_wizard_id', '=', self.id)]):
-            print rec.company_id.name
-            # rec.company_id.hash = rec.hash
+        for rec in self.hash_ids:
+            rec.company_id.write({'currency_service_hash': rec.hash})
 
 
 class ResCompanyHashList(models.TransientModel):
     _name = 'res.company.hash.list'
 
     company_id = fields.Many2one('res.company', 'Company')
-    name = fields.Char(related='company_id.name')
+    name = fields.Char()
     hash = fields.Char()
-    hash_wizard_id = fields.Many2one('res.company.hash.wizard', 'Wizard')
+    hash_wizard_id = fields.Many2one('res.company.hash.wizard', 'Wizard', required=True)

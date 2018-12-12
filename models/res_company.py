@@ -65,7 +65,7 @@ class ResCompany(models.Model):
                           'uuid': self.env['ir.config_parameter'].sudo().get_param('database.uuid'),
                           'rnc': company.vat or '',
                           'username': self.env.user.partner_id.name,
-                          'hash': self.env['ir.config_parameter'].sudo().get_param('indexa.api.token')}
+                          'hash': company.currency_service_hash}
 
                 rates_dict = self.get_currency_rates(params)
                 d = {}

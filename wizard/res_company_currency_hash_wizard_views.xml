@@ -26,8 +26,7 @@
                     name="Set hash"
                     res_model="res.company.hash.wizard"
                     src_model="res.company"
-                    view_mode="form"
-                    multi="True"
+                    view_mode="form" view_type="form"
                     target="new"
                     groups="account.group_account_manager"
                     key2="client_action_multi"/>
