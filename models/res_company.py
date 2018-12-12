@@ -59,16 +59,23 @@ class ResCompany(models.Model):
             if company.l10n_do_currency_provider:
                 _logger.info("Calling API rates resource.")
                 params = {'bank': company.l10n_do_currency_provider,
-                          'date': fields.Date.context_today(self)}
+                          'date': fields.Date.context_today(self),
+                          'uuid': self.env['ir.config_parameter'].sudo().get_param('database.uuid'),
+                          'rnc': self.env.user.company_id.vat or '',
+                          'username': self.env.user.partner_id.name,
+                          'hash': self.env['ir.config_parameter'].sudo().get_param('indexa.api.token')}
+
                 rates_dict = self.get_currency_rates(params)
                 d = json.loads(rates_dict)
-
-                for currency in d['data']:
-                    if str(currency['name']).endswith(company.currency_base or 'x'):
-                        inverse_rate = 1 / float(currency['rate'])
-                        self.env['res.currency.rate'].create(
-                            {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
-                             'rate': inverse_rate, 'company_id': company.id})
+                if 'data' in d:
+                    for currency in d['data']:
+                        if str(currency['name']).endswith(company.currency_base or 'x'):
+                            inverse_rate = 1 / float(currency['rate'])
+                            self.env['res.currency.rate'].create(
+                                {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
+                                 'rate': inverse_rate, 'company_id': company.id})
+                else:
+                    res = False
             else:
                 res = False
             if not res:
