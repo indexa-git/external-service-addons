@@ -41,6 +41,7 @@ class ResCompany(models.Model):
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
     rate_offset = fields.Float('Offset', default=0)
     l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
+    currency_service_hash = fields.Char()
 
     def get_currency_rates(self, params):
         api_url = self.env['ir.config_parameter'].sudo().get_param('indexa.api.url')
