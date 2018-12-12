@@ -1,0 +1,156 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* l10n_do_currency_update
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 10.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-12 02:09+0000\n"
+"PO-Revision-Date: 2018-12-12 02:09+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/res_company.py:50
+#, python-format
+msgid "API requests return the following error %s"
+msgstr "API requests return the following error %s"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco BDI"
+msgstr "Banco BDI"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco Lopez de Haro"
+msgstr "Banco Lopez de Haro"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco Popular Dominicano"
+msgstr "Banco Popular Dominicano"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco Promerica"
+msgstr "Banco Promerica"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco Santa Cruz"
+msgstr "Banco Santa Cruz"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco de Reservas"
+msgstr "Banco de Reservas"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_provider:0
+msgid "Banco del Progreso"
+msgstr "Banco del Progreso"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_l10n_do_currency_provider
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_l10n_do_currency_provider
+msgid "Bank"
+msgstr "Banco"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,currency_base:0
+msgid "Buy rate"
+msgstr "Tasa de compra"
+
+#. module: l10n_do_currency_update
+#: model:ir.model,name:l10n_do_currency_update.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_currency_base
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_currency_base
+msgid "Currency base"
+msgstr "Base"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_interval_unit:0
+msgid "Daily"
+msgstr "Diario"
+
+#. module: l10n_do_currency_update
+#: model:ir.ui.view,arch_db:l10n_do_currency_update.view_account_config_settings_inherited
+msgid "Dominican Banks Rates"
+msgstr "Tasa de Bancos Dominicanos"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_l10n_do_currency_interval_unit
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_l10n_do_currency_interval_unit
+msgid "Interval Unit"
+msgstr "Intervalo"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_interval_unit:0
+msgid "Manually"
+msgstr "Manualmente"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_interval_unit:0
+msgid "Monthly"
+msgstr "Mensual"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_l10n_do_currency_next_execution_date
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_l10n_do_currency_next_execution_date
+msgid "Next Execution Date"
+msgstr "Siguiente fecha de ejecución"
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/res_company.py:74
+#, python-format
+msgid "No serializable data from API response"
+msgstr "No hay data serializable en la respuesta de API"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_rate_offset
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_rate_offset
+msgid "Offset"
+msgstr "Compensación"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,currency_base:0
+msgid "Sell rate"
+msgstr "Tasa de venta"
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/account_config_settings.py:42
+#, python-format
+msgid "Unable to fetch currency from given API. The service may be temporary down. Please try again in a moment."
+msgstr "Incapaz de traer las monedas desde el API suministrada. El servicio puede estar abajo. Por favor intente más tarde."
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/res_company.py:89
+#, python-format
+msgid "Unable to fetch new rates records from API"
+msgstr "Incapaz de traer nuevos registros de tasas desde el API"
+
+#. module: l10n_do_currency_update
+#: model:ir.ui.view,arch_db:l10n_do_currency_update.view_account_config_settings_inherited
+msgid "Update Now"
+msgstr "Actualizar ahora"
+
+#. module: l10n_do_currency_update
+#: selection:res.company,l10n_do_currency_interval_unit:0
+msgid "Weekly"
+msgstr "Semanalmente"
+
+#. module: l10n_do_currency_update
+#: model:ir.model,name:l10n_do_currency_update.model_account_config_settings
+msgid "account.config.settings"
+msgstr "account.config.settings"
+
