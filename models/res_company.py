@@ -37,16 +37,18 @@ class ResCompany(models.Model):
         ('bsc', 'Banco Santa Cruz'),
         ('bdi', 'Banco BDI'),
         ('bpm', 'Banco Promerica'),
+        ('bvm', 'Banco Vimenca'),
     ], default='bpd', string='Bank')
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
     rate_offset = fields.Float('Offset', default=0)
     l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
-    currency_service_hash = fields.Char()
+    currency_service_token = fields.Char()
 
-    def get_currency_rates(self, params):
+    def get_currency_rates(self, params, token):
         api_url = self.env['ir.config_parameter'].sudo().get_param('indexa.api.url')
+
         try:
-            response = requests.get(api_url, params)
+            response = requests.get(api_url, params, headers={'x-access-token': token})
         except requests.exceptions.ConnectionError as e:
             _logger.warning(_('API requests return the following error %s' % e))
             return {}
@@ -61,13 +63,10 @@ class ResCompany(models.Model):
             if company.l10n_do_currency_provider:
                 _logger.info("Calling API rates resource.")
                 params = {'bank': company.l10n_do_currency_provider,
-                          'date': fields.Date.context_today(self),
-                          'uuid': self.env['ir.config_parameter'].sudo().get_param('database.uuid'),
-                          'rnc': company.vat or '',
-                          'username': self.env.user.partner_id.name,
-                          'hash': company.currency_service_hash}
+                          'date': fields.Date.context_today(self)}
 
-                rates_dict = self.get_currency_rates(params)
+                token = company.currency_service_token or ''
+                rates_dict = self.get_currency_rates(params, token)
                 d = {}
                 try:
                     d = json.loads(rates_dict)
