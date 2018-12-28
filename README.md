@@ -1,4 +1,3 @@
-===============================
 Dominican Banks Currency Update
 ===============================
 
@@ -49,7 +48,6 @@ Usage
 * Your **Scheduled Actions** will fetch your bank rates from the given API on intervals you set up in your settings
 
 
-========
 Support
 ========
 
