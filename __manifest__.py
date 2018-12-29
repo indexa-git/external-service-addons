@@ -25,4 +25,7 @@
         'views/res_config_settings_views.xml',
         'wizard/res_company_currency_hash_wizard_views.xml',
     ],
+    'demo': [
+        'demo/res_company_demo.xml',
+    ],
 }
