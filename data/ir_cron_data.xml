@@ -5,11 +5,11 @@
         <field name="name">[CURRENCY] Update l10n_do banks currency</field>
         <field name="interval_number">1</field>
         <field name="interval_type">days</field>
+        <field name="state">code</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="False"/>
         <field name="model_id" ref="model_res_company"/>
-        <field name="function" eval="'l10n_do_run_update_currency'"/>
-        <field name="args">()</field>
+        <field name="code">model.l10n_do_run_update_currency()</field>
     </record>
 
 </odoo>

@@ -6,6 +6,7 @@ import json
 import logging
 import requests
 import datetime
+import pytz
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, _
 
@@ -63,10 +64,14 @@ class ResCompany(models.Model):
         for company in self:
             if company.l10n_do_currency_provider:
                 _logger.info("Calling API rates resource.")
+
+                tz = pytz.timezone('America/Santo_Domingo')
+                today = datetime.datetime.now(tz)
                 params = {'bank': company.l10n_do_currency_provider,
-                          'date': fields.Date.context_today(self)}
+                          'date': datetime.datetime.strftime(today, '%Y-%m-%d')}
 
                 token = company.currency_service_token or ''
+
                 rates_dict = self.get_currency_rates(params, token)
 
                 d = {}
@@ -79,6 +84,7 @@ class ResCompany(models.Model):
                     for currency in d['data']:
                         if str(currency['name']).endswith(company.currency_base or 'x'):
                             inverse_rate = 1 / (float(currency['rate']) + company.rate_offset)
+
                             self.env['res.currency.rate'].create(
                                 {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
                                  'rate': inverse_rate, 'company_id': company.id})

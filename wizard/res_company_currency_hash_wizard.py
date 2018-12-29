@@ -28,6 +28,7 @@ class ResCompanyTokenWizard(models.TransientModel):
 
 class ResCompanyTokenList(models.TransientModel):
     _name = 'res.company.token.list'
+    _description = "Company Token List"
 
     company_id = fields.Many2one('res.company', 'Company')
     name = fields.Char()

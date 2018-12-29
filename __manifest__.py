@@ -16,7 +16,7 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base',
-                'account_invoicing'],
+                'account'],
 
     # always loaded
     'data': [
@@ -24,5 +24,8 @@
         'data/ir_config_parameter_data.xml',
         'views/res_config_settings_views.xml',
         'wizard/res_company_currency_hash_wizard_views.xml',
+    ],
+    'demo': [
+        'demo/res_company_demo.xml',
     ],
 }
