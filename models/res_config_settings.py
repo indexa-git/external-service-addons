@@ -11,12 +11,12 @@ from odoo.exceptions import UserError
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    l10n_do_currency_interval_unit = fields.Selection(related="company_id.l10n_do_currency_interval_unit", )
-    l10n_do_currency_provider = fields.Selection(related="company_id.l10n_do_currency_provider", )
-    l10n_do_currency_next_execution_date = fields.Date(related="company_id.l10n_do_currency_next_execution_date")
-    currency_base = fields.Selection(related="company_id.currency_base")
-    rate_offset = fields.Float(related="company_id.rate_offset")
-    last_currency_sync_date = fields.Date(related="company_id.last_currency_sync_date")
+    l10n_do_currency_interval_unit = fields.Selection(related="company_id.l10n_do_currency_interval_unit", readonly=False)
+    l10n_do_currency_provider = fields.Selection(related="company_id.l10n_do_currency_provider", readonly=False)
+    l10n_do_currency_next_execution_date = fields.Date(related="company_id.l10n_do_currency_next_execution_date", readonly=False)
+    currency_base = fields.Selection(related="company_id.currency_base", readonly=False)
+    rate_offset = fields.Float(related="company_id.rate_offset", readonly=False)
+    last_currency_sync_date = fields.Date(related="company_id.last_currency_sync_date", readonly=False)
 
     @api.onchange('l10n_do_currency_interval_unit')
     def onchange_l10n_do_currency_interval_unit(self):
