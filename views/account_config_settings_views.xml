@@ -35,6 +35,10 @@
                             <label for="l10n_do_currency_provider"/>
                             <field name="l10n_do_currency_provider" class="oe_inline"/>
                         </div>
+                        <div>
+                            <label for="last_currency_sync_date"/>
+                            <field name="last_currency_sync_date" class="oe_inline"/>
+                        </div>
                     </div>
                 </div>
             </field>

@@ -44,6 +44,7 @@ class ResCompany(models.Model):
     rate_offset = fields.Float('Offset', default=0)
     l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
     currency_service_token = fields.Char()
+    last_currency_sync_date = fields.Date(string="Last Sync Date", readonly=True)
 
     def get_currency_rates(self, params, token):
         api_url = self.env['ir.config_parameter'].sudo().get_param('indexa.api.url')
@@ -84,6 +85,7 @@ class ResCompany(models.Model):
                             self.env['res.currency.rate'].create(
                                 {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
                                  'rate': inverse_rate, 'company_id': company.id})
+                    company.last_currency_sync_date = fields.Date.today()
                 else:
                     res = False
             else:

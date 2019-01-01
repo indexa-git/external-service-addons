@@ -16,6 +16,7 @@ class AccountConfigSettings(models.TransientModel):
     l10n_do_currency_next_execution_date = fields.Date(related="company_id.l10n_do_currency_next_execution_date")
     currency_base = fields.Selection(related="company_id.currency_base")
     rate_offset = fields.Float(related="company_id.rate_offset")
+    last_currency_sync_date = fields.Date(related="company_id.last_currency_sync_date", readonly=False)
 
     @api.onchange('l10n_do_currency_interval_unit')
     def onchange_l10n_do_currency_interval_unit(self):
