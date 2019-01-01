@@ -40,7 +40,8 @@
                         <div class="row">
                             <label string="Last Sync Date" for="last_currency_sync_date" class="col-md-3 o_light_label"
                                    attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
-                            <field name="last_currency_sync_date"/>
+                            <field name="last_currency_sync_date"
+                                   attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
                         </div>
 
                     </div>
