@@ -33,7 +33,7 @@ class ResConfigSettings(models.TransientModel):
         else:
             self.l10n_do_currency_next_execution_date = False
             return
-        self.l10n_do_currency_next_execution_date = datetime.datetime.now() + next_update
+        self.l10n_do_currency_next_execution_date = fields.Date.to_string(datetime.datetime.now() + next_update)
 
     @api.multi
     def l10n_do_update_currency_rates(self):
