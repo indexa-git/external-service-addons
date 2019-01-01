@@ -36,12 +36,12 @@
                                 <i title="Update now" class="fa fa-fw fa-refresh"></i>
                             </button>
                         </div>
+                        <div class="row">
+                            <label string="Last Sync Date" for="last_currency_sync_date" class="col-md-3 o_light_label"
+                                   attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
+                            <field name="last_currency_sync_date"/>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <label string="Last Sync Date" for="last_currency_sync_date" class="col-md-3 o_light_label"
-                           attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
-                    <field name="last_currency_sync_date"/>
                 </div>
             </xpath>
         </field>
