@@ -29,7 +29,7 @@ class ResCompany(models.Model):
         ('daily', 'Daily'),
         ('weekly', 'Weekly'),
         ('monthly', 'Monthly')],
-        default='manually', string='Interval Unit')
+        default='daily', string='Interval Unit')
     l10n_do_currency_provider = fields.Selection([
         ('bpd', 'Banco Popular Dominicano'),
         ('bnr', 'Banco de Reservas'),
