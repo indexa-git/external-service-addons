@@ -33,7 +33,6 @@ class ResCompany(models.Model):
     l10n_do_currency_provider = fields.Selection([
         ('bpd', 'Banco Popular Dominicano'),
         ('bnr', 'Banco de Reservas'),
-        ('blh', 'Banco Lopez de Haro'),
         ('bpr', 'Banco del Progreso'),
         ('bsc', 'Banco Santa Cruz'),
         ('bdi', 'Banco BDI'),
