@@ -35,17 +35,6 @@ class CurrencyTestCase(TransactionCase):
         self.assertTrue(res)
         self.assertEqual(len(self.currency_usd.rate_ids), rates_count + 1)
 
-    def test_l10n_do_currency_update_blh(self):
-        """ Banco Lopez de Haro currency update test """
-
-        self.test_company.l10n_do_currency_provider = 'blh'
-        self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
-        rates_count = len(self.currency_usd.rate_ids)
-        res = self.test_company.l10n_do_update_currency_rates()
-        self.assertTrue(res)
-        self.assertEqual(len(self.currency_usd.rate_ids), rates_count + 1)
-
     def test_l10n_do_currency_update_bpr(self):
         """ Banco del Progreso currency update test """
 
