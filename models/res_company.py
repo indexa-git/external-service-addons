@@ -45,6 +45,10 @@ class ResCompany(models.Model):
     currency_service_token = fields.Char()
     last_currency_sync_date = fields.Date(string="Last Sync Date", readonly=True)
 
+    _sql_constraints = [
+        ('token_uniq', 'unique(currency_service_token)', 'Token must be unique per company.')
+    ]
+
     def get_currency_rates(self, params, token):
         api_url = self.env['ir.config_parameter'].sudo().get_param('indexa.api.url')
 
