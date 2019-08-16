@@ -38,6 +38,7 @@ class ResCompany(models.Model):
         ('bdi', 'Banco BDI'),
         ('bpm', 'Banco Promerica'),
         ('bvm', 'Banco Vimenca'),
+        ('bcd', 'Banco Central Dominicano'),
     ], default='bpd', string='Bank')
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
     rate_offset = fields.Float('Offset', default=0)
