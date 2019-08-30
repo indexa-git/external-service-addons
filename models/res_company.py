@@ -86,7 +86,7 @@ class ResCompany(models.Model):
 
                 if 'data' in d:
                     for currency in d['data']:
-                        if str(currency['name']).endswith(company.currency_base or 'x'):
+                        if str(currency['name']).endswith(company.currency_base or 'x') and currency['rate']:
                             inverse_rate = 1 / (float(currency['rate']) + company.rate_offset)
 
                             self.env['res.currency.rate'].create(
