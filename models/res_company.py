@@ -86,9 +86,12 @@ class ResCompany(models.Model):
                     for currency in d['data']:
                         if str(currency['name']).endswith(company.currency_base or 'x') and currency['rate']:
                             inverse_rate = 1 / (float(currency['rate']) + company.rate_offset)
-                            self.env['res.currency.rate'].create(
-                                {'currency_id': self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]]).id,
-                                 'rate': inverse_rate, 'company_id': company.id})
+
+                            currency_id = self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]])
+                            if currency_id and currency_id.active:
+                                self.env['res.currency.rate'].create(
+                                    {'currency_id': currency_id.id,
+                                     'rate': inverse_rate, 'company_id': company.id})
                     company.last_currency_sync_date = fields.Date.today()
                 else:
                     res = False
