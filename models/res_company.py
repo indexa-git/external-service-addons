@@ -119,6 +119,6 @@ class ResCompany(models.Model):
                 else:
                     record.l10n_do_currency_interval_unit = False
                     continue
-                record.l10n_do_currency_next_execution_date = datetime.datetime.now() + next_update
+                record.l10n_do_currency_next_execution_date = datetime.date.today() + next_update
                 to_update += record
             to_update.l10n_do_update_currency_rates()
