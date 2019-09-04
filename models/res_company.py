@@ -111,7 +111,7 @@ class ResCompany(models.Model):
                 all_good = False
                 _logger.warning(_('Unable to fetch new rates records from API'))
         return all_good
-\
+
     @api.model
     def l10n_do_run_update_currency(self):
 
