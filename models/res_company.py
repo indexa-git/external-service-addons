@@ -84,6 +84,8 @@ class ResCompany(models.Model):
                 except TypeError:
                     _logger.warning(_('No serializable data from API response'))
 
+                Rate = self.env['res.currency.rate']
+
                 if 'data' in d:
                     for currency in d['data']:
                         if str(currency['name']).endswith(company.currency_base or 'x') and currency['rate']:
@@ -91,9 +93,15 @@ class ResCompany(models.Model):
 
                             currency_id = self.env.ref('base.' + CURRENCY_MAPPING[str(currency['name'])[:4]])
                             if currency_id and currency_id.active:
-                                self.env['res.currency.rate'].create(
-                                    {'currency_id': currency_id.id,
-                                     'rate': inverse_rate, 'company_id': company.id})
+                                rate_id = Rate.search([('name', '=', fields.Date.today()),
+                                                       ('currency_id', '=', currency_id.id),
+                                                       ('company_id', '=', company.id)])
+                                if rate_id:
+                                    rate_id.write({'rate': inverse_rate})
+                                else:
+                                    Rate.create({'currency_id': currency_id.id,
+                                                 'rate': inverse_rate,
+                                                 'company_id': company.id})
                     company.last_currency_sync_date = fields.Date.today()
                 else:
                     res = False
@@ -103,7 +111,7 @@ class ResCompany(models.Model):
                 all_good = False
                 _logger.warning(_('Unable to fetch new rates records from API'))
         return all_good
-
+\
     @api.model
     def l10n_do_run_update_currency(self):
 
