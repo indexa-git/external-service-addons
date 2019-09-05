@@ -12,6 +12,15 @@ class AccountInvoice(models.Model):
         compute='_compute_rate',
         store=True,
     )
+    show_rate = fields.Boolean(
+        compute='_compute_show_rate'
+    )
+
+    @api.multi
+    @api.depends('currency_id', 'company_id')
+    def _compute_show_rate(self):
+        for inv in self:
+            inv.show_rate = not inv.company_id.currency_id == inv.currency_id
 
     def get_invoice_rate(self, date):
 
