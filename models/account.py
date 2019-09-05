@@ -2,7 +2,6 @@
 #  Copyright (c) 2018 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
-from datetime import timedelta as td
 from odoo import models, fields, api
 
 
