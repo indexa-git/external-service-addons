@@ -23,14 +23,13 @@ class AccountInvoice(models.Model):
                                ('company_id', '=', self.company_id.id)])
 
         if rate_id:
-            return rate_id.rate
+            return 1 / rate_id.rate
 
-        if Rate.search_count([('name', '<', date), ('currency_id', '=', self.currency_id.id),
-                              ('company_id', '=', self.company_id.id)]):
-            date = fields.Date.from_string(date) - td(days=1)
-            return self.get_invoice_rate(fields.Date.to_string(date))
+        before_rate_id = Rate.search(
+            [('name', '<', date), ('currency_id', '=', self.currency_id.id),
+             ('company_id', '=', self.company_id.id)], order='name desc', limit=1)
 
-        return 1
+        return 1 / before_rate_id.rate if before_rate_id else 1
 
     @api.multi
     @api.depends('state', 'date_invoice', 'currency_id')
