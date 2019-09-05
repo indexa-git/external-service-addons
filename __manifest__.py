@@ -22,6 +22,7 @@
     'data': [
         'data/ir_cron_data.xml',
         'data/ir_config_parameter_data.xml',
+        'views/account_views.xml',
         'views/res_config_settings_views.xml',
         'wizard/res_company_currency_hash_wizard_views.xml',
     ],

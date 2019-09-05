@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 12.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-29 00:45+0000\n"
-"PO-Revision-Date: 2018-12-29 00:45+0000\n"
+"POT-Creation-Date: 2019-09-05 22:44+0000\n"
+"PO-Revision-Date: 2019-09-05 22:44+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_do_currency_update
-#: code:addons/l10n_do_currency_update/models/res_company.py:55
+#: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
+msgid "<i title=\"Update now\" class=\"fa fa-fw fa-refresh\"/>"
+msgstr ""
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/res_company.py:59
 #, python-format
 msgid "API requests return the following error %s"
 msgstr "La petición al API retornó el siguiente error %s"
@@ -24,42 +29,42 @@ msgstr "La petición al API retornó el siguiente error %s"
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco BDI"
-msgstr "Banco BDI"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
-msgid "Banco Lopez de Haro"
-msgstr "Banco Lopez de Haro"
+msgid "Banco Central Dominicano"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Popular Dominicano"
-msgstr "Banco Popular Dominicano"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Promerica"
-msgstr "Banco Promerica"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Santa Cruz"
-msgstr "Banco Santa Cruz"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Vimenca"
-msgstr "Banco Vimenca"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco de Reservas"
-msgstr "Banco de Reservas"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco del Progreso"
-msgstr "Banco del Progreso"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_provider
@@ -71,7 +76,7 @@ msgstr "Banco"
 #. module: l10n_do_currency_update
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "Base"
-msgstr "Base"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,currency_base:0
@@ -114,7 +119,7 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__create_date
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard__create_date
 msgid "Created on"
-msgstr "Creado el"
+msgstr "Creado en"
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__currency_base
@@ -133,6 +138,27 @@ msgid "Daily"
 msgstr "Diario"
 
 #. module: l10n_do_currency_update
+#: model:res.company,overdue_msg:l10n_do_currency_update.res_company_company_1
+#: model:res.company,overdue_msg:l10n_do_currency_update.res_company_company_2
+msgid "Dear Sir/Madam,\n"
+"\n"
+"Our records indicate that some payments on your account are still due. Please find details below.\n"
+"If the amount has already been paid, please disregard this notice. Otherwise, please forward us the total amount stated below.\n"
+"If you have any queries regarding your account, Please contact us.\n"
+"\n"
+"Thank you in advance for your cooperation.\n"
+"Best Regards,"
+msgstr "Estimado/a Señor/Señora, \n"
+"\n"
+"Nuestros registros indican que tiene pagos pendientes de su cuenta. Encontrará los detalles a continuación. \n"
+"Si ya ha pagado la cantidad, por favor ignore este aviso. \n"
+"De lo contrario, por favor envíe la cantidad total que se indica a continuación. \n"
+"Si tiene cualquier pregunta relacionada con su cuenta, por favor póngase en contacto con nosotros. \n"
+"\n"
+"Gracias de antemano por su colaboración. \n"
+"Atentamente,"
+
+#. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__display_name
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard__display_name
 msgid "Display Name"
@@ -147,18 +173,19 @@ msgstr "Tasas Bancos Dominicanos"
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__id
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard__id
 msgid "ID"
-msgstr ""
+msgstr "ID (identificación)"
 
 #. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_interval_unit
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings__l10n_do_currency_interval_unit
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "Interval"
 msgstr "Intervalo"
 
 #. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_interval_unit
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings__l10n_do_currency_interval_unit
-msgid "Interval Unit"
-msgstr "Unidad de intervalo"
+#: model:ir.model,name:l10n_do_currency_update.model_account_invoice
+msgid "Invoice"
+msgstr "Factura"
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list____last_update
@@ -177,13 +204,13 @@ msgstr "Última fecha de sincronización"
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__write_uid
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard__write_uid
 msgid "Last Updated by"
-msgstr "Última actualización por"
+msgstr "Última actualización de"
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__write_date
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard__write_date
 msgid "Last Updated on"
-msgstr "Última actualización el"
+msgstr "Última actualización en"
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_interval_unit:0
@@ -202,18 +229,18 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_next_execution_date
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings__l10n_do_currency_next_execution_date
-msgid "Next Execution Date"
-msgstr "Siguiente fecha de ejecución"
-
-#. module: l10n_do_currency_update
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "Next Run"
 msgstr "Siguiente ejecución"
 
 #. module: l10n_do_currency_update
-#: code:addons/l10n_do_currency_update/models/res_company.py:81
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_next_execution_date
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings__l10n_do_currency_next_execution_date
+msgid "Next Running Date"
+msgstr "Próxima fecha ejecución"
+
+#. module: l10n_do_currency_update
+#: code:addons/l10n_do_currency_update/models/res_company.py:85
 #, python-format
 msgid "No serializable data from API response"
 msgstr "No hay data serializable en la respuesta de API"
@@ -224,6 +251,12 @@ msgstr "No hay data serializable en la respuesta de API"
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "Offset"
 msgstr "Compensación"
+
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice__rate
+#: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.invoice_form_inherited
+msgid "Rate"
+msgstr "Tasa"
 
 #. module: l10n_do_currency_update
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_company_currency_token_wizard_form
@@ -246,9 +279,19 @@ msgid "Set token"
 msgstr "Poner token"
 
 #. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice__show_rate
+msgid "Show Rate"
+msgstr "Mostrar tasa"
+
+#. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list__token
 msgid "Token"
-msgstr "Token"
+msgstr ""
+
+#. module: l10n_do_currency_update
+#: sql_constraint:res.company:0
+msgid "Token must be unique per company."
+msgstr "El Token debe ser único por compañía"
 
 #. module: l10n_do_currency_update
 #: code:addons/l10n_do_currency_update/models/res_config_settings.py:43
@@ -257,7 +300,7 @@ msgid "Unable to fetch currency from given API. The service may be temporary dow
 msgstr "Incapaz de traer las tasas de el API suministrada. El servicio puede estar temporalmente inactivo. Por favor, intentelo más tarde."
 
 #. module: l10n_do_currency_update
-#: code:addons/l10n_do_currency_update/models/res_company.py:98
+#: code:addons/l10n_do_currency_update/models/res_company.py:112
 #, python-format
 msgid "Unable to fetch new rates records from API"
 msgstr "Incapaz de traer nuevos registros de tasas desde el API"
