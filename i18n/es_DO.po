@@ -279,3 +279,8 @@ msgstr "account.config.settings"
 msgid "res.company.token.list"
 msgstr "res.company.token.list"
 
+#. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice_rate
+#: model:ir.ui.view,arch_db:l10n_do_currency_update.invoice_form_inherited
+msgid "Rate"
+msgstr "Tasa"
