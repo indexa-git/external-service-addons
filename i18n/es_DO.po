@@ -250,6 +250,12 @@ msgid "Rate"
 msgstr "Tasa"
 
 #. module: l10n_do_currency_update
+#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice_show_rate
+#: model:ir.ui.view,arch_db:l10n_do_currency_update.invoice_form_inherited
+msgid "Show rate"
+msgstr "Mostrar tasa"
+
+#. module: l10n_do_currency_update
 #: model:ir.ui.view,arch_db:l10n_do_currency_update.res_company_currency_token_wizard_form
 msgid "Save"
 msgstr "Guardar"
