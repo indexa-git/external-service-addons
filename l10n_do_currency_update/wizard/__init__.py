@@ -3,3 +3,4 @@
 #  See LICENSE file for full licensing details.
 
 from . import res_company_currency_hash_wizard
+from . import update_rate_wizard

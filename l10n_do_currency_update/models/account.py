@@ -44,15 +44,3 @@ class AccountInvoice(models.Model):
     def _compute_rate(self):
         for inv in self.filtered(lambda i: i.date_invoice and i.state != 'paid'):
             inv.rate = inv.get_invoice_rate(inv.date_invoice)
-
-    def action_show_currency(self):
-        self.ensure_one()
-        view_id = self.env.ref('base.view_currency_form')
-        return {
-            'type': 'ir.actions.act_window',
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_model': 'res.currency',
-            'view_id': view_id.id,
-            'res_id': self.currency_id.id
-        }
