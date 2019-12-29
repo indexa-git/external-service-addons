@@ -15,5 +15,6 @@
     'data': [
         'views/res_partner_views.xml',
         'views/res_config_settings_views.xml',
+        'data/ir_config_parameter_data.xml',
     ],
 }
