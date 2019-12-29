@@ -116,10 +116,13 @@ class ResPartner(models.Model):
 
                 else:
                     # TODO: here we should request data from DGII WebService
-                    pass
-
+                    partner = super(ResPartner, self).create(vals)
+                    partner.sudo().message_post(
+                        subject=_("%s vat request" % partner.name),
+                        body=_("External service could not find requested "
+                               "contact data."))
+                    return partner
             else:
                 raise UserError(_('RNC/Cédula %s exist with name %s')
                                 % (rnc, partner_search.name))
-
         return super(ResPartner, self).create(vals)
