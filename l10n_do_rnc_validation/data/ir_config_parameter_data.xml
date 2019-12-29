@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="l10n_do_rnc_validation_api_url" model="ir.config_parameter">
+        <field name="key">rnc.indexa.api.url</field>
+        <field name="value">https://api.indexa.do/api/rnc</field>
+    </record>
+
+</odoo>
