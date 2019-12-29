@@ -1,8 +1,10 @@
+
+import json
+import logging
+import requests
+
 from odoo import models, api, _
 from odoo.exceptions import ValidationError, UserError
-import logging
-import json
-import requests
 
 _logger = logging.getLogger(__name__)
 
@@ -27,40 +29,47 @@ class ResPartner(models.Model):
                 res = partners.name_get()
         return res
 
-    def validate_rnc_cedula(self, vat):
+    @api.model
+    def get_contact_data(self, vat):
+        """
+        Gets contact fiscal data from external service.
 
+        :param vat: string representation of contact tax id
+        :return: json object containing contact fiscal data
+        Eg:
+        {
+            "status": "success",
+            "data": [
+                {
+                    "sector": "LOS RESTAURADORES",
+                    "street_number": "18",
+                    "street": "4",
+                    "economic_activity": "VENTA DE SOFTWARE",
+                    "phone": "9393231",
+                    "tradename": "INDEXA",
+                    "state": "ACTIVO",
+                    "business_name": "INDEXA SRL",
+                    "rnc": "131793916",
+                    "payment_regime": "NORMAL",
+                    "constitution_date": "2018-07-20"
+                }
+            ]
+        }
+        """
         if vat and vat.isdigit():
             try:
+                _logger.info("Starting contact fiscal data request "
+                             "of res.partner vat: %s" % vat)
                 response = requests.get(
                     'https://api.indexa.do/api/rnc',
                     {'rnc': vat},
                     headers={'x-access-token': 'demotoken'}
                 )
             except requests.exceptions.ConnectionError as e:
-                _logger.warning(
-                    _('API requests return the following error %s' % e))
-                raise ValidationError(_(e))
-
+                _logger.warning('API requests return the following '
+                                'error %s' % e)
+                return {"status": "error", "data": []}
             try:
-                    # response:
-                    # {
-                    #     "status": "success",
-                    #     "data": [
-                    #         {
-                    #             "sector": "LOS RESTAURADORES",
-                    #             "street_number": "18",
-                    #             "street": "4",
-                    #             "economic_activity": "VENTA DE SOFTWARE",
-                    #             "phone": "9393231",
-                    #             "tradename": "INDEXA",
-                    #             "state": "ACTIVO",
-                    #             "business_name": "INDEXA SRL",
-                    #             "rnc": "131793916",
-                    #             "payment_regime": "NORMAL",
-                    #             "constitution_date": "2018-07-20"
-                    #         }
-                    #     ]
-                    # }
                 return json.loads(response.text)
             except TypeError:
                 _logger.warning(_('No serializable data from API response'))
@@ -87,7 +96,7 @@ class ResPartner(models.Model):
             partner_search = self.search([('vat', '=', rnc)], limit=1)
             if not partner_search:
                 partner = self.env['res.partner'].\
-                    validate_rnc_cedula(rnc)
+                    get_contact_data(rnc)
 
                 if partner and partner['data']:
                     vals['name'] = partner['data'][0]['business_name']
