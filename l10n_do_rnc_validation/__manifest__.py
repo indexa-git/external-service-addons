@@ -1,27 +1,19 @@
 {
-    'name': 'l10n do external valdiation RNC',
+    'name': 'Dominican Tax ID Validation',
     'version': '12.0.0.0.0',
-    'summary': 'Validate rnc and cedula from indexa api',
-    # Categories can be used to filter modules in modules listing
-    # for the full list
-    'category': '',
+    'summary': 'Validate RNC/Cédula from external service',
+    'category': 'Extra Tools',
     'author': 'Guavana,'
               'Indexa,'
               'Iterativo',
     'website': 'https://github.com/odoo-dominicana',
-    'license': '',
-    # any module necessary for this one to work correctly
+    'license': 'LGPL-3',
     'depends': [
         'base',
         'base_setup',
     ],
-    # always loaded
     'data': [
         'views/res_partner_views.xml',
         'views/res_config_settings_views.xml',
     ],
-    # only loaded in demonstration mode
-    'demo': [],
-    'installable': True,
-    'auto_install': False,
 }
