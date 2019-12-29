@@ -60,9 +60,10 @@ class ResPartner(models.Model):
             try:
                 _logger.info("Starting contact fiscal data request "
                              "of res.partner vat: %s" % vat)
+                api_url = self.env['ir.config_parameter'].sudo().get_param(
+                    'rnc.indexa.api.url')
                 response = requests.get(
-                    'https://api.indexa.do/api/rnc',
-                    {'rnc': vat},
+                    api_url, {'rnc': vat},
                     headers={'x-access-token': 'demotoken'}
                 )
             except requests.exceptions.ConnectionError as e:
