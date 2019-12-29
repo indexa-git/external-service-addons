@@ -4,7 +4,7 @@ import logging
 import requests
 
 from odoo import models, api, _
-from odoo.exceptions import ValidationError, UserError
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -77,49 +77,48 @@ class ResPartner(models.Model):
 
     @api.model
     def create(self, vals):
-        rnc = False
-        company_obj = self.env['res.company'].search([
+        rnc = ""
+        company_id = self.env['res.company'].search([
             ('id', '=', self.env.user.company_id.id)])
-        if vals['vat'] and vals['vat'].isdigit() and \
-                company_obj.can_validate_rnc:
+        if 'vat' in vals and str(vals['vat']).isdigit() and \
+                company_id.can_validate_rnc:
             rnc = vals['vat']
 
-        if vals['name'].isdigit():
-            if company_obj.can_validate_rnc:
-                rnc = vals['name']
-            else:
-                raise UserError(_('Inquiries from RNC / Cedula online are '
-                                  'deactivated, please contact your '
-                                  'administrator'))
+        if vals['name'].isdigit() and len(vals['name']) in (9, 11) and \
+                company_id.can_validate_rnc:
+            rnc = vals['name']
 
         if rnc:
             partner_search = self.search([('vat', '=', rnc)], limit=1)
             if not partner_search:
-                partner = self.env['res.partner'].\
-                    get_contact_data(rnc)
-
-                if partner and partner['data']:
-                    vals['name'] = partner['data'][0]['business_name']
+                partner_json = self.get_contact_data(rnc)
+                if partner_json and partner_json['data']:
+                    data = dict(partner_json['data'][0])
+                    vals['name'] = data['business_name']
                     vals['vat'] = rnc
-                    if not vals['phone'] and partner['data'][0]['phone']:
-                        vals['phone'] = partner['data'][0]['phone']
-                    if not vals['street'] and partner['data'][0]['street']:
-                        vals['street'] = '%s, #%s, %s' % (
-                            partner['data'][0]['street'],
-                            partner['data'][0]['street_number'],
-                            partner['data'][0]['sector'],
-                        )
+                    if not vals.get('phone') and data['phone']:
+                        vals['phone'] = data['phone']
+                    if not vals.get('street'):
+                        address = ""
+                        if data['street']:
+                            address += data['street']
+                        if data['street_number']:
+                            address += ", " + data['street_number']
+                        if data['sector']:
+                            address += ", " + data['sector']
+                        vals['street'] = address
+
                     if len(rnc) == 9:
                         vals['is_company'] = True
                     else:
                         vals['is_company'] = False
 
                 else:
-                    raise UserError(_('RNC/Cedula %s not exist') % rnc)
+                    # TODO: here we should request data from DGII WebService
+                    pass
+
             else:
-                raise UserError(_('RNC/Cedula %s exist with name %s')
+                raise UserError(_('RNC/Cédula %s exist with name %s')
                                 % (rnc, partner_search.name))
 
-        res = super(ResPartner, self).create(vals)
-
-        return res
+        return super(ResPartner, self).create(vals)
