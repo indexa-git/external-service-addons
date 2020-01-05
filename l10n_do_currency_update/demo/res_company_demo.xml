@@ -16,7 +16,7 @@
         <field name="partner_id" ref="res_partner_company_1"/>
         <field name="name">Company_X</field>
         <field name="l10n_do_currency_provider">bpd</field>
-        <field name="currency_interval_unit">daily</field>
+        <field name="l10n_do_currency_interval_unit">daily</field>
     </record>
     <record id="res_partner_company_2" model="res.partner">
         <field name="name">Company_Y</field>
@@ -34,6 +34,6 @@
         <field name="partner_id" ref="res_partner_company_2"/>
         <field name="name">Company_Y</field>
         <field name="l10n_do_currency_provider">bsc</field>
-        <field name="currency_interval_unit">daily</field>
+        <field name="l10n_do_currency_interval_unit">daily</field>
     </record>
 </odoo>
