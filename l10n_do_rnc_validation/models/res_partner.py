@@ -82,57 +82,6 @@ class ResPartner(models.Model):
         return False
 
     @api.model
-    def create(self, vals):
-        rnc = ""
-        company_id = self.env['res.company'].search([
-            ('id', '=', self.env.user.company_id.id)])
-        if 'vat' in vals and str(vals['vat']).isdigit() and \
-                len(vals['name']) in (9, 11) and company_id.can_validate_rnc:
-            rnc = vals['vat']
-
-        if vals['name'].isdigit() and len(vals['name']) in (9, 11) and \
-                company_id.can_validate_rnc:
-            rnc = vals['name']
-
-        if rnc:
-            partner_search = self.search([('vat', '=', rnc)], limit=1)
-            if not partner_search:
-                partner_json = self.get_contact_data(rnc)
-                if partner_json and partner_json['data']:
-                    data = dict(partner_json['data'][0])
-                    vals['name'] = data['business_name']
-                    vals['vat'] = rnc
-                    if not vals.get('phone') and data['phone']:
-                        vals['phone'] = data['phone']
-                    if not vals.get('street'):
-                        address = ""
-                        if data['street']:
-                            address += data['street']
-                        if data['street_number']:
-                            address += ", " + data['street_number']
-                        if data['sector']:
-                            address += ", " + data['sector']
-                        vals['street'] = address
-
-                    if len(rnc) == 9:
-                        vals['is_company'] = True
-                    else:
-                        vals['is_company'] = False
-
-                else:
-                    # TODO: here we should request data from DGII WebService
-                    partner = super(ResPartner, self).create(vals)
-                    partner.sudo().message_post(
-                        subject=_("%s vat request" % partner.name),
-                        body=_("External service could not find requested "
-                               "contact data."))
-                    return partner
-            else:
-                raise UserError(_('RNC/Cédula %s exist with name %s')
-                                % (rnc, partner_search.name))
-        return super(ResPartner, self).create(vals)
-
-    @api.model
     def validate_rnc_cedula(self, number, model='partner'):
 
         company_id = self.env['res.company'].search([
