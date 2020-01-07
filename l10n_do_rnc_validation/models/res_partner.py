@@ -8,6 +8,11 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+try:
+    from stdnum.do import rnc, cedula
+except (ImportError, IOError) as err:
+    _logger.debug(err)
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -82,7 +87,7 @@ class ResPartner(models.Model):
         company_id = self.env['res.company'].search([
             ('id', '=', self.env.user.company_id.id)])
         if 'vat' in vals and str(vals['vat']).isdigit() and \
-                company_id.can_validate_rnc:
+                len(vals['name']) in (9, 11) and company_id.can_validate_rnc:
             rnc = vals['vat']
 
         if vals['name'].isdigit() and len(vals['name']) in (9, 11) and \
@@ -126,3 +131,129 @@ class ResPartner(models.Model):
                 raise UserError(_('RNC/Cédula %s exist with name %s')
                                 % (rnc, partner_search.name))
         return super(ResPartner, self).create(vals)
+
+    @api.model
+    def validate_rnc_cedula(self, number, model='partner'):
+
+        company_id = self.env['res.company'].search([
+            ('id', '=', self.env.user.company_id.id)])
+
+        if number and str(number).isdigit() and len(number) in (9, 11) and \
+                company_id.can_validate_rnc:
+            result, dgii_vals = {}, False
+            # TODO use context instead of adding a parameter to the function
+            model = 'res.partner' if model == 'partner' else 'res.company'
+
+            self_id = self.id if self.id else 0
+            # Considering multi-company scenarios
+            domain = [
+                ('vat', '=', number),
+                ('id', '!=', self_id),
+                ('parent_id', '=', False)
+            ]
+            if self.sudo().env.ref('base.res_partner_rule').active:
+                domain.extend([('company_id', '=',
+                                self.env.user.company_id.id)])
+            contact = self.search(domain)
+
+            if contact:
+                name = contact.name if len(contact) == 1 else ", ".join(
+                    [x.name for x in contact if x.name])
+                raise UserError(_('RNC/Cédula %s is already assigned to %s')
+                                % (rnc, name))
+
+            try:
+                is_rnc = len(number) == 9
+                rnc.validate(number) if is_rnc else cedula.validate(number)
+            except Exception:
+                _logger.warning(
+                    "RNC/Ced Inválido en el contacto {}".format(self.name))
+
+            partner_json = self.get_contact_data(rnc)
+            if partner_json and partner_json['data']:
+                data = dict(partner_json['data'][0])
+                result['name'] = data['business_name']
+                result['vat'] = rnc
+                if not result.get('phone') and data['phone']:
+                    result['phone'] = data['phone']
+                if not result.get('street'):
+                    address = ""
+                    if data['street']:
+                        address += data['street']
+                    if data['street_number']:
+                        address += ", " + data['street_number']
+                    if data['sector']:
+                        address += ", " + data['sector']
+                    result['street'] = address
+
+                if model == 'res.partner':
+                    result['is_company'] = True if is_rnc else False
+
+            else:
+                dgii_vals = rnc.check_dgii(number)
+                if dgii_vals is None:
+                    if is_rnc:
+                        self.sudo().message_post(
+                            subject=_("%s vat request" % self.name),
+                            body=_("External service could not find requested "
+                                    "contact data."))
+                    result['vat'] = number
+                    # TODO this has to be done in l10n_do
+                    # result['sale_fiscal_type'] = "final"
+                else:
+                    result['name'] = dgii_vals.get('name', False)
+                    result['vat'] = dgii_vals.get('rnc')
+
+                    if model == 'res.partner':
+                        result['is_company'] = True if is_rnc else False
+                        # TODO this has to be done in l10n_do
+                        # result['sale_fiscal_type'] = "fiscal"
+            return result
+
+
+    @api.onchange('name')
+    def _onchange_partner_name(self):
+        if self.name:
+            result = self.validate_rnc_cedula(self.name)
+            if result:
+                self.name = result.get('name')
+                self.vat = result.get('vat')
+                if not self.phone:
+                    self.phone = result.get('phone')
+                if not self.street:
+                    self.street = result.get('street')
+                self.is_company = result.get('is_company', False)
+                # # TODO this has to be done in l10n_do
+                # self.sale_fiscal_type = result.get('sale_fiscal_type')
+
+
+    @api.onchange('vat')
+    def _onchange_partner_vat(self):
+        if self.vat:
+            result = self.validate_rnc_cedula(self.vat)
+            if result:
+            if result:
+                self.name = result.get('name')
+                self.vat = result.get('vat')
+                if not self.phone:
+                    self.phone = result.get('phone')
+                if not self.street:
+                    self.street = result.get('street')
+                self.is_company = result.get('is_company', False)
+                # # TODO this has to be done in l10n_do
+                # self.sale_fiscal_type = result.get('sale_fiscal_type')
+
+    @api.model
+    def name_create(self, name):
+        if self._context.get('install_mode', False):
+            return super(ResPartner, self).name_create(name)
+        if self._rec_name:
+            if name.isdigit():
+                partner = self.search([('vat', '=', name)])
+                if partner:
+                    return partner.name_get()[0]
+                else:
+                    new_partner = self.create({"vat": name})
+                    return new_partner.name_get()[0]
+            else:
+                return super(ResPartner, self).name_create(name)
