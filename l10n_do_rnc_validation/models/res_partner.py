@@ -116,7 +116,7 @@ class ResPartner(models.Model):
                 rnc.validate(number) if is_rnc else cedula.validate(number)
             except Exception:
                 _logger.warning(
-                    "RNC/Ced Inválido en el contacto {}".format(self.name))
+                    "RNC/Ced is invalid for partner {}".format(self.name))
 
             partner_json = self.get_contact_data(rnc)
             if partner_json and partner_json['data']:
@@ -180,7 +180,6 @@ class ResPartner(models.Model):
     def _onchange_partner_vat(self):
         if self.vat:
             result = self.validate_rnc_cedula(self.vat)
-            if result:
             if result:
                 self.name = result.get('name')
                 self.vat = result.get('vat')
