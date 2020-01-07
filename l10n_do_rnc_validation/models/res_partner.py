@@ -109,7 +109,7 @@ class ResPartner(models.Model):
                 name = contact.name if len(contact) == 1 else ", ".join(
                     [x.name for x in contact if x.name])
                 raise UserError(_('RNC/Cédula %s is already assigned to %s')
-                                % (rnc, name))
+                                % (number, name))
 
             try:
                 is_rnc = len(number) == 9
@@ -118,11 +118,11 @@ class ResPartner(models.Model):
                 _logger.warning(
                     "RNC/Ced is invalid for partner {}".format(self.name))
 
-            partner_json = self.get_contact_data(rnc)
+            partner_json = self.get_contact_data(number)
             if partner_json and partner_json['data']:
                 data = dict(partner_json['data'][0])
                 result['name'] = data['business_name']
-                result['vat'] = rnc
+                result['vat'] = number
                 if not result.get('phone') and data['phone']:
                     result['phone'] = data['phone']
                 if not result.get('street'):
