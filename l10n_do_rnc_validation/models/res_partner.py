@@ -159,7 +159,6 @@ class ResPartner(models.Model):
                         # result['sale_fiscal_type'] = "fiscal"
             return result
 
-
     @api.onchange('name')
     def _onchange_partner_name(self):
         if self.name:
@@ -174,7 +173,6 @@ class ResPartner(models.Model):
                 self.is_company = result.get('is_company', False)
                 # # TODO this has to be done in l10n_do
                 # self.sale_fiscal_type = result.get('sale_fiscal_type')
-
 
     @api.onchange('vat')
     def _onchange_partner_vat(self):
