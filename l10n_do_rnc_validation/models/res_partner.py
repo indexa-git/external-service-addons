@@ -1,4 +1,3 @@
-
 import json
 import logging
 import requests
@@ -20,10 +19,7 @@ class ResPartner(models.Model):
     @api.model
     def name_search(self, name, args=None, operator='ilike', limit=100):
         res = super(ResPartner, self).name_search(
-            name,
-            args=args,
-            operator=operator,
-            limit=100
+            name, args=args, operator=operator, limit=100
         )
         if not res and name:
             if len(name) in (9, 11):
@@ -63,17 +59,20 @@ class ResPartner(models.Model):
         """
         if vat and vat.isdigit():
             try:
-                _logger.info("Starting contact fiscal data request "
-                             "of res.partner vat: %s" % vat)
-                api_url = self.env['ir.config_parameter'].sudo().get_param(
-                    'rnc.indexa.api.url')
+                _logger.info(
+                    "Starting contact fiscal data request "
+                    "of res.partner vat: %s" % vat
+                )
+                api_url = (
+                    self.env['ir.config_parameter']
+                    .sudo()
+                    .get_param('rnc.indexa.api.url')
+                )
                 response = requests.get(
-                    api_url, {'rnc': vat},
-                    headers={'x-access-token': 'demotoken'}
+                    api_url, {'rnc': vat}, headers={'x-access-token': 'demotoken'}
                 )
             except requests.exceptions.ConnectionError as e:
-                _logger.warning('API requests return the following '
-                                'error %s' % e)
+                _logger.warning('API requests return the following ' 'error %s' % e)
                 return {"status": "error", "data": []}
             try:
                 return json.loads(response.text)
@@ -84,11 +83,16 @@ class ResPartner(models.Model):
     @api.model
     def validate_rnc_cedula(self, number, model='partner'):
 
-        company_id = self.env['res.company'].search([
-            ('id', '=', self.env.user.company_id.id)])
+        company_id = self.env['res.company'].search(
+            [('id', '=', self.env.user.company_id.id)]
+        )
 
-        if number and str(number).isdigit() and len(number) in (9, 11) and \
-                company_id.can_validate_rnc:
+        if (
+            number
+            and str(number).isdigit()
+            and len(number) in (9, 11)
+            and company_id.can_validate_rnc
+        ):
             result, dgii_vals = {}, False
             # TODO use context instead of adding a parameter to the function
             model = 'res.partner' if model == 'partner' else 'res.company'
@@ -98,25 +102,27 @@ class ResPartner(models.Model):
             domain = [
                 ('vat', '=', number),
                 ('id', '!=', self_id),
-                ('parent_id', '=', False)
+                ('parent_id', '=', False),
             ]
             if self.sudo().env.ref('base.res_partner_rule').active:
-                domain.extend([('company_id', '=',
-                                self.env.user.company_id.id)])
+                domain.extend([('company_id', '=', self.env.user.company_id.id)])
             contact = self.search(domain)
 
             if contact:
-                name = contact.name if len(contact) == 1 else ", ".join(
-                    [x.name for x in contact if x.name])
-                raise UserError(_('RNC/Cédula %s is already assigned to %s')
-                                % (number, name))
+                name = (
+                    contact.name
+                    if len(contact) == 1
+                    else ", ".join([x.name for x in contact if x.name])
+                )
+                raise UserError(
+                    _('RNC/Cédula %s is already assigned to %s') % (number, name)
+                )
 
             try:
                 is_rnc = len(number) == 9
                 rnc.validate(number) if is_rnc else cedula.validate(number)
             except Exception:
-                _logger.warning(
-                    "RNC/Ced is invalid for partner {}".format(self.name))
+                _logger.warning("RNC/Ced is invalid for partner {}".format(self.name))
 
             partner_json = self.get_contact_data(number)
             if partner_json and partner_json['data']:
@@ -144,19 +150,18 @@ class ResPartner(models.Model):
                     if is_rnc:
                         self.sudo().message_post(
                             subject=_("%s vat request" % self.name),
-                            body=_("External service could not find requested "
-                                    "contact data."))
+                            body=_(
+                                "External service could not find requested "
+                                "contact data."
+                            ),
+                        )
                     result['vat'] = number
-                    # TODO this has to be done in l10n_do
-                    # result['sale_fiscal_type'] = "final"
                 else:
                     result['name'] = dgii_vals.get('name', False)
                     result['vat'] = dgii_vals.get('rnc')
 
                     if model == 'res.partner':
                         result['is_company'] = True if is_rnc else False
-                        # TODO this has to be done in l10n_do
-                        # result['sale_fiscal_type'] = "fiscal"
             return result
 
     @api.onchange('name')
@@ -171,8 +176,6 @@ class ResPartner(models.Model):
                 if not self.street:
                     self.street = result.get('street')
                 self.is_company = result.get('is_company', False)
-                # # TODO this has to be done in l10n_do
-                # self.sale_fiscal_type = result.get('sale_fiscal_type')
 
     @api.onchange('vat')
     def _onchange_partner_vat(self):
@@ -186,8 +189,6 @@ class ResPartner(models.Model):
                 if not self.street:
                     self.street = result.get('street')
                 self.is_company = result.get('is_company', False)
-                # # TODO this has to be done in l10n_do
-                # self.sale_fiscal_type = result.get('sale_fiscal_type')
 
     @api.model
     def name_create(self, name):
