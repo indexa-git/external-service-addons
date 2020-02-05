@@ -19,7 +19,6 @@ class ResCompanyTokenWizard(models.TransientModel):
     token_ids = fields.One2many('res.company.token.list', 'token_wizard_id', string='Companies',
                                 default=_get_default_token_ids)
 
-    @api.multi
     def set_company_token(self):
         self.ensure_one()
         for rec in self.token_ids:

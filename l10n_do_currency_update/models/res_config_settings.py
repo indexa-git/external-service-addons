@@ -35,7 +35,6 @@ class ResConfigSettings(models.TransientModel):
             return
         self.l10n_do_currency_next_execution_date = fields.Date.to_string(datetime.datetime.now() + next_update)
 
-    @api.multi
     def l10n_do_update_currency_rates(self):
         companies = self.env['res.company'].browse([record.company_id.id for record in self])
 
