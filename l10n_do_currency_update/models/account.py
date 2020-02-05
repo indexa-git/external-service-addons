@@ -5,8 +5,8 @@
 from odoo import models, fields, api
 
 
-class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+class AccountMove(models.Model):
+    _inherit = 'account.move'
 
     rate = fields.Float(
         compute='_compute_rate',
@@ -16,7 +16,6 @@ class AccountInvoice(models.Model):
         compute='_compute_show_rate'
     )
 
-    @api.multi
     @api.depends('currency_id', 'company_id')
     def _compute_show_rate(self):
         for inv in self:
@@ -39,11 +38,10 @@ class AccountInvoice(models.Model):
 
         return 1 / before_rate_id.rate if before_rate_id else 1
 
-    @api.multi
-    @api.depends('state', 'date_invoice', 'currency_id')
+    @api.depends('state', 'invoice_date', 'currency_id')
     def _compute_rate(self):
-        for inv in self.filtered(lambda i: i.date_invoice and i.state != 'paid'):
-            inv.rate = inv.get_invoice_rate(inv.date_invoice)
+        for inv in self.filtered(lambda i: i.invoice_date and i.state != 'paid'):
+            inv.rate = inv.get_invoice_rate(inv.invoice_date)
 
     def action_show_currency(self):
         self.ensure_one()

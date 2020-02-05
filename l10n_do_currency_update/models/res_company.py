@@ -60,7 +60,6 @@ class ResCompany(models.Model):
             return {}
         return response.text
 
-    @api.multi
     def l10n_do_update_currency_rates(self):
 
         all_good = True
