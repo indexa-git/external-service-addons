@@ -145,7 +145,7 @@ class ResPartner(models.Model):
                         self.sudo().message_post(
                             subject=_("%s vat request" % self.name),
                             body=_("External service could not find requested "
-                                    "contact data."))
+                                   "contact data."))
                     result['vat'] = number
                     # TODO this has to be done in l10n_do
                     # result['sale_fiscal_type'] = "final"
@@ -161,23 +161,16 @@ class ResPartner(models.Model):
 
     @api.onchange('name')
     def _onchange_partner_name(self):
-        if self.name:
-            result = self.validate_rnc_cedula(self.name)
-            if result:
-                self.name = result.get('name')
-                self.vat = result.get('vat')
-                if not self.phone:
-                    self.phone = result.get('phone')
-                if not self.street:
-                    self.street = result.get('street')
-                self.is_company = result.get('is_company', False)
-                # # TODO this has to be done in l10n_do
-                # self.sale_fiscal_type = result.get('sale_fiscal_type')
+        self.validate_vat_onchange(self.name)
 
     @api.onchange('vat')
     def _onchange_partner_vat(self):
-        if self.vat:
-            result = self.validate_rnc_cedula(self.vat)
+        self.validate_vat_onchange(self.vat)
+
+    @api.model
+    def validate_vat_onchange(self, vat):
+        if vat:
+            result = self.validate_rnc_cedula(vat)
             if result:
                 self.name = result.get('name')
                 self.vat = result.get('vat')
