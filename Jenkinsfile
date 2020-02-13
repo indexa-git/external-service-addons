@@ -3,7 +3,7 @@ pipeline {
   options { disableConcurrentBuilds() }
   environment {
     BRANCH = "${env.GIT_BRANCH}"
-    ODOO_BRANCH = 11.0
+    ODOO_BRANCH = 13.0
     ODOO_IMAGE = "external_service_addons-${env.BRANCH}_odoo"
     PG_IMAGE = "external_service_addons-${env.BRANCH}_db"
     ADDONS_PATH = "${env.JENKINS_HOME}/odoo-addons"
@@ -38,7 +38,7 @@ pipeline {
             odoo \
             -d ${env.PG_IMAGE} \
             --addons-path=/etc/odoo/odoo/addons,/etc/odoo/addons,/etc/odoo-addons/external_service_addons \
-            -i l10n_do_currency_update \
+            -i l10n_do_currency_update,l10n_do_rnc_validation \
             --stop-after-init \
             --test-enable"
         sh "docker stop ${env.ODOO_IMAGE}"
