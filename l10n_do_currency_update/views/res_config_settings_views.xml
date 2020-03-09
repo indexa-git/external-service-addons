@@ -43,7 +43,6 @@
                             <field name="last_currency_sync_date"
                                    attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
                         </div>
-
                     </div>
                 </div>
             </xpath>
