@@ -20,7 +20,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bpd'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -35,7 +35,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bnr'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -50,7 +50,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bpr'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -65,7 +65,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bsc'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -80,7 +80,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bdi'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -95,7 +95,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bpm'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
@@ -110,7 +110,7 @@ class CurrencyTestCase(TransactionCase):
 
         self.test_company.l10n_do_currency_provider = 'bvm'
         self.test_company.currency_base = 'buyrate'
-        self.test_company.currency_service_token = 'demotoken'
+        # self.test_company.currency_service_token = 'demotoken'
         rates_count = len(self.currency_usd.rate_ids)
         res = self.test_company.l10n_do_update_currency_rates()
 
