@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #  Copyright (c) 2018 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
@@ -43,12 +42,7 @@ class ResCompany(models.Model):
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
     rate_offset = fields.Float('Offset', default=0)
     l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
-    currency_service_token = fields.Char()
     last_currency_sync_date = fields.Date(string="Last Sync Date", readonly=True)
-
-    _sql_constraints = [
-        ('token_uniq', 'unique(currency_service_token)', 'Token must be unique per company.')
-    ]
 
     def get_currency_rates(self, params, token):
         api_url = self.env['ir.config_parameter'].sudo().get_param('indexa.api.url')
@@ -74,7 +68,8 @@ class ResCompany(models.Model):
                 params = {'bank': company.l10n_do_currency_provider,
                           'date': datetime.datetime.strftime(today, '%Y-%m-%d')}
 
-                token = company.currency_service_token or ''
+                token = self.env['ir.config_parameter'].sudo().get_param(
+                    'indexa.api.token')
                 rates_dict = self.get_currency_rates(params, token)
 
                 d = {}
