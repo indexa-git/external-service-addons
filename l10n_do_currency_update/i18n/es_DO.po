@@ -20,7 +20,7 @@ msgstr ""
 #. module: l10n_do_currency_update
 #: model:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "<i title=\"Update now\" class=\"fa fa-fw fa-refresh\"/>"
-msgstr "<i title=“Actualizar ahora” class=\"fa fa-fw fa-refresh”/>"
+msgstr "<i title=\"Actualizar ahora\" class=\"fa fa-fw fa-refresh\"/>"
 
 #. module: l10n_do_currency_update
 #: code:addons/l10n_do_currency_update/models/res_company.py:53
