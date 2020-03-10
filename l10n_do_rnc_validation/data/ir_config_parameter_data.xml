@@ -6,4 +6,9 @@
         <field name="value">https://api.indexa.do/api/rnc</field>
     </record>
 
+    <record id="l10n_do_rnc_validation_api_token" model="ir.config_parameter">
+        <field name="key">rnc.indexa.api.token</field>
+        <field name="value">false</field>
+    </record>
+
 </odoo>
