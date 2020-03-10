@@ -1,6 +1,6 @@
 {
     'name': 'Dominican Tax ID Validation',
-    'version': '12.0.0.0.0',
+    'version': '13.0.0.0.0',
     'summary': 'Validate RNC/Cédula from external service',
     'category': 'Extra Tools',
     'author': 'Guavana,'
