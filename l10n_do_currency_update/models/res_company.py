@@ -109,7 +109,7 @@ class ResCompany(models.Model):
     @api.model
     def l10n_do_run_update_currency(self):
 
-        records = self.search([('l10n_do_currency_next_execution_date', '<=', fields.Date.today())])
+        records = self.search([])
         if records:
             to_update = self.env['res.company']
             for record in records:
