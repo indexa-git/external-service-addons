@@ -6,6 +6,10 @@
             <field name="key">indexa.api.url</field>
             <field name="value">https://api.indexa.do/api/rates</field>
         </record>
+        <record id="l10n_do_currency_update_api_token" model="ir.config_parameter">
+            <field name="key">indexa.api.token</field>
+            <field name="value">false</field>
+        </record>
 
     </data>
 </odoo>

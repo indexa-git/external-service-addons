@@ -42,8 +42,11 @@ class AccountInvoice(models.Model):
     @api.multi
     @api.depends('state', 'date_invoice', 'currency_id')
     def _compute_rate(self):
-        for inv in self.filtered(lambda i: i.date_invoice and i.state != 'paid'):
-            inv.rate = inv.get_invoice_rate(inv.date_invoice)
+        for inv in self.filtered(lambda i: i.date_invoice):
+            if not inv.rate:
+                inv.rate = inv.get_invoice_rate(inv.date_invoice)
+            else:
+                inv.rate = inv.rate
 
     def action_show_currency(self):
         self.ensure_one()

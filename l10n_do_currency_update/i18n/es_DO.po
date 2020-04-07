@@ -73,34 +73,6 @@ msgid "Buy rate"
 msgstr "Tasa de compra"
 
 #. module: l10n_do_currency_update
-#: model:ir.ui.view,arch_db:l10n_do_currency_update.res_company_currency_token_wizard_form
-msgid "Cancel"
-msgstr "Cancelar"
-
-#. module: l10n_do_currency_update
-#: model:ir.model,name:l10n_do_currency_update.model_res_company
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard_token_ids
-msgid "Companies"
-msgstr "Compañías"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_company_id
-msgid "Company"
-msgstr "Compañía"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_create_uid
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard_create_uid
-msgid "Created by"
-msgstr "Creado por"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_create_date
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard_create_date
-msgid "Created on"
-msgstr "Creado el"
-
-#. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_currency_base
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_currency_base
 msgid "Currency base"
@@ -160,30 +132,6 @@ msgid "Interval Unit"
 msgstr "Intervalo"
 
 #. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list___last_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard___last_update
-msgid "Last Modified on"
-msgstr "Última modificación en"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_last_currency_sync_date
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_last_currency_sync_date
-msgid "Last Sync Date"
-msgstr "Última fecha de sincronización"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_write_uid
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard_write_uid
-msgid "Last Updated by"
-msgstr "Última actualización por"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_write_date
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_wizard_write_date
-msgid "Last Updated on"
-msgstr "Última actualización el"
-
-#. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_interval_unit:0
 msgid "Manually"
 msgstr "Manualmente"
@@ -192,12 +140,6 @@ msgstr "Manualmente"
 #: selection:res.company,l10n_do_currency_interval_unit:0
 msgid "Monthly"
 msgstr "Mensual"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_name
-#: model:ir.ui.view,arch_db:l10n_do_currency_update.res_company_currency_token_wizard_form
-msgid "Name"
-msgstr "Nombre"
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_config_settings_l10n_do_currency_next_execution_date
@@ -218,29 +160,9 @@ msgid "Offset"
 msgstr "Compensación"
 
 #. module: l10n_do_currency_update
-#: model:ir.ui.view,arch_db:l10n_do_currency_update.res_company_currency_token_wizard_form
-msgid "Save"
-msgstr "Guardar"
-
-#. module: l10n_do_currency_update
 #: selection:res.company,currency_base:0
 msgid "Sell rate"
 msgstr "Tasa de venta"
-
-#. module: l10n_do_currency_update
-#: model:ir.actions.act_window,name:l10n_do_currency_update.res_company_currency_token_wizard_action
-msgid "Set token"
-msgstr "Poner Token"
-
-#. module: l10n_do_currency_update
-#: model:ir.model,name:l10n_do_currency_update.model_res_company_token_wizard
-msgid "Set token Wizard"
-msgstr "Asistente Poner Token"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_token_list_token
-msgid "Token"
-msgstr "Token"
 
 #. module: l10n_do_currency_update
 #: code:addons/l10n_do_currency_update/models/account_config_settings.py:43
@@ -273,11 +195,6 @@ msgstr "Asistente"
 #: model:ir.model,name:l10n_do_currency_update.model_account_config_settings
 msgid "account.config.settings"
 msgstr "account.config.settings"
-
-#. module: l10n_do_currency_update
-#: model:ir.model,name:l10n_do_currency_update.model_res_company_token_list
-msgid "res.company.token.list"
-msgstr "res.company.token.list"
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice_rate
