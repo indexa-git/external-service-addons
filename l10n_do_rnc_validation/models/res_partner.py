@@ -84,7 +84,7 @@ class ResPartner(models.Model):
         return False
 
     @api.model
-    def validate_rnc_cedula(self, number, model='partner'):
+    def validate_rnc_cedula(self, number):
 
         company_id = self.env['res.company'].search([
             ('id', '=', self.env.user.company_id.id)])
@@ -93,7 +93,7 @@ class ResPartner(models.Model):
                 company_id.can_validate_rnc:
             result, dgii_vals = {}, False
             # TODO use context instead of adding a parameter to the function
-            model = 'res.partner' if model == 'partner' else 'res.company'
+            model = self.env.context.get('model')
 
             self_id = self.id if self.id else 0
             # Considering multi-company scenarios
@@ -164,7 +164,7 @@ class ResPartner(models.Model):
         new_vals = {}
         if any([val in vals for val in ['name', 'vat']]):
             vat = vals['name'] if not vals.get('vat', False) else vals['vat']
-            result = self.validate_rnc_cedula(vat)
+            result = self.with_context(model=self._name).validate_rnc_cedula(vat)
             if result is not None:
                 new_vals['name'] = result.get('name')
                 new_vals['vat'] = result.get('vat')
