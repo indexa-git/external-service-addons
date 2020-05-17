@@ -92,7 +92,6 @@ class ResPartner(models.Model):
         if number and str(number).isdigit() and len(number) in (9, 11) and \
                 company_id.can_validate_rnc:
             result, dgii_vals = {}, False
-            # TODO use context instead of adding a parameter to the function
             model = self.env.context.get('model')
 
             self_id = self.id if self.id else 0
