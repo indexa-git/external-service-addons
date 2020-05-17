@@ -8,7 +8,8 @@ substitutions:
   # Deployment variables
   _ENVIRONMENT: dev
   _DEPLOYMENT_BRANCH: master
-  _CD_TRIGGER: odoo-repos
+  _UPGRADE_ODOO: "1"
+  _STAGING_DB: client
   # SSH & KMS Key variables
   _CIPHERED_KEY: git-ci.enc
   _CIPHER_PROJECT: sec-manager
@@ -16,9 +17,9 @@ substitutions:
   _CIPHER_KEYRING: east-ring
   _CIPHER_KEY: github-key
   _KEY_BUCKET: cicd-key
-  _GKE_PROJECT: zeus-matrix
-  _GKE_LOCATION: us-east1
-  _GKE_CLUSTER: hyades
+  _GKE_PROJECT: indexa-odoo
+  _GKE_LOCATION: us-east1-c
+  _GKE_CLUSTER: dev-cluster
 # Allow variables without substitutions
 options:
   substitution_option: "ALLOW_LOOSE"
@@ -77,7 +78,7 @@ steps:
       - name: "ssh"
         path: /root/.ssh
 
-    # Move "cleaned" modules to their own folder and download required dependencies
+  # Move "cleaned" modules to their own folder and download required dependencies
   - name: "gcr.io/cloud-builders/git"
     id: dependencies
     waitFor: ["ssh"]
@@ -92,7 +93,6 @@ steps:
         ###### Add other git dependencies here ########
         git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:camptocamp/odoo-cloud-platform.git
         git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:odoo/enterprise.git
-        git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:odoo-dominicana/l10n-dominicana.git
         ###### Do not modify under this line ####
         chown -R 1000:1000 /builder/home/
     volumes:
@@ -107,7 +107,7 @@ steps:
     args:
       - "-c"
       - |
-        git clone --depth 1 --branch ${_DEPLOYMENT_BRANCH} --single-branch git@github.com:iterativo-git/odoo-gke.git
+        git clone --depth 1 --branch ${_DEPLOYMENT_BRANCH} --single-branch git@github.com:indexa-git/gke-dev-cluster.git
         ls
     volumes:
       - name: "ssh"
@@ -137,55 +137,75 @@ steps:
     env:
       - "ODOO_EXTRA_ADDONS=/var/lib/odoo/extra-addons"
 
-    # Install PostgreSQL
+  # Install PostgreSQL
   - name: gcr.io/cloud-builders/docker
     id: postgres
     waitFor: ["-"]
     args:
-      [
-        "run", "--name=${REPO_NAME}-${BRANCH_NAME}",
-        "-e", "POSTGRES_DB=postgres",
-        "-e", "POSTGRES_USER=odoo",
-        "-e", "POSTGRES_PASSWORD=odoo",
-        "--network=cloudbuild",
-        "-d", "postgres:11",
-      ]
+      ["run", "--name=${REPO_NAME}-${BRANCH_NAME}", "-e", "POSTGRES_DB=postgres", "-e", "POSTGRES_USER=odoo", "-e", "POSTGRES_PASSWORD=odoo",
+       "--network=cloudbuild", "-d", "postgres:11-alpine"]
 
   # Run dockerdoo with modules inside the repo
   - name: "gcr.io/$PROJECT_ID/$REPO_NAME:${BRANCH_NAME}"
     id: run
     dir: /
     waitFor: ["dependencies", "postgres", "build"]
-    entrypoint: bash
     args:
+      - "bash"
       - "-c"
       - |
-        export ADDONS_PATH=$(python getaddons.py /workspace)
         export EXTRA_MODULES=$(< /workspace/_MODULES)
-        [[ "$_RUN_TESTS" == "0" ]] && odoo --addons-path=$${ADDONS_PATH} -d ${REPO_NAME}-${BRANCH_NAME} --db_host=${REPO_NAME}-${BRANCH_NAME} --init=$${EXTRA_MODULES} --db_user=odoo --db_password=odoo --stop-after-init || echo "skipping..."
+        [[ "$_RUN_TESTS" == "0" ]] || exit 0 \
+          && odoo -d ${REPO_NAME}-${BRANCH_NAME} -i $${EXTRA_MODULES} --stop-after-init
     env:
+      - "DB_PORT_5432_TCP_ADDR=${REPO_NAME}-${BRANCH_NAME}"
+      - "DB_ENV_POSTGRES_USER=odoo"
+      - "DB_ENV_POSTGRES_PASSWORD=odoo"
       - "LOG_LEVEL=${_LOG_LEVEL}"
       - "WITHOUT_DEMO=${_WITHOUT_DEMO}"
 
-  # Run dockerdoo with modules inside the repo and run tests
+  # Run dockerdoo with modules inside the repo and run tests if needed
   - name: "gcr.io/$PROJECT_ID/$REPO_NAME:${BRANCH_NAME}"
     id: tests
     dir: /
     waitFor: ["dependencies", "postgres", "build"]
-    entrypoint: bash
     args:
+      - "bash"
       - "-c"
       - |
-        export ADDONS_PATH=$(python getaddons.py /workspace)
         export EXTRA_MODULES=$(< /workspace/_MODULES)
-        [[ "$_RUN_TESTS" == "1" ]] && odoo --addons-path=$${ADDONS_PATH} -d ${REPO_NAME}-${BRANCH_NAME} --db_host=${REPO_NAME}-${BRANCH_NAME} --test-enable --init=$${EXTRA_MODULES} --test-tags=$${EXTRA_MODULES} --db_user=odoo --db_password=odoo --stop-after-init || echo "skipping..."
+        [[ "$_RUN_TESTS" == "1" && "$_TEST_BRANCH" != "11.0" && -z "$_PR_NUMBER" ]] || exit 0 \
+          && odoo -d ${REPO_NAME}-${BRANCH_NAME} -i $${EXTRA_MODULES} --test-enable --stop-after-init
     env:
+      - "DB_PORT_5432_TCP_ADDR=${REPO_NAME}-${BRANCH_NAME}"
+      - "DB_ENV_POSTGRES_USER=odoo"
+      - "DB_ENV_POSTGRES_PASSWORD=odoo"
+      - "LOG_LEVEL=${_LOG_LEVEL}"
+      - "WITHOUT_DEMO=${_WITHOUT_DEMO}"
+
+  # Run dockerdoo with modules inside the repo and run tests if needed
+  - name: "gcr.io/$PROJECT_ID/$REPO_NAME:${BRANCH_NAME}"
+    id: tests-all
+    dir: /
+    waitFor: ["dependencies", "postgres", "build"]
+    args:
+      - "bash"
+      - "-c"
+      - |
+        export EXTRA_MODULES=$(< /workspace/_MODULES)
+        [[ "$_RUN_TESTS" == "1" && "$_BASE_BRANCH" =~ ^[0-9]{1,2}\.[0]$ || "$_RUN_TESTS" == "1" && "$_BASE_BRANCH" =~ ^[0-9]{1,2}\.[0]-staging-.*$ || "$_RUN_TESTS" == "1" && "$_TEST_BRANCH" == "11.0" ]] || exit 0\
+          && odoo -d ${REPO_NAME}-${BRANCH_NAME} -i $${EXTRA_MODULES} --test-enable --stop-after-init
+    env:
+      - "DB_PORT_5432_TCP_ADDR=${REPO_NAME}-${BRANCH_NAME}"
+      - "DB_ENV_POSTGRES_USER=odoo"
+      - "DB_ENV_POSTGRES_PASSWORD=odoo"
       - "LOG_LEVEL=${_LOG_LEVEL}"
       - "WITHOUT_DEMO=${_WITHOUT_DEMO}"
 
   # Push the image to Google Cloud Registry
   - name: "gcr.io/cloud-builders/docker"
     id: push
+    waitFor: ["run", "tests", "tests-all"]
     args: ["push", "gcr.io/$PROJECT_ID/${REPO_NAME}:${BRANCH_NAME}"]
 
   ################
@@ -200,7 +220,7 @@ steps:
     args:
       - "-c"
       - |
-        kustomize build odoo-gke/deployments/odoo/${_TEST_BRANCH}/${_ENVIRONMENT} -o gke-${REPO_NAME}-${BRANCH_NAME}.yaml
+        kustomize build gke-dev-cluster/deployments/odoo/${_TEST_BRANCH}/${_ENVIRONMENT} -o gke-${REPO_NAME}-${BRANCH_NAME}.yaml
         ls
     env:
       - "CLOUDSDK_COMPUTE_ZONE=${_GKE_LOCATION}"
@@ -217,7 +237,9 @@ steps:
         export REPO_URL=${REPO_NAME//[[:punct:]]/-}
         export BRANCH_URL=${BRANCH_NAME//[[:punct:]]/-}
         export EXTRA_MODULES=$(cat /workspace/_MODULES)
-        cat gke-${REPO_NAME}-${BRANCH_NAME}.yaml | envsubst '$${REPO_NAME} $${BRANCH_NAME} $${REPO_URL} $${BRANCH_URL} $${EXTRA_MODULES} $${PROJECT_ID}' > gke-${REPO_NAME}-${BRANCH_NAME}.yaml.processed
+        cat gke-${REPO_NAME}-${BRANCH_NAME}.yaml | envsubst \
+        '$${ENV} $${REPO_NAME} $${BRANCH_NAME} $${REPO_URL} $${BRANCH_URL} $${_UPGRADE_ODOO} \
+        $${EXTRA_MODULES} $${PROJECT_ID} $${SHORT_SHA} $${GKE_LOCATION} $${_STAGING_DB}' > gke-${REPO_NAME}-${BRANCH_NAME}.yaml.processed
         mv gke-${REPO_NAME}-${BRANCH_NAME}.yaml.processed gke-${REPO_NAME}-${BRANCH_NAME}.yaml
         cat gke-${REPO_NAME}-${BRANCH_NAME}.yaml
     env:
@@ -225,6 +247,10 @@ steps:
         "REPO_NAME=${REPO_NAME}",
         "BRANCH_NAME=${BRANCH_NAME}",
         "PROJECT_ID=${PROJECT_ID}",
+        "ENV=${_ENVIRONMENT}",
+        "SHORT_SHA=${SHORT_SHA}",
+        "EXTRA_MODULES=${_EXTRA_MODULES}",
+        "GKE_LOCATION=${_GKE_LOCATION}",
       ]
 
   # Deploy the container image to GKE
@@ -238,7 +264,7 @@ steps:
       - --project=${_GKE_PROJECT}
       - --location=${_GKE_LOCATION}
       - --cluster=${_GKE_CLUSTER}
-      - --timeout=600s
+      - --timeout=1200s
 
   # Print the resulting URL
   - name: "gcr.io/cloud-builders/gcloud"
@@ -267,4 +293,4 @@ images:
   - "gcr.io/$PROJECT_ID/${REPO_NAME}:${BRANCH_NAME}"
 
 # Allow Odoo to build when there's no cache
-timeout: 1800s
+timeout: 2300s
