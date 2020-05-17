@@ -113,8 +113,8 @@ class ResPartner(models.Model):
                 raise UserError(_('RNC/Cédula %s is already assigned to %s')
                                 % (number, name))
 
+            is_rnc = len(number) == 9
             try:
-                is_rnc = len(number) == 9
                 rnc.validate(number) if is_rnc else cedula.validate(number)
             except Exception:
                 _logger.warning(
@@ -141,7 +141,6 @@ class ResPartner(models.Model):
                     result['is_company'] = True if is_rnc else False
 
             else:
-
                 try:
                     dgii_vals = rnc.check_dgii(number)
                 except:
@@ -153,16 +152,11 @@ class ResPartner(models.Model):
                             body=_("External service could not find requested "
                                    "contact data."))
                     result['vat'] = number
-                    # TODO this has to be done in l10n_do
-                    # result['sale_fiscal_type'] = "final"
                 elif dgii_vals:
                     result['name'] = dgii_vals.get('name', False)
                     result['vat'] = dgii_vals.get('rnc')
-
                     if model == 'res.partner':
-                        result['is_company'] = True if is_rnc else False
-                        # TODO this has to be done in l10n_do
-                        # result['sale_fiscal_type'] = "fiscal"
+                        result['is_company'] = is_rnc
             return result
 
     @api.model
