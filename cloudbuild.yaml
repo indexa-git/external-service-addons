@@ -93,6 +93,7 @@ steps:
         ###### Add other git dependencies here ########
         git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:camptocamp/odoo-cloud-platform.git
         git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:odoo/enterprise.git
+        git clone --depth 1 --branch ${_TEST_BRANCH} --single-branch git@github.com:odoo-dominicana/l10n-dominicana.git
         ###### Do not modify under this line ####
         chown -R 1000:1000 /builder/home/
     volumes:
@@ -175,7 +176,7 @@ steps:
       - |
         export EXTRA_MODULES=$(< /workspace/_MODULES)
         [[ "$_RUN_TESTS" == "1" && "$_TEST_BRANCH" != "11.0" && -z "$_PR_NUMBER" ]] || exit 0 \
-          && odoo -d ${REPO_NAME}-${BRANCH_NAME} -i $${EXTRA_MODULES} --test-enable --stop-after-init
+          && odoo -d ${REPO_NAME}-${BRANCH_NAME} -i $${EXTRA_MODULES} --test-enable --test-tags=$${EXTRA_MODULES} --stop-after-init
     env:
       - "DB_PORT_5432_TCP_ADDR=${REPO_NAME}-${BRANCH_NAME}"
       - "DB_ENV_POSTGRES_USER=odoo"
