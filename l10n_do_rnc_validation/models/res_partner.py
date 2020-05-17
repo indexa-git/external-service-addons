@@ -162,7 +162,7 @@ class ResPartner(models.Model):
     def _get_updated_vals(self, vals):
         new_vals = {}
         if any([val in vals for val in ['name', 'vat']]):
-            vat = vals['name'] if not vals.get('vat', False) else vals['vat']
+            vat = vals["vat"] if vals.get('vat') is not None else vals.get('name')
             result = self.with_context(model=self._name).validate_rnc_cedula(vat)
             if result is not None:
                 new_vals['name'] = result.get('name')
