@@ -165,28 +165,33 @@ class ResPartner(models.Model):
                         # result['sale_fiscal_type'] = "fiscal"
             return result
 
-    @api.onchange('name')
-    def _onchange_partner_name(self):
-        self.validate_vat_onchange(self.name)
-
-    @api.onchange('vat')
-    def _onchange_partner_vat(self):
-        self.validate_vat_onchange(self.vat)
-
     @api.model
-    def validate_vat_onchange(self, vat):
-        if vat:
+    def _get_updated_vals(self, vals):
+        new_vals = {}
+        if any([val in vals for val in ['name', 'vat']]):
+            vat = vals['name'] if not vals.get('vat', False) else vals['vat']
             result = self.validate_rnc_cedula(vat)
-            if result:
-                self.name = result.get('name')
-                self.vat = result.get('vat')
-                if not self.phone:
-                    self.phone = result.get('phone')
-                if not self.street:
-                    self.street = result.get('street')
-                self.is_company = result.get('is_company', False)
-                # # TODO this has to be done in l10n_do
-                # self.sale_fiscal_type = result.get('sale_fiscal_type')
+            if result is not None:
+                new_vals['name'] = result.get('name')
+                new_vals['vat'] = result.get('vat')
+                new_vals['is_company'] = result.get('is_company', False)
+                new_vals['company_type'] = 'company' if new_vals['is_company'] else 'person'
+                if not vals.get('phone'):
+                    new_vals['phone'] = result.get('phone')
+                if not vals.get('street'):
+                    new_vals['street'] = result.get('street')
+        return new_vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals.update(self._get_updated_vals(vals))
+        return super(ResPartner, self).create(vals_list)
+
+    @api.multi
+    def write(self, vals):
+        vals.update(self._get_updated_vals(vals))
+        return super(ResPartner, self).write(vals)
 
     @api.model
     def name_create(self, name):
