@@ -84,27 +84,28 @@ class ResPartner(models.Model):
         return False
 
     @api.model
-    def validate_rnc_cedula(self, number, model='partner'):
+    def validate_rnc_cedula(self, number):
 
-        company_id = self.env['res.company'].search([
-            ('id', '=', self.env.user.company_id.id)])
+        company_id = self.env.user.company_id
 
         if number and str(number).isdigit() and len(number) in (9, 11) and \
                 company_id.can_validate_rnc:
             result, dgii_vals = {}, False
-            # TODO use context instead of adding a parameter to the function
-            model = 'res.partner' if model == 'partner' else 'res.company'
+            model = self.env.context.get('model')
 
-            self_id = self.id if self.id else 0
+            if model == 'res.partner' and self:
+                self_id = [self.id, self.parent_id.id]
+            else:
+                self_id = [company_id.id]
+
             # Considering multi-company scenarios
             domain = [
                 ('vat', '=', number),
-                ('id', '!=', self_id),
+                ('id', 'not in', self_id),
                 ('parent_id', '=', False)
             ]
             if self.sudo().env.ref('base.res_partner_rule').active:
-                domain.extend([('company_id', '=',
-                                self.env.user.company_id.id)])
+                domain.extend([('company_id', '=', company_id.id)])
             contact = self.search(domain)
 
             if contact:
@@ -113,8 +114,8 @@ class ResPartner(models.Model):
                 raise UserError(_('RNC/Cédula %s is already assigned to %s')
                                 % (number, name))
 
+            is_rnc = len(number) == 9
             try:
-                is_rnc = len(number) == 9
                 rnc.validate(number) if is_rnc else cedula.validate(number)
             except Exception:
                 _logger.warning(
@@ -141,7 +142,6 @@ class ResPartner(models.Model):
                     result['is_company'] = True if is_rnc else False
 
             else:
-
                 try:
                     dgii_vals = rnc.check_dgii(number)
                 except:
@@ -153,40 +153,44 @@ class ResPartner(models.Model):
                             body=_("External service could not find requested "
                                    "contact data."))
                     result['vat'] = number
-                    # TODO this has to be done in l10n_do
-                    # result['sale_fiscal_type'] = "final"
                 elif dgii_vals:
                     result['name'] = dgii_vals.get('name', False)
                     result['vat'] = dgii_vals.get('rnc')
-
                     if model == 'res.partner':
-                        result['is_company'] = True if is_rnc else False
-                        # TODO this has to be done in l10n_do
-                        # result['sale_fiscal_type'] = "fiscal"
+                        result['is_company'] = is_rnc
             return result
 
-    @api.onchange('name')
-    def _onchange_partner_name(self):
-        self.validate_vat_onchange(self.name)
+    def _get_updated_vals(self, vals):
+        new_vals = {}
+        if any([val in vals for val in ['name', 'vat']]):
+            vat = vals["vat"] if vals.get('vat') else vals.get('name')
+            result = self.with_context(model=self._name).validate_rnc_cedula(vat)
+            if result is not None:
+                new_vals['name'] = result.get('name')
+                new_vals['vat'] = result.get('vat')
+                new_vals['is_company'] = result.get('is_company', False)
+                new_vals['company_type'] = 'company' if new_vals['is_company'] else 'person'
+                if not vals.get('phone'):
+                    new_vals['phone'] = result.get('phone')
+                if not vals.get('street'):
+                    new_vals['street'] = result.get('street')
+        return new_vals
 
-    @api.onchange('vat')
-    def _onchange_partner_vat(self):
-        self.validate_vat_onchange(self.vat)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals.update(self._get_updated_vals(vals))
+        return super(ResPartner, self).create(vals_list)
 
-    @api.model
-    def validate_vat_onchange(self, vat):
-        if vat:
-            result = self.validate_rnc_cedula(vat)
-            if result:
-                self.name = result.get('name')
-                self.vat = result.get('vat')
-                if not self.phone:
-                    self.phone = result.get('phone')
-                if not self.street:
-                    self.street = result.get('street')
-                self.is_company = result.get('is_company', False)
-                # # TODO this has to be done in l10n_do
-                # self.sale_fiscal_type = result.get('sale_fiscal_type')
+    @api.multi
+    def write(self, vals):
+        # Do not replace contact name by related (parent) company name
+        for partner in self:
+            vals.update(partner._get_updated_vals(vals))
+            if partner.parent_id and vals.get('name'):
+                del vals['name']
+
+        return super(ResPartner, self).write(vals)
 
     @api.model
     def name_create(self, name):
