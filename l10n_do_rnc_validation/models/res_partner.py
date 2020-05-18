@@ -86,24 +86,26 @@ class ResPartner(models.Model):
     @api.model
     def validate_rnc_cedula(self, number):
 
-        company_id = self.env['res.company'].search([
-            ('id', '=', self.env.user.company_id.id)])
+        company_id = self.env.user.company_id
 
         if number and str(number).isdigit() and len(number) in (9, 11) and \
                 company_id.can_validate_rnc:
             result, dgii_vals = {}, False
             model = self.env.context.get('model')
 
-            self_id = self.id if self.id else 0
+            if model == 'res.partner' and self:
+                self_id = [self.id, self.parent_id.id]
+            else:
+                self_id = [company_id.id]
+
             # Considering multi-company scenarios
             domain = [
                 ('vat', '=', number),
-                ('id', '!=', self_id),
+                ('id', 'not in', self_id),
                 ('parent_id', '=', False)
             ]
             if self.sudo().env.ref('base.res_partner_rule').active:
-                domain.extend([('company_id', '=',
-                                self.env.user.company_id.id)])
+                domain.extend([('company_id', '=', company_id.id)])
             contact = self.search(domain)
 
             if contact:
@@ -158,11 +160,10 @@ class ResPartner(models.Model):
                         result['is_company'] = is_rnc
             return result
 
-    @api.model
     def _get_updated_vals(self, vals):
         new_vals = {}
         if any([val in vals for val in ['name', 'vat']]):
-            vat = vals["vat"] if vals.get('vat') is not None else vals.get('name')
+            vat = vals["vat"] if vals.get('vat') else vals.get('name')
             result = self.with_context(model=self._name).validate_rnc_cedula(vat)
             if result is not None:
                 new_vals['name'] = result.get('name')
@@ -184,6 +185,11 @@ class ResPartner(models.Model):
     @api.multi
     def write(self, vals):
         vals.update(self._get_updated_vals(vals))
+
+        # Do not replace contact name by related (parent) company name
+        if self.parent_id and vals.get('name'):
+            del vals['name']
+
         return super(ResPartner, self).write(vals)
 
     @api.model
