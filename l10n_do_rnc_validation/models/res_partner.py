@@ -184,10 +184,9 @@ class ResPartner(models.Model):
 
     @api.multi
     def write(self, vals):
-        vals.update(self._get_updated_vals(vals))
-
         # Do not replace contact name by related (parent) company name
         for partner in self:
+            vals.update(partner._get_updated_vals(vals))
             if partner.parent_id and vals.get('name'):
                 del vals['name']
 
