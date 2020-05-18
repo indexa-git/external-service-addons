@@ -187,8 +187,9 @@ class ResPartner(models.Model):
         vals.update(self._get_updated_vals(vals))
 
         # Do not replace contact name by related (parent) company name
-        if self.parent_id and vals.get('name'):
-            del vals['name']
+        for partner in self:
+            if partner.parent_id and vals.get('name'):
+                del vals['name']
 
         return super(ResPartner, self).write(vals)
 
