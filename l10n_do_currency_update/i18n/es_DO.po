@@ -1,21 +1,19 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* l10n_do_currency_update
+#	* l10n_do_currency_update
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 12.0\n"
+"Project-Id-Version: Odoo Server 12.0+e-20200511\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-09 21:58+0000\n"
-"PO-Revision-Date: 2020-03-09 18:03-0400\n"
+"POT-Creation-Date: 2020-05-19 22:02+0000\n"
+"PO-Revision-Date: 2020-05-19 22:02+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-"Language: es_DO\n"
-"X-Generator: Poedit 2.3\n"
 
 #. module: l10n_do_currency_update
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
@@ -31,42 +29,42 @@ msgstr "La petición al API retornó el siguiente error %s"
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco BDI"
-msgstr "Banco BDI"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Central Dominicano"
-msgstr "Banco Central Dominicano"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Popular Dominicano"
-msgstr "Banco Popular Dominicano"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Promerica"
-msgstr "Banco Promerica"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Santa Cruz"
-msgstr "Banco Santa Cruz"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco Vimenca"
-msgstr "Banco Vimenca"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco de Reservas"
-msgstr "Banco de Reservas"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,l10n_do_currency_provider:0
 msgid "Banco del Progreso"
-msgstr "Banco del Progreso"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company__l10n_do_currency_provider
@@ -78,7 +76,7 @@ msgstr "Banco"
 #. module: l10n_do_currency_update
 #: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.res_config_settings_view_form_inherited
 msgid "Base"
-msgstr "Base"
+msgstr ""
 
 #. module: l10n_do_currency_update
 #: selection:res.company,currency_base:0
@@ -109,8 +107,7 @@ msgstr "Diario"
 #. module: l10n_do_currency_update
 #: model:res.company,overdue_msg:l10n_do_currency_update.res_company_company_1
 #: model:res.company,overdue_msg:l10n_do_currency_update.res_company_company_2
-msgid ""
-"Dear Sir/Madam,\n"
+msgid "Dear Sir/Madam,\n"
 "\n"
 "Our records indicate that some payments on your account are still due. Please find details below.\n"
 "If the amount has already been paid, please disregard this notice. Otherwise, please forward us the total amount stated below.\n"
@@ -118,8 +115,7 @@ msgid ""
 "\n"
 "Thank you in advance for your cooperation.\n"
 "Best Regards,"
-msgstr ""
-"Estimado/a Señor/Señora, \n"
+msgstr "Estimado/a Señor/Señora, \n"
 "\n"
 "Nuestros registros indican que tiene pagos pendientes de su cuenta. Encontrará los detalles a continuación. \n"
 "Si ya se ha pagado el importe, por favor ignore este aviso. \n"
@@ -192,20 +188,9 @@ msgid "Offset"
 msgstr "Compensación"
 
 #. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice__rate
-#: model_terms:ir.ui.view,arch_db:l10n_do_currency_update.invoice_form_inherited
-msgid "Rate"
-msgstr "Tasa"
-
-#. module: l10n_do_currency_update
 #: selection:res.company,currency_base:0
 msgid "Sell rate"
 msgstr "Tasa de venta"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice__show_rate
-msgid "Show Rate"
-msgstr "Mostrar tasa"
 
 #. module: l10n_do_currency_update
 #: code:addons/l10n_do_currency_update/models/res_config_settings.py:42
@@ -230,3 +215,4 @@ msgstr "Semanalmente"
 #: model:ir.cron,name:l10n_do_currency_update.ir_cron_currency_update
 msgid "[CURRENCY] Update l10n_do banks currency"
 msgstr "[TASAS] Actualizar tasas"
+
