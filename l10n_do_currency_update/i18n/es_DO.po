@@ -186,20 +186,9 @@ msgid "Offset"
 msgstr "Compensación"
 
 #. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice_rate
-#: model:ir.ui.view,arch_db:l10n_do_currency_update.invoice_form_inherited
-msgid "Rate"
-msgstr "Tasa"
-
-#. module: l10n_do_currency_update
 #: selection:res.company,currency_base:0
 msgid "Sell rate"
 msgstr "Tasa de venta"
-
-#. module: l10n_do_currency_update
-#: model:ir.model.fields,field_description:l10n_do_currency_update.field_account_invoice_show_rate
-msgid "Show Rate"
-msgstr "Mostrar tasa"
 
 #. module: l10n_do_currency_update
 #: code:addons/l10n_do_currency_update/models/res_config_settings.py:42
