@@ -17,6 +17,7 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         def get_payment_type(inv):
+            # TODO: evaluate payment type 3 <Gratuito> Check DGII docs
             if not inv.invoice_payment_term_id and inv.invoice_date_due:
                 return 2
             elif not inv.invoice_payment_term_id:
