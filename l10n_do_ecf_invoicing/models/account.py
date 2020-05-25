@@ -28,6 +28,45 @@ class AccountMove(models.Model):
             else:
                 return 1
 
+        def get_payment_forms(inv):
+
+            payment_dict = {'cash': '01', 'bank': '02', 'card': '03',
+                            'credit': '04', 'swap': '06',
+                            'credit_note': '07'}
+
+            payments = []
+
+            for payment in self._get_reconciled_info_JSON_values():
+                payment_id = self.env['account.payment'].browse(
+                    payment.get('account_payment_id'))
+                move_id = False
+                if payment_id:
+                    if payment_id.journal_id.type in ['cash', 'bank']:
+                        payment_form = payment_id.journal_id.l10n_do_payment_form
+                        payments.append({
+                            "FormaPago": payment_dict[payment_form],
+                            "MontoPago": payment.get('amount', 0)
+                        })
+
+                elif not payment_id:
+                    move_id = self.env['account.move'].browse(
+                        payment.get('move_id'))
+                    if move_id:
+                        payments.append({
+                            "FormaPago": payment_dict['swap'],
+                            "MontoPago": payment.get('amount', 0)
+                        })
+                elif not move_id:
+                    # If invoice is paid, but the payment doesn't come from
+                    # a journal, assume it is a credit note
+                    payments.append({
+                        "FormaPago": payment_dict['credit_note'],
+                        "MontoPago": payment.get('amount', 0)
+                    })
+
+            # TODO: implement amount conversion to company currency
+            return payments
+
         # At this point, json only contains required
         # fields in all e-CF's types
         ecf_json = {
@@ -38,6 +77,7 @@ class AccountMove(models.Model):
                         "TipoeCF": self.l10n_latam_document_type_id.l10n_do_ncf_type,
                         "eNCF": self.l10n_latam_document_number,
                         "TipoPago": get_payment_type(self),
+                        "TablaFormasPago": {"FormaDePago": get_payment_forms(self)}
                     },
                     "Emisor": {
                         "RNCEmisor": self.partner_id.vat,
