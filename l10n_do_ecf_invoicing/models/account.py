@@ -80,7 +80,7 @@ class AccountMove(models.Model):
                         "TablaFormasPago": {"FormaDePago": get_payment_forms(self)}
                     },
                     "Emisor": {
-                        "RNCEmisor": self.partner_id.vat,
+                        "RNCEmisor": self.company_id.vat,
                         "RazonSocialEmisor": self.company_id.name,
                         "DireccionEmisor": self.company_id.street,
                         "FechaEmision": dt.strftime(self.invoice_date, "%d-%m-%Y"),
