@@ -67,6 +67,20 @@ class AccountMove(models.Model):
             # TODO: implement amount conversion to company currency
             return payments
 
+        itbis_group = self.ref("l10n_do.group_itbis")
+
+        def get_taxed_amount(inv, tax_rate):  # Monto gravado
+
+            return sum(line.credit for line in inv.invoice_line_ids if any(
+                True for tax in line.tax_ids if tax.tax_group_id.d == itbis_group
+                and tax.amount == tax_rate))
+
+        def get_tax_amount(inv, tax_rate):  # Monto del impuesto
+
+            return sum(line.credit for line in self.line_ids.filtered(
+                lambda l: l.tax_line_id and l.tax_line_id.tax_group_id ==
+                          itbis_group and l.tax_line_id.amount == tax_rate))
+
         # At this point, json only contains required
         # fields in all e-CF's types
         ecf_json = {
@@ -193,5 +207,45 @@ class AccountMove(models.Model):
             else:  # 31, 41, 44, 45, 46
                 ecf_json["Encabezado"]["Comprador"][
                     "RazonSocialComprador"] = self.partner_id.name
+
+        if l10n_do_ncf_type not in ("43", "44", "47") and self.amount_tax_signed:
+
+            # Montos gravados con 18%, 16% y 0% de ITBIS
+            taxed_amount_1 = get_taxed_amount(self, 18)
+            taxed_amount_2 = get_taxed_amount(self, 16)
+            taxed_amount_3 = get_taxed_amount(self, 0)
+            exempt_amount = sum(line.credit for line in self.line_ids.filtered(
+                lambda l: l.product_id and (
+                        not l.tax_ids or (l.tax_line_id and not l.tax_line_id.amount))))
+
+            itbis1_total = get_tax_amount(self, 18)
+            itbis2_total = get_tax_amount(self, 16)
+            itbis3_total = get_tax_amount(self, 0)
+
+            total_taxed = sum([taxed_amount_1, taxed_amount_2, taxed_amount_3])
+
+            if taxed_amount_1:
+                ecf_json["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
+                    round(taxed_amount_1, 2))
+                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "18"
+                ecf_json["Encabezado"]["Totales"]["TotalITBIS1"] = abs(
+                    round(itbis1_total, 2))
+            if taxed_amount_2:
+                ecf_json["Encabezado"]["Totales"]["MontoGravadoI2"] = abs(
+                    round(taxed_amount_2, 2))
+                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "16"
+                ecf_json["Encabezado"]["Totales"]["TotalITBIS2"] = abs(
+                    round(itbis2_total, 2))
+            if taxed_amount_3:
+                ecf_json["Encabezado"]["Totales"]["MontoGravadoI3"] = abs(
+                    round(taxed_amount_3, 2))
+                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "0%"
+                ecf_json["Encabezado"]["Totales"]["TotalITBIS3"] = abs(
+                    round(itbis3_total, 2))
+            if exempt_amount:
+                ecf_json["Encabezado"]["Totales"]["MontoExento"] = abs(
+                    round(exempt_amount, 2))
+
+        # TODO: implement TotalITBISRetenido and TotalISRRetencion of Totales section
 
         return ecf_json
