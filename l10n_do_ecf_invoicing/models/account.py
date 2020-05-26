@@ -84,6 +84,7 @@ class AccountMove(models.Model):
                         "RazonSocialEmisor": self.company_id.name,
                         "DireccionEmisor": self.company_id.street,
                         "FechaEmision": dt.strftime(self.invoice_date, "%d-%m-%Y"),
+                        "NumeroFacturaInterna": self.name,
                     },
                     "Totales": {
                         "MontoTotal": self.amount_total_signed,
