@@ -223,6 +223,7 @@ class AccountMove(models.Model):
             itbis3_total = get_tax_amount(self, 0)
 
             total_taxed = sum([taxed_amount_1, taxed_amount_2, taxed_amount_3])
+            total_itbis = sum([itbis1_total, itbis2_total, itbis3_total])
 
             if taxed_amount_1:
                 ecf_json["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
@@ -245,7 +246,64 @@ class AccountMove(models.Model):
             if exempt_amount:
                 ecf_json["Encabezado"]["Totales"]["MontoExento"] = abs(
                     round(exempt_amount, 2))
+            if total_taxed:
+                ecf_json["Encabezado"]["Totales"]["MontoGravadoTotal"] = abs(
+                    round(total_taxed, 2))
+                ecf_json["Encabezado"]["Totales"]["TotalITBIS"] = abs(
+                    round(total_itbis, 2))
 
         # TODO: implement TotalITBISRetenido and TotalISRRetencion of Totales section
+
+        if self.currency_id != self.company_id.currency_id:
+            if "OtraMoneda" not in ecf_json["Encabezado"]:
+                ecf_json["Encabezado"]["OtraMoneda"] = {}
+
+            ecf_json["Encabezado"]["OtraMoneda"][
+                "MontoTotalOtraMoneda"] = self.amount_total
+            ecf_json["Encabezado"]["OtraMoneda"]["TipoMoneda"] = self.currency_id.name
+            ecf_json["Encabezado"]["OtraMoneda"]["TipoCambio"] = round(
+                1/(self.amount_total/self.amount_total_signed), 2)
+
+            if l10n_do_ncf_type not in ("43", "44", "47"):
+
+                rate = ecf_json["Encabezado"]["OtraMoneda"]["TipoCambio"]
+
+                if "MontoGravadoTotal" in ecf_json["Encabezado"]["Totales"]:
+                    ecf_json["Encabezado"]["OtraMoneda"][
+                        "MontoGravadoTotalOtraMoneda"] = round(
+                        ecf_json["Encabezado"]["Totales"]["MontoGravadoTotal"] / rate,
+                        2)
+                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBISOtraMoneda"] = \
+                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS"] / rate, 2)
+
+                if "MontoGravadoI1" in ecf_json["Encabezado"]["Totales"]:
+                    ecf_json["Encabezado"]["OtraMoneda"][
+                        "MontoGravado1OtraMoneda"] = round(
+                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI1"] / rate, 2)
+                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS1OtraMoneda"] = \
+                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS1"] / rate,
+                              2)
+
+                if "MontoGravadoI2" in ecf_json["Encabezado"]["Totales"]:
+                    ecf_json["Encabezado"]["OtraMoneda"][
+                        "MontoGravado2OtraMoneda"] = round(
+                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI2"] / rate, 2)
+                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS2OtraMoneda"] = \
+                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS2"] / rate,
+                              2)
+
+                if "MontoGravadoI3" in ecf_json["Encabezado"]["Totales"]:
+                    ecf_json["Encabezado"]["OtraMoneda"][
+                        "MontoGravado3OtraMoneda"] = round(
+                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI3"] / rate, 2)
+                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS3OtraMoneda"] = \
+                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS3"] / rate,
+                              2)
+
+            if "MontoExento" in ecf_json["Encabezado"][
+                "Totales"] and l10n_do_ncf_type != "46":
+                ecf_json["Encabezado"]["OtraMoneda"]["MontoExentoOtraMoneda"] = round(
+                    ecf_json["Encabezado"]["Totales"]["MontoExento"] / rate, 2)
+
 
         return ecf_json
