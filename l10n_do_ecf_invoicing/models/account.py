@@ -96,11 +96,16 @@ class AccountMove(models.Model):
             },
         }
 
-        if self.l10n_latam_document_type_id.l10n_do_ncf_type not in ("32", "34"):
+        l10n_do_ncf_type = self.l10n_latam_document_type_id.l10n_do_ncf_type
+        is_l10n_do_partner = self.partner_id.country_id and \
+                             self.partner_id.country_id.code == "DO"
+        partner_vat = self.partner_id.vat
+
+        if l10n_do_ncf_type not in ("32", "34"):
             # TODO: pending
             ecf_json["Encabezado"]["IdDoc"]["FechaVencimientoSecuencia"] = "31-12-2020"
 
-        if self.l10n_latam_document_type_id.l10n_do_ncf_type == "34":
+        if l10n_do_ncf_type == "34":
             origin_move_id = self.search(
                 [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
             delta = origin_move_id.invoice_date - fields.Date.context_today(self)
@@ -110,11 +115,11 @@ class AccountMove(models.Model):
         if self.company_id.l10n_do_ecf_deferred_submissions:
             ecf_json["Encabezado"]["IdDoc"]["IndicadorEnvioDiferido"] = 1
 
-        if self.l10n_do_ncf_type not in ("43", "44", "46"):
+        if l10n_do_ncf_type not in ("43", "44", "46"):
             ecf_json["Encabezado"]["IdDoc"]["IndicadorMontoGravado"] = int(
                 any(True for t in self.invoice_line_ids.tax_ids if t.price_include))
 
-        if self.l10n_do_ncf_type not in ("41", "43", "47"):
+        if l10n_do_ncf_type not in ("41", "43", "47"):
             ecf_json["Encabezado"]["IdDoc"]["TipoIngresos"] = self.l10n_do_income_type
 
         if ecf_json["Encabezado"]["IdDoc"]["TipoPago"] == 2:
@@ -123,5 +128,70 @@ class AccountMove(models.Model):
 
             delta = self.invoice_date_due - self.invoice_date
             ecf_json["Encabezado"]["IdDoc"]["TerminoPago"] = "%s días" % delta.days
+
+        if l10n_do_ncf_type not in ("43", "47"):
+            if "Comprador" not in ecf_json["Encabezado"]:
+                ecf_json["Encabezado"]["Comprador"] = {}
+
+            if l10n_do_ncf_type in ("31", "41", "45"):
+                ecf_json["Encabezado"]["Comprador"][
+                    "RNCComprador"] = partner_vat
+
+            if l10n_do_ncf_type == "32" or partner_vat:
+                ecf_json["Encabezado"]["Comprador"][
+                    "RNCComprador"] = partner_vat
+
+            if l10n_do_ncf_type in ("33", "34"):
+                origin_move_id = self.search(
+                    [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                if origin_move_id and origin_move_id.amount_total_signed >= 250000:
+                    if is_l10n_do_partner:
+                        ecf_json["Encabezado"]["Comprador"][
+                            "RNCComprador"] = partner_vat
+                    else:
+                        ecf_json["Encabezado"]["Comprador"][
+                            "IdentificadorExtranjero"] = partner_vat
+
+            if l10n_do_ncf_type == "44":
+                if is_l10n_do_partner and partner_vat:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "RNCComprador"] = partner_vat
+                elif not is_l10n_do_partner and partner_vat:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "IdentificadorExtranjero"] = partner_vat
+
+            if self.company_id.l10n_do_dgii_tax_payer_type == "special":
+                if is_l10n_do_partner:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "RNCComprador"] = partner_vat
+                else:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "IdentificadorExtranjero"] = partner_vat
+
+        if l10n_do_ncf_type not in ("31", "41", "43", "45") and not is_l10n_do_partner:
+            if "Comprador" not in ecf_json["Encabezado"]:
+                ecf_json["Encabezado"]["Comprador"] = {}
+
+            if l10n_do_ncf_type == "32" and self.amount_total_signed >= 250000:
+                ecf_json["Encabezado"]["Comprador"][
+                    "IdentificadorExtranjero"] = partner_vat
+
+        if l10n_do_ncf_type not in ("43", "47"):
+
+            if l10n_do_ncf_type == "32":
+                if self.amount_total_signed >= 250000 or partner_vat:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "RazonSocialComprador"] = self.partner_id.name
+
+            if l10n_do_ncf_type in ("33", "34"):
+                origin_move_id = self.search(
+                    [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                if origin_move_id and origin_move_id.amount_total_signed >= 250000:
+                    ecf_json["Encabezado"]["Comprador"][
+                        "RazonSocialComprador"] = self.partner_id.name
+
+            else:  # 31, 41, 44, 45, 46
+                ecf_json["Encabezado"]["Comprador"][
+                    "RazonSocialComprador"] = self.partner_id.name
 
         return ecf_json
