@@ -105,6 +105,7 @@ class AccountMove(models.Model):
                     }
                 },
                 "DetallesItems": {
+                    "Item": []
                     # Items data would be added later
                 },
             },
@@ -114,45 +115,49 @@ class AccountMove(models.Model):
         is_l10n_do_partner = self.partner_id.country_id and \
                              self.partner_id.country_id.code == "DO"
         partner_vat = self.partner_id.vat
+        is_company_currency = self.currency_id == self.company_id.currency_id
 
         if l10n_do_ncf_type not in ("32", "34"):
             # TODO: pending
-            ecf_json["Encabezado"]["IdDoc"]["FechaVencimientoSecuencia"] = "31-12-2020"
+            ecf_json["ECF"]["Encabezado"]["IdDoc"][
+                "FechaVencimientoSecuencia"] = "31-12-2020"
 
         if l10n_do_ncf_type == "34":
             origin_move_id = self.search(
                 [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
             delta = origin_move_id.invoice_date - fields.Date.context_today(self)
-            ecf_json["Encabezado"]["IdDoc"][
+            ecf_json["ECF"]["Encabezado"]["IdDoc"][
                 "IndicadorNotaCredito"] = int(delta.days > 30)
 
         if self.company_id.l10n_do_ecf_deferred_submissions:
-            ecf_json["Encabezado"]["IdDoc"]["IndicadorEnvioDiferido"] = 1
+            ecf_json["ECF"]["Encabezado"]["IdDoc"]["IndicadorEnvioDiferido"] = 1
 
         if l10n_do_ncf_type not in ("43", "44", "46"):
-            ecf_json["Encabezado"]["IdDoc"]["IndicadorMontoGravado"] = int(
+            ecf_json["ECF"]["Encabezado"]["IdDoc"]["IndicadorMontoGravado"] = int(
                 any(True for t in self.invoice_line_ids.tax_ids if t.price_include))
 
         if l10n_do_ncf_type not in ("41", "43", "47"):
-            ecf_json["Encabezado"]["IdDoc"]["TipoIngresos"] = self.l10n_do_income_type
+            ecf_json["ECF"]["Encabezado"]["IdDoc"][
+                "TipoIngresos"] = self.l10n_do_income_type
 
-        if ecf_json["Encabezado"]["IdDoc"]["TipoPago"] == 2:
-            ecf_json["Encabezado"]["IdDoc"]["FechaLimitePago"] = dt.strftime(
+        if ecf_json["ECF"]["Encabezado"]["IdDoc"]["TipoPago"] == 2:
+            ecf_json["ECF"]["Encabezado"]["IdDoc"]["FechaLimitePago"] = dt.strftime(
                 self.invoice_date_due, "%d-%m-%Y")
 
             delta = self.invoice_date_due - self.invoice_date
-            ecf_json["Encabezado"]["IdDoc"]["TerminoPago"] = "%s días" % delta.days
+            ecf_json["ECF"]["Encabezado"]["IdDoc"][
+                "TerminoPago"] = "%s días" % delta.days
 
         if l10n_do_ncf_type not in ("43", "47"):
-            if "Comprador" not in ecf_json["Encabezado"]:
-                ecf_json["Encabezado"]["Comprador"] = {}
+            if "Comprador" not in ecf_json["ECF"]["Encabezado"]:
+                ecf_json["ECF"]["Encabezado"]["Comprador"] = {}
 
             if l10n_do_ncf_type in ("31", "41", "45"):
-                ecf_json["Encabezado"]["Comprador"][
+                ecf_json["ECF"]["Encabezado"]["Comprador"][
                     "RNCComprador"] = partner_vat
 
             if l10n_do_ncf_type == "32" or partner_vat:
-                ecf_json["Encabezado"]["Comprador"][
+                ecf_json["ECF"]["Encabezado"]["Comprador"][
                     "RNCComprador"] = partner_vat
 
             if l10n_do_ncf_type in ("33", "34"):
@@ -160,52 +165,52 @@ class AccountMove(models.Model):
                     [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
                 if origin_move_id and origin_move_id.amount_total_signed >= 250000:
                     if is_l10n_do_partner:
-                        ecf_json["Encabezado"]["Comprador"][
+                        ecf_json["ECF"]["Encabezado"]["Comprador"][
                             "RNCComprador"] = partner_vat
                     else:
-                        ecf_json["Encabezado"]["Comprador"][
+                        ecf_json["ECF"]["Encabezado"]["Comprador"][
                             "IdentificadorExtranjero"] = partner_vat
 
             if l10n_do_ncf_type == "44":
                 if is_l10n_do_partner and partner_vat:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RNCComprador"] = partner_vat
                 elif not is_l10n_do_partner and partner_vat:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "IdentificadorExtranjero"] = partner_vat
 
             if self.company_id.l10n_do_dgii_tax_payer_type == "special":
                 if is_l10n_do_partner:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RNCComprador"] = partner_vat
                 else:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "IdentificadorExtranjero"] = partner_vat
 
         if l10n_do_ncf_type not in ("31", "41", "43", "45") and not is_l10n_do_partner:
-            if "Comprador" not in ecf_json["Encabezado"]:
-                ecf_json["Encabezado"]["Comprador"] = {}
+            if "Comprador" not in ecf_json["ECF"]["Encabezado"]:
+                ecf_json["ECF"]["Encabezado"]["Comprador"] = {}
 
             if l10n_do_ncf_type == "32" and self.amount_total_signed >= 250000:
-                ecf_json["Encabezado"]["Comprador"][
+                ecf_json["ECF"]["Encabezado"]["Comprador"][
                     "IdentificadorExtranjero"] = partner_vat
 
         if l10n_do_ncf_type not in ("43", "47"):
 
             if l10n_do_ncf_type == "32":
                 if self.amount_total_signed >= 250000 or partner_vat:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RazonSocialComprador"] = self.partner_id.name
 
             if l10n_do_ncf_type in ("33", "34"):
                 origin_move_id = self.search(
                     [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
                 if origin_move_id and origin_move_id.amount_total_signed >= 250000:
-                    ecf_json["Encabezado"]["Comprador"][
+                    ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RazonSocialComprador"] = self.partner_id.name
 
             else:  # 31, 41, 44, 45, 46
-                ecf_json["Encabezado"]["Comprador"][
+                ecf_json["ECF"]["Encabezado"]["Comprador"][
                     "RazonSocialComprador"] = self.partner_id.name
 
         if l10n_do_ncf_type not in ("43", "44", "47") and self.amount_tax_signed:
@@ -226,84 +231,153 @@ class AccountMove(models.Model):
             total_itbis = sum([itbis1_total, itbis2_total, itbis3_total])
 
             if taxed_amount_1:
-                ecf_json["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
                     round(taxed_amount_1, 2))
-                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "18"
-                ecf_json["Encabezado"]["Totales"]["TotalITBIS1"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "18"
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"] = abs(
                     round(itbis1_total, 2))
             if taxed_amount_2:
-                ecf_json["Encabezado"]["Totales"]["MontoGravadoI2"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI2"] = abs(
                     round(taxed_amount_2, 2))
-                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "16"
-                ecf_json["Encabezado"]["Totales"]["TotalITBIS2"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "16"
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"] = abs(
                     round(itbis2_total, 2))
             if taxed_amount_3:
-                ecf_json["Encabezado"]["Totales"]["MontoGravadoI3"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI3"] = abs(
                     round(taxed_amount_3, 2))
-                ecf_json["Encabezado"]["Totales"]["ITBIS1"] = "0%"
-                ecf_json["Encabezado"]["Totales"]["TotalITBIS3"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "0%"
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"] = abs(
                     round(itbis3_total, 2))
             if exempt_amount:
-                ecf_json["Encabezado"]["Totales"]["MontoExento"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoExento"] = abs(
                     round(exempt_amount, 2))
             if total_taxed:
-                ecf_json["Encabezado"]["Totales"]["MontoGravadoTotal"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoTotal"] = abs(
                     round(total_taxed, 2))
-                ecf_json["Encabezado"]["Totales"]["TotalITBIS"] = abs(
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS"] = abs(
                     round(total_itbis, 2))
 
         # TODO: implement TotalITBISRetenido and TotalISRRetencion of Totales section
 
-        if self.currency_id != self.company_id.currency_id:
-            if "OtraMoneda" not in ecf_json["Encabezado"]:
-                ecf_json["Encabezado"]["OtraMoneda"] = {}
+        if not is_company_currency:
+            if "OtraMoneda" not in ecf_json["ECF"]["Encabezado"]:
+                ecf_json["ECF"]["Encabezado"]["OtraMoneda"] = {}
 
-            ecf_json["Encabezado"]["OtraMoneda"][
+            ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                 "MontoTotalOtraMoneda"] = self.amount_total
-            ecf_json["Encabezado"]["OtraMoneda"]["TipoMoneda"] = self.currency_id.name
-            ecf_json["Encabezado"]["OtraMoneda"]["TipoCambio"] = round(
-                1/(self.amount_total/self.amount_total_signed), 2)
+            ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                "TipoMoneda"] = self.currency_id.name
+            ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"] = round(
+                1 / (self.amount_total / self.amount_total_signed), 2)
 
             if l10n_do_ncf_type not in ("43", "44", "47"):
 
-                rate = ecf_json["Encabezado"]["OtraMoneda"]["TipoCambio"]
+                rate = ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"]
 
-                if "MontoGravadoTotal" in ecf_json["Encabezado"]["Totales"]:
-                    ecf_json["Encabezado"]["OtraMoneda"][
+                if "MontoGravadoTotal" in ecf_json["ECF"]["Encabezado"]["Totales"]:
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                         "MontoGravadoTotalOtraMoneda"] = round(
-                        ecf_json["Encabezado"]["Totales"]["MontoGravadoTotal"] / rate,
+                        ecf_json["ECF"]["Encabezado"]["Totales"][
+                            "MontoGravadoTotal"] / rate,
                         2)
-                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBISOtraMoneda"] = \
-                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS"] / rate, 2)
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                        "TotalITBISOtraMoneda"] = \
+                        round(ecf_json["ECF"]["Encabezado"]["Totales"][
+                                  "TotalITBIS"] / rate, 2)
 
-                if "MontoGravadoI1" in ecf_json["Encabezado"]["Totales"]:
-                    ecf_json["Encabezado"]["OtraMoneda"][
+                if "MontoGravadoI1" in ecf_json["ECF"]["Encabezado"]["Totales"]:
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                         "MontoGravado1OtraMoneda"] = round(
-                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI1"] / rate, 2)
-                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS1OtraMoneda"] = \
-                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS1"] / rate,
+                        ecf_json["ECF"]["Encabezado"]["Totales"][
+                            "MontoGravadoI1"] / rate, 2)
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                        "TotalITBIS1OtraMoneda"] = \
+                        round(ecf_json["ECF"]["Encabezado"]["Totales"][
+                                  "TotalITBIS1"] / rate,
                               2)
 
-                if "MontoGravadoI2" in ecf_json["Encabezado"]["Totales"]:
-                    ecf_json["Encabezado"]["OtraMoneda"][
+                if "MontoGravadoI2" in ecf_json["ECF"]["Encabezado"]["Totales"]:
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                         "MontoGravado2OtraMoneda"] = round(
-                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI2"] / rate, 2)
-                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS2OtraMoneda"] = \
-                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS2"] / rate,
+                        ecf_json["ECF"]["Encabezado"]["Totales"][
+                            "MontoGravadoI2"] / rate, 2)
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                        "TotalITBIS2OtraMoneda"] = \
+                        round(ecf_json["ECF"]["Encabezado"]["Totales"][
+                                  "TotalITBIS2"] / rate,
                               2)
 
-                if "MontoGravadoI3" in ecf_json["Encabezado"]["Totales"]:
-                    ecf_json["Encabezado"]["OtraMoneda"][
+                if "MontoGravadoI3" in ecf_json["ECF"]["Encabezado"]["Totales"]:
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                         "MontoGravado3OtraMoneda"] = round(
-                        ecf_json["Encabezado"]["Totales"]["MontoGravadoI3"] / rate, 2)
-                    ecf_json["Encabezado"]["OtraMoneda"]["TotalITBIS3OtraMoneda"] = \
-                        round(ecf_json["Encabezado"]["Totales"]["TotalITBIS3"] / rate,
+                        ecf_json["ECF"]["Encabezado"]["Totales"][
+                            "MontoGravadoI3"] / rate, 2)
+                    ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                        "TotalITBIS3OtraMoneda"] = \
+                        round(ecf_json["ECF"]["Encabezado"]["Totales"][
+                                  "TotalITBIS3"] / rate,
                               2)
 
-            if "MontoExento" in ecf_json["Encabezado"][
+            if "MontoExento" in ecf_json["ECF"]["Encabezado"][
                 "Totales"] and l10n_do_ncf_type != "46":
-                ecf_json["Encabezado"]["OtraMoneda"]["MontoExentoOtraMoneda"] = round(
-                    ecf_json["Encabezado"]["Totales"]["MontoExento"] / rate, 2)
+                ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                    "MontoExentoOtraMoneda"] = round(
+                    ecf_json["ECF"]["Encabezado"]["Totales"]["MontoExento"] / rate, 2)
 
+        for i, line in enumerate(self.invoice_line_ids.sorted('sequence'), 1):
+
+            rate = ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"]
+
+            line_dict = {}
+            product = line.product_id
+            line_dict["NumeroLinea"] = i
+            line_dict["NombreItem"] = product.name if product else line.name
+            line_dict["IndicadorBienoServicio"] = "2" if \
+                product and product.type == "service" else "1"
+            line_dict["DescripcionItem"] = line.name
+            line_dict["CantidadItem"] = line.quantity
+
+            line_dict["PrecioUnitarioItem"] = line.price_unit if is_company_currency \
+                else round(line.price_unit / rate, 2)
+
+            price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
+            discount_amount = price_unit_wo_discount - line.price_subtotal
+            if line.dicount:
+                line_dict["TablaSubDescuento"] = {"SubDescuento": [{
+                    "TipoSubDescuento": "%",
+                    "SubDescuentoPorcentaje": line.dicount,
+                    "MontoSubDescuento": discount_amount if is_company_currency \
+                        else round(discount_amount / rate, 2),
+                }]}
+                line_dict["DescuentoMonto"] = sum(
+                    d["MontoSubDescuento"] for d in line_dict[
+                        "TablaSubDescuento"]["SubDescuento"])
+
+            if not is_company_currency:
+                line_dict["OtraMonedaDetalle"] = {
+                    "PrecioOtraMoneda": line.price_unit,
+                    "DescuentoOtraMoneda": discount_amount,
+                    "MontoItemOtraMoneda": line.price_subtotal,
+                }
+
+            line_dict["MontoItem"] = line.price_subtotal if is_company_currency \
+                else line.price_subtotal / rate
+
+            ecf_json["ECF"]["DetallesItems"]["Item"].append(line_dict)
+
+        if l10n_do_ncf_type in ("33", "34"):
+            cancellation_type_map = {
+                "01": "01",
+                "02": "01",
+                "03": "01",
+                "04": "02",
+                # and so on
+            }
+
+            origin_move_id = self.search(
+                [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+            ecf_json["ECF"]["NCFModificado"] = origin_move_id.l10n_latam_document_number
+            ecf_json["ECF"]["FechaNCFModificado"] = dt.strftime(
+                origin_move_id.invoice_date, "%d-%m-%Y")
 
         return ecf_json
