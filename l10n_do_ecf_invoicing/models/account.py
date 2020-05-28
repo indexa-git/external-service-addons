@@ -67,19 +67,25 @@ class AccountMove(models.Model):
             # TODO: implement amount conversion to company currency
             return payments
 
-        itbis_group = self.ref("l10n_do.group_itbis")
+        itbis_group = self.env.ref("l10n_do.group_itbis")
 
         def get_taxed_amount(inv, tax_rate):  # Monto gravado
 
             return sum(line.credit for line in inv.invoice_line_ids if any(
-                True for tax in line.tax_ids if tax.tax_group_id.d == itbis_group
+                True for tax in line.tax_ids if tax.tax_group_id.id == itbis_group.id
                 and tax.amount == tax_rate))
 
         def get_tax_amount(inv, tax_rate):  # Monto del impuesto
 
             return sum(line.credit for line in self.line_ids.filtered(
-                lambda l: l.tax_line_id and l.tax_line_id.tax_group_id ==
-                          itbis_group and l.tax_line_id.amount == tax_rate))
+                lambda l: l.tax_line_id and l.tax_line_id.tax_group_id.id ==
+                          itbis_group.id and l.tax_line_id.amount == tax_rate))
+
+        l10n_do_ncf_type = self.l10n_latam_document_type_id.doc_code_prefix[1:]
+        is_l10n_do_partner = self.partner_id.country_id and \
+                             self.partner_id.country_id.code == "DO"
+        partner_vat = self.partner_id.vat
+        is_company_currency = self.currency_id == self.company_id.currency_id
 
         # At this point, json only contains required
         # fields in all e-CF's types
@@ -88,10 +94,9 @@ class AccountMove(models.Model):
                 "Encabezado": {
                     "Version": "1.0",  # TODO: is this value going to change anytime?
                     "IdDoc": {
-                        "TipoeCF": self.l10n_latam_document_type_id.l10n_do_ncf_type,
+                        "TipoeCF": l10n_do_ncf_type,
                         "eNCF": self.l10n_latam_document_number,
                         "TipoPago": get_payment_type(self),
-                        "TablaFormasPago": {"FormaDePago": get_payment_forms(self)}
                     },
                     "Emisor": {
                         "RNCEmisor": self.company_id.vat,
@@ -111,11 +116,9 @@ class AccountMove(models.Model):
             },
         }
 
-        l10n_do_ncf_type = self.l10n_latam_document_type_id.l10n_do_ncf_type
-        is_l10n_do_partner = self.partner_id.country_id and \
-                             self.partner_id.country_id.code == "DO"
-        partner_vat = self.partner_id.vat
-        is_company_currency = self.currency_id == self.company_id.currency_id
+        if self.invoice_payment_state != "not_paid":
+            ecf_json["ECF"]["Encabezado"]["IdDoc"]["TablaFormasPago"] = {
+                "FormaDePago": get_payment_forms(self)}
 
         if l10n_do_ncf_type not in ("32", "34"):
             # TODO: pending
@@ -179,7 +182,7 @@ class AccountMove(models.Model):
                     ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "IdentificadorExtranjero"] = partner_vat
 
-            if self.company_id.l10n_do_dgii_tax_payer_type == "special":
+            if self.company_id.partner_id.l10n_do_dgii_tax_payer_type == "special":
                 if is_l10n_do_partner:
                     ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RNCComprador"] = partner_vat
@@ -341,11 +344,12 @@ class AccountMove(models.Model):
                 else round(line.price_unit / rate, 2)
 
             price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
-            discount_amount = price_unit_wo_discount - line.price_subtotal
-            if line.dicount:
+            discount_amount = abs(
+                round(price_unit_wo_discount - line.price_subtotal, 2))
+            if line.discount:
                 line_dict["TablaSubDescuento"] = {"SubDescuento": [{
                     "TipoSubDescuento": "%",
-                    "SubDescuentoPorcentaje": line.dicount,
+                    "SubDescuentoPorcentaje": line.discount,
                     "MontoSubDescuento": discount_amount if is_company_currency \
                         else round(discount_amount / rate, 2),
                 }]}
@@ -357,11 +361,11 @@ class AccountMove(models.Model):
                 line_dict["OtraMonedaDetalle"] = {
                     "PrecioOtraMoneda": line.price_unit,
                     "DescuentoOtraMoneda": discount_amount,
-                    "MontoItemOtraMoneda": line.price_subtotal,
+                    "MontoItemOtraMoneda": round(line.price_subtotal, 2),
                 }
 
-            line_dict["MontoItem"] = line.price_subtotal if is_company_currency \
-                else line.price_subtotal / rate
+            line_dict["MontoItem"] = round(line.price_subtotal if is_company_currency \
+                else line.price_subtotal / rate, 2)
 
             ecf_json["ECF"]["DetallesItems"]["Item"].append(line_dict)
 
@@ -379,3 +383,12 @@ class AccountMove(models.Model):
                 "CodigoModificacion"] = self.l10n_do_ecf_cancellation_type
 
         return ecf_json
+
+
+    def post(self):
+
+        res = super(AccountMove, self).post()
+
+        print(self._get_invoice_ecf_json())
+
+        return res

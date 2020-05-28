@@ -13,8 +13,8 @@
     'website': "https://www.indexa.do",
 
     'category': 'Accounting',
-    'version': "12.0.1.0.0",
-    'depends': ['ncf_manager'],
+    'version': "13.0.1.0.0",
+    'depends': ['l10n_do_accounting'],
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
