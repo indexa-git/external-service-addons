@@ -366,18 +366,16 @@ class AccountMove(models.Model):
             ecf_json["ECF"]["DetallesItems"]["Item"].append(line_dict)
 
         if l10n_do_ncf_type in ("33", "34"):
-            cancellation_type_map = {
-                "01": "01",
-                "02": "01",
-                "03": "01",
-                "04": "02",
-                # and so on
-            }
-
+            if "InformacionReferencia" not in ecf_json["ECF"]:
+                ecf_json["ECF"]["InformacionReferencia"] = {}
             origin_move_id = self.search(
                 [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
-            ecf_json["ECF"]["NCFModificado"] = origin_move_id.l10n_latam_document_number
-            ecf_json["ECF"]["FechaNCFModificado"] = dt.strftime(
+            ecf_json["ECF"]["InformacionReferencia"][
+                "NCFModificado"] = origin_move_id.l10n_latam_document_number
+            ecf_json["ECF"]["InformacionReferencia"][
+                "FechaNCFModificado"] = dt.strftime(
                 origin_move_id.invoice_date, "%d-%m-%Y")
+            ecf_json["ECF"]["InformacionReferencia"][
+                "CodigoModificacion"] = self.l10n_do_ecf_cancellation_type
 
         return ecf_json
