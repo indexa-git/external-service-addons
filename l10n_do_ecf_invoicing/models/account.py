@@ -71,13 +71,13 @@ class AccountMove(models.Model):
 
         def get_taxed_amount(inv, tax_rate):  # Monto gravado
 
-            return sum(line.credit for line in inv.invoice_line_ids if any(
+            return sum(((line.credit+line.debit)/2) for line in inv.invoice_line_ids if any(
                 True for tax in line.tax_ids if tax.tax_group_id.id == itbis_group.id
                 and tax.amount == tax_rate))
 
         def get_tax_amount(inv, tax_rate):  # Monto del impuesto
 
-            return sum(line.credit for line in self.line_ids.filtered(
+            return sum(((line.credit+line.debit)/2) for line in self.line_ids.filtered(
                 lambda l: l.tax_line_id and l.tax_line_id.tax_group_id.id ==
                           itbis_group.id and l.tax_line_id.amount == tax_rate))
 
