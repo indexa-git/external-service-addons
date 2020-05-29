@@ -95,18 +95,17 @@ class AccountMove(models.Model):
                     "Version": "1.0",  # TODO: is this value going to change anytime?
                     "IdDoc": {
                         "TipoeCF": l10n_do_ncf_type,
-                        "eNCF": self.l10n_latam_document_number,
+                        "eNCF": self.ref,
                         "TipoPago": get_payment_type(self),
                     },
                     "Emisor": {
                         "RNCEmisor": self.company_id.vat,
                         "RazonSocialEmisor": self.company_id.name,
-                        "DireccionEmisor": self.company_id.street,
                         "FechaEmision": dt.strftime(self.invoice_date, "%d-%m-%Y"),
                         "NumeroFacturaInterna": self.name,
                     },
                     "Totales": {
-                        "MontoTotal": self.amount_total_signed,
+                        "MontoTotal": abs(round(self.amount_total_signed, 2)),
                     }
                 },
                 "DetallesItems": {
@@ -115,6 +114,10 @@ class AccountMove(models.Model):
                 },
             },
         }
+
+        if self.company_id.street:
+            ecf_json["ECF"]["Encabezado"]["Emisor"][
+                "DireccionEmisor"] = self.company_id.street
 
         if self.invoice_payment_state != "not_paid":
             ecf_json["ECF"]["Encabezado"]["IdDoc"]["TablaFormasPago"] = {
@@ -127,7 +130,7 @@ class AccountMove(models.Model):
 
         if l10n_do_ncf_type == "34":
             origin_move_id = self.search(
-                [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                [('ref', '=', self.l10n_do_origin_ncf)])
             delta = origin_move_id.invoice_date - fields.Date.context_today(self)
             ecf_json["ECF"]["Encabezado"]["IdDoc"][
                 "IndicadorNotaCredito"] = int(delta.days > 30)
@@ -164,8 +167,8 @@ class AccountMove(models.Model):
                     "RNCComprador"] = partner_vat
 
             if l10n_do_ncf_type in ("33", "34"):
-                origin_move_id = self.search(
-                    [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                origin_move_id = self.search([
+                    ('ref', '=', self.l10n_do_origin_ncf)])
                 if origin_move_id and origin_move_id.amount_total_signed >= 250000:
                     if is_l10n_do_partner:
                         ecf_json["ECF"]["Encabezado"]["Comprador"][
@@ -207,7 +210,7 @@ class AccountMove(models.Model):
 
             if l10n_do_ncf_type in ("33", "34"):
                 origin_move_id = self.search(
-                    [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                    [('ref', '=', self.l10n_do_origin_ncf)])
                 if origin_move_id and origin_move_id.amount_total_signed >= 250000:
                     ecf_json["ECF"]["Encabezado"]["Comprador"][
                         "RazonSocialComprador"] = self.partner_id.name
@@ -270,8 +273,8 @@ class AccountMove(models.Model):
                 "MontoTotalOtraMoneda"] = self.amount_total
             ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                 "TipoMoneda"] = self.currency_id.name
-            ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"] = round(
-                1 / (self.amount_total / self.amount_total_signed), 2)
+            ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"] = abs(round(
+                1 / (self.amount_total / self.amount_total_signed), 2))
 
             if l10n_do_ncf_type not in ("43", "44", "47"):
 
@@ -329,7 +332,9 @@ class AccountMove(models.Model):
 
         for i, line in enumerate(self.invoice_line_ids.sorted('sequence'), 1):
 
-            rate = ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"]
+            rate = 1
+            if "OtraMoneda" in ecf_json["ECF"]["Encabezado"]:
+                rate = ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"]
 
             line_dict = {}
             product = line.product_id
@@ -340,8 +345,8 @@ class AccountMove(models.Model):
             line_dict["DescripcionItem"] = line.name
             line_dict["CantidadItem"] = line.quantity
 
-            line_dict["PrecioUnitarioItem"] = line.price_unit if is_company_currency \
-                else round(line.price_unit / rate, 2)
+            line_dict["PrecioUnitarioItem"] = abs(line.price_unit if is_company_currency \
+                else round(line.price_unit / rate, 2))
 
             price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
             discount_amount = abs(
@@ -359,13 +364,13 @@ class AccountMove(models.Model):
 
             if not is_company_currency:
                 line_dict["OtraMonedaDetalle"] = {
-                    "PrecioOtraMoneda": line.price_unit,
+                    "PrecioOtraMoneda": abs(line.price_unit),
                     "DescuentoOtraMoneda": discount_amount,
-                    "MontoItemOtraMoneda": round(line.price_subtotal, 2),
+                    "MontoItemOtraMoneda": abs(round(line.price_subtotal, 2)),
                 }
 
-            line_dict["MontoItem"] = round(line.price_subtotal if is_company_currency \
-                else line.price_subtotal / rate, 2)
+            line_dict["MontoItem"] = abs(round(line.price_subtotal if is_company_currency \
+                else line.price_subtotal / rate, 2))
 
             ecf_json["ECF"]["DetallesItems"]["Item"].append(line_dict)
 
@@ -373,14 +378,14 @@ class AccountMove(models.Model):
             if "InformacionReferencia" not in ecf_json["ECF"]:
                 ecf_json["ECF"]["InformacionReferencia"] = {}
             origin_move_id = self.search(
-                [('l10n_latam_document_number', '=', self.l10n_do_origin_ncf)])
+                [('ref', '=', self.l10n_do_origin_ncf)])
             ecf_json["ECF"]["InformacionReferencia"][
-                "NCFModificado"] = origin_move_id.l10n_latam_document_number
+                "NCFModificado"] = origin_move_id.ref
             ecf_json["ECF"]["InformacionReferencia"][
                 "FechaNCFModificado"] = dt.strftime(
                 origin_move_id.invoice_date, "%d-%m-%Y")
             ecf_json["ECF"]["InformacionReferencia"][
-                "CodigoModificacion"] = self.l10n_do_ecf_cancellation_type
+                "CodigoModificacion"] = self.l10n_do_ecf_modification_code
 
         return ecf_json
 
@@ -389,6 +394,7 @@ class AccountMove(models.Model):
 
         res = super(AccountMove, self).post()
 
-        print(self._get_invoice_ecf_json())
+        for inv in self:
+            print(inv._get_invoice_ecf_json())
 
         return res
