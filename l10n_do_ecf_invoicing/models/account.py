@@ -9,6 +9,31 @@ from odoo import models, fields, api
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    def _get_l10n_do_ecf_send_state(self):
+        return [
+            ("to_send", "Not send"),
+            ("invalid", "Sent, but invalid"),  # no pasó validacion xsd
+            ("delivered_accepted", "Delivered and accepted"),  # to' ta bien
+            ("delivered_refused", "Delivered and refused"),  # rechazado por dgii
+            ("not_sent", "Could not send the e-CF"),  #  request no pudo salir de odoo
+            ("service_unreachable", "Service unreachable"),  # no se pudo comunicar con api
+        ]
+
+    l10n_do_ecf_send_state = fields.Selection(
+        string="e-CF Send State",
+        selection="_get_l10n_do_ecf_send_state",
+        copy=False,
+        index=True,
+        # readonly=True,
+        default="to_send",
+        tracking=True,
+    )
+    l10n_do_ecf_trackid = fields.Char(
+        "e-CF Trackid",
+        readonly=True,
+        copy=False,
+    )
+
     def _get_invoice_ecf_json(self):
         """
         Regarding invoice type, returns its e-CF json
@@ -394,7 +419,9 @@ class AccountMove(models.Model):
 
         res = super(AccountMove, self).post()
 
-        for inv in self:
+        for inv in self.filtered(
+                lambda i: i.is_ecf_invoice and i.l10n_do_ecf_send_state != \
+                          "delivered_accepted"):
             print(inv._get_invoice_ecf_json())
 
         return res

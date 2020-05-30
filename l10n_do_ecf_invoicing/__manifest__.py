@@ -17,8 +17,8 @@
     'depends': ['l10n_do_accounting'],
     'data': [
         # 'security/ir.model.access.csv',
-        'views/views.xml',
-        'views/templates.xml',
+        'views/account_views.xml',
+        'data/ir_config_parameter_data.xml',
     ],
     'demo': [
         'demo/demo.xml',
