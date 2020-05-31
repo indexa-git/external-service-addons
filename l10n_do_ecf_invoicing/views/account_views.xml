@@ -6,48 +6,35 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='currency_id']" position="after">
-                <field name="l10n_do_ecf_send_state" invisible="0"/>
+            <xpath expr="//header" position="inside">
+                <button name="send_ecf_data"
+                        string="Resend e-CF"
+                        type="object"
+                        icon="fa-refresh"
+                        groups="account.group_account_invoice"
+                        attrs="{'invisible' : [
+                        '|', '|',
+                        ('is_ecf_invoice', '=', False),
+                        ('l10n_do_ecf_send_state', '=', 'delivered_accepted'),
+                        ('state', '=', 'draft'),
+                        ]}"/>
             </xpath>
-            <xpath expr="//field[@name='currency_id']/.." position="after">
-                <group>
-                    <button icon="fa-star-o"
-                            class="btn-outline-primary disabled"
-                            aria-label="Not yet send"
-                            title="Not yet send"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'to_send')]}"
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <label for="l10n_do_ecf_send_state" invisible="1"/>
+                <div class="o_row" col="4">
+                    <field name="l10n_do_ecf_send_state"
+                           widget="label_selection"
+                           attrs="{'invisible': [('is_ecf_invoice', '=', False)]}"
+                           options="{'classes': {
+                           'to_send': 'default',
+                           'invalid': 'danger',
+                           'delivered_accepted': 'success',
+                           'delivered_refused': 'danger',
+                           'not_sent': 'warning',
+                           'service_unreachable': 'warning',
+                           }}"
                     />
-                    <button icon="fa-paper-plane-o"
-                            class="btn-outline-danger disabled"
-                            aria-label="Sent, but invalid"
-                            title="Sent, but invalid"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'invalid')]}"
-                    />
-                    <button icon="fa-paper-plane-o"
-                            class="btn-outline-success disabled"
-                            aria-label="Delivered and accepted"
-                            title="Delivered and accepted"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'delivered_accepted')]}"
-                    />
-                    <button icon="fa-paper-plane-o"
-                            class="btn-outline-warning disabled"
-                            aria-label="Delivered and refused"
-                            title="Delivered and refused"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'delivered_refused')]}"
-                    />
-                    <button icon="fa-exclamation"
-                            class="btn-outline-danger disabled"
-                            aria-label="Could not send the e-CF"
-                            title="Could not send the e-CF"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'not_sent')]}"
-                    />
-                    <button icon="fa-exclamation"
-                            class="btn-outline-warning disabled"
-                            aria-label="Service unreachable"
-                            title="Service unreachable"
-                            attrs="{'invisible': ['|', ('is_ecf_invoice', '=', False), ('l10n_do_ecf_send_state', '!=', 'service_unreachable')]}"
-                    />
-                </group>
+                </div>
             </xpath>
         </field>
     </record>

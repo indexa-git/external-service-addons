@@ -1,9 +1,11 @@
 #  Copyright (c) 2020 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
+import requests
 from datetime import datetime as dt
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class AccountMove(models.Model):
@@ -11,12 +13,12 @@ class AccountMove(models.Model):
 
     def _get_l10n_do_ecf_send_state(self):
         return [
-            ("to_send", "Not send"),
-            ("invalid", "Sent, but invalid"),  # no pasó validacion xsd
-            ("delivered_accepted", "Delivered and accepted"),  # to' ta bien
-            ("delivered_refused", "Delivered and refused"),  # rechazado por dgii
-            ("not_sent", "Could not send the e-CF"),  #  request no pudo salir de odoo
-            ("service_unreachable", "Service unreachable"),  # no se pudo comunicar con api
+            ("to_send", _("Not send")),
+            ("invalid", _("Sent, but invalid")),  # no pasó validacion xsd
+            ("delivered_accepted", _("Delivered and accepted")),  # to' ta bien
+            ("delivered_refused", _("Delivered and refused")),  # rechazado por dgii
+            ("not_sent", _("Could not send the e-CF")),  #  request no pudo salir de odoo
+            ("service_unreachable", _("Service unreachable")),  # no se pudo comunicar con api
         ]
 
     l10n_do_ecf_send_state = fields.Selection(
@@ -24,7 +26,7 @@ class AccountMove(models.Model):
         selection="_get_l10n_do_ecf_send_state",
         copy=False,
         index=True,
-        # readonly=True,
+        readonly=True,
         default="to_send",
         tracking=True,
     )
@@ -106,6 +108,21 @@ class AccountMove(models.Model):
                 lambda l: l.tax_line_id and l.tax_line_id.tax_group_id.id ==
                           itbis_group.id and l.tax_line_id.amount == tax_rate))
 
+        def get_invoicing_indicator(inv_line):
+            "IndicadorFacturacion"
+            if not inv_line.tax_ids:
+                return 4
+            tax_set = set(tax.amount for tax in inv_line.tax_ids
+                          if tax.tax_group_id.id == itbis_group.id)
+            if len(tax_set) > 1 or 18 in tax_set:
+                return 1
+            elif 16 in tax_set:
+                return 2
+            elif 0 in tax_set:
+                return 4
+            else:
+                return 3
+
         l10n_do_ncf_type = self.l10n_latam_document_type_id.doc_code_prefix[1:]
         is_l10n_do_partner = self.partner_id.country_id and \
                              self.partner_id.country_id.code == "DO"
@@ -121,22 +138,28 @@ class AccountMove(models.Model):
                     "IdDoc": {
                         "TipoeCF": l10n_do_ncf_type,
                         "eNCF": self.ref,
+                        "FechaVencimientoSecuencia": "31-12-2020",
+                        "IndicadorMontoGravado": None,
+                        "TipoIngresos": "01",
                         "TipoPago": get_payment_type(self),
                     },
                     "Emisor": {
                         "RNCEmisor": self.company_id.vat,
                         "RazonSocialEmisor": self.company_id.name,
+                        "NombreComercial": "",
+                        "Sucursal": "",
+                        "DireccionEmisor": "",
                         "FechaEmision": dt.strftime(self.invoice_date, "%d-%m-%Y"),
-                        "NumeroFacturaInterna": self.name,
                     },
-                    "Totales": {
-                        "MontoTotal": abs(round(self.amount_total_signed, 2)),
-                    }
+                    "Comprador": {},
+                    "Totales": {}
                 },
                 "DetallesItems": {
                     "Item": []
                     # Items data would be added later
                 },
+                "FechaHoraFirma": dt.strftime(dt.today(), "%d-%m-%Y %H:%M:%S"),
+                "_ANY_": "",
             },
         }
 
@@ -148,10 +171,9 @@ class AccountMove(models.Model):
             ecf_json["ECF"]["Encabezado"]["IdDoc"]["TablaFormasPago"] = {
                 "FormaDePago": get_payment_forms(self)}
 
-        if l10n_do_ncf_type not in ("32", "34"):
+        if l10n_do_ncf_type in ("32", "34"):
             # TODO: pending
-            ecf_json["ECF"]["Encabezado"]["IdDoc"][
-                "FechaVencimientoSecuencia"] = "31-12-2020"
+            del ecf_json["ECF"]["Encabezado"]["IdDoc"]["FechaVencimientoSecuencia"]
 
         if l10n_do_ncf_type == "34":
             origin_move_id = self.search(
@@ -166,10 +188,14 @@ class AccountMove(models.Model):
         if l10n_do_ncf_type not in ("43", "44", "46"):
             ecf_json["ECF"]["Encabezado"]["IdDoc"]["IndicadorMontoGravado"] = int(
                 any(True for t in self.invoice_line_ids.tax_ids if t.price_include))
+        else:
+            del ecf_json["ECF"]["Encabezado"]["IdDoc"]["IndicadorMontoGravado"]
 
         if l10n_do_ncf_type not in ("41", "43", "47"):
             ecf_json["ECF"]["Encabezado"]["IdDoc"][
                 "TipoIngresos"] = self.l10n_do_income_type
+        else:
+            del ecf_json["ECF"]["Encabezado"]["IdDoc"]["TipoIngresos"]
 
         if ecf_json["ECF"]["Encabezado"]["IdDoc"]["TipoPago"] == 2:
             ecf_json["ECF"]["Encabezado"]["IdDoc"]["FechaLimitePago"] = dt.strftime(
@@ -180,8 +206,6 @@ class AccountMove(models.Model):
                 "TerminoPago"] = "%s días" % delta.days
 
         if l10n_do_ncf_type not in ("43", "47"):
-            if "Comprador" not in ecf_json["ECF"]["Encabezado"]:
-                ecf_json["ECF"]["Encabezado"]["Comprador"] = {}
 
             if l10n_do_ncf_type in ("31", "41", "45"):
                 ecf_json["ECF"]["Encabezado"]["Comprador"][
@@ -261,32 +285,44 @@ class AccountMove(models.Model):
             total_taxed = sum([taxed_amount_1, taxed_amount_2, taxed_amount_3])
             total_itbis = sum([itbis1_total, itbis2_total, itbis3_total])
 
-            if taxed_amount_1:
-                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
-                    round(taxed_amount_1, 2))
-                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "18"
-                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"] = abs(
-                    round(itbis1_total, 2))
-            if taxed_amount_2:
-                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI2"] = abs(
-                    round(taxed_amount_2, 2))
-                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "16"
-                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"] = abs(
-                    round(itbis2_total, 2))
-            if taxed_amount_3:
-                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI3"] = abs(
-                    round(taxed_amount_3, 2))
-                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "0%"
-                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"] = abs(
-                    round(itbis3_total, 2))
-            if exempt_amount:
-                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoExento"] = abs(
-                    round(exempt_amount, 2))
             if total_taxed:
                 ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoTotal"] = abs(
                     round(total_taxed, 2))
+            if taxed_amount_1:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI1"] = abs(
+                    round(taxed_amount_1, 2))
+            if taxed_amount_2:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI2"] = abs(
+                    round(taxed_amount_2, 2))
+            if taxed_amount_3:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoGravadoI3"] = abs(
+                    round(taxed_amount_3, 2))
+            if exempt_amount:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["MontoExento"] = abs(
+                    round(exempt_amount, 2))
+
+            if taxed_amount_1:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS1"] = "18"
+            if taxed_amount_2:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS2"] = "16"
+            if taxed_amount_3:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["ITBIS3"] = "0%"
+
+            if total_taxed:
                 ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS"] = abs(
                     round(total_itbis, 2))
+            if taxed_amount_1:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"] = abs(
+                    round(itbis1_total, 2))
+            if taxed_amount_2:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"] = abs(
+                    round(itbis2_total, 2))
+            if taxed_amount_3:
+                ecf_json["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"] = abs(
+                    round(itbis3_total, 2))
+
+            ecf_json["ECF"]["Encabezado"]["Totales"]["MontoTotal"] = abs(
+                round(self.amount_total_signed, 2))
 
         # TODO: implement TotalITBISRetenido and TotalISRRetencion of Totales section
 
@@ -295,11 +331,12 @@ class AccountMove(models.Model):
                 ecf_json["ECF"]["Encabezado"]["OtraMoneda"] = {}
 
             ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
-                "MontoTotalOtraMoneda"] = self.amount_total
-            ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
                 "TipoMoneda"] = self.currency_id.name
             ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"] = abs(round(
                 1 / (self.amount_total / self.amount_total_signed), 2))
+
+            ecf_json["ECF"]["Encabezado"]["OtraMoneda"][
+                "MontoTotalOtraMoneda"] = self.amount_total
 
             if l10n_do_ncf_type not in ("43", "44", "47"):
 
@@ -364,6 +401,7 @@ class AccountMove(models.Model):
             line_dict = {}
             product = line.product_id
             line_dict["NumeroLinea"] = i
+            line_dict["IndicadorFacturacion"] = get_invoicing_indicator(line)
             line_dict["NombreItem"] = product.name if product else line.name
             line_dict["IndicadorBienoServicio"] = "2" if \
                 product and product.type == "service" else "1"
@@ -414,14 +452,59 @@ class AccountMove(models.Model):
 
         return ecf_json
 
+    def log_error_message(self, body, sent_data):
+
+        msg_body = "<ul>"
+        try:
+            import ast
+            error_message = ast.literal_eval(body)
+            for msg in list(error_message.get("messages")):
+                msg_body += "<li>%s</li>" % msg
+        except SyntaxError:
+            msg_body += "<li>%s</li>" % body
+
+        msg_body += "</ul>"
+        msg_body += "<p>%s</p>" % sent_data
+        self.env["mail.message"].sudo().create({
+            "record_name": self.ref,
+            "subject": _("e-CF Sending Error"),
+            "body": msg_body,
+        })
+
+    def send_ecf_data(self):
+        for invoice in self:
+
+            if invoice.l10n_do_ecf_send_state == "delivered_accepted":
+                raise ValidationError(_("Resend a Delivered and Accepted e-CF is not "
+                                        "allowed."))
+
+            ecf_data = invoice._get_invoice_ecf_json()
+            api_url = self.env['ir.config_parameter'].sudo().get_param('ecf.api.url')
+            try:
+                response = requests.post(api_url, json=ecf_data)
+                if response.status_code >= 400:
+                    self.log_error_message(response.text, ecf_data)
+                    invoice.l10n_do_ecf_send_state = "invalid"
+
+                # if response.status_code == 401:
+                #     # TODO: cuáles son los status_code del API?
+                #     #  para saber si poner un rango de códigos
+                #
+                #     # Request could not authenticate with API
+                #     invoice.l10n_do_ecf_send_state = "service_unreachable"
+            except requests.exceptions.ConnectionError:
+                # Odoo cound not send the request
+                invoice.l10n_do_ecf_send_state = "not_sent"
+
+        return True
 
     def post(self):
 
         res = super(AccountMove, self).post()
 
-        for inv in self.filtered(
-                lambda i: i.is_ecf_invoice and i.l10n_do_ecf_send_state != \
-                          "delivered_accepted"):
-            print(inv._get_invoice_ecf_json())
+        fiscal_invoices = self.filtered(
+            lambda i: i.is_ecf_invoice and i.l10n_do_ecf_send_state != \
+                      "delivered_accepted")
+        fiscal_invoices.send_ecf_data()
 
         return res
