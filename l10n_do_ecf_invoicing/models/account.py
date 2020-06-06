@@ -450,7 +450,11 @@ class AccountMove(models.Model):
             ecf_json["ECF"]["InformacionReferencia"][
                 "CodigoModificacion"] = self.l10n_do_ecf_modification_code
 
-        return ecf_json
+        from collections import OrderedDict
+        ordered_ecf_json = OrderedDict()
+        ordered_ecf_json.update(ecf_json)
+
+        return ordered_ecf_json
 
     def log_error_message(self, body, sent_data):
 
