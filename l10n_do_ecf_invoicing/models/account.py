@@ -1,11 +1,12 @@
 #  Copyright (c) 2020 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
+import ast
 import requests
 from collections import OrderedDict as od
 from datetime import datetime as dt
 
-from odoo import models, fields, api, _
+from odoo import models, fields, _
 from odoo.exceptions import ValidationError
 
 
@@ -18,7 +19,7 @@ class AccountMove(models.Model):
             ("invalid", _("Sent, but invalid")),  # no pasó validacion xsd
             ("delivered_accepted", _("Delivered and accepted")),  # to' ta bien
             ("delivered_refused", _("Delivered and refused")),  # rechazado por dgii
-            ("not_sent", _("Could not send the e-CF")),  #  request no pudo salir de odoo
+            ("not_sent", _("Could not send the e-CF")),  # request no pudo salir de odoo
             ("service_unreachable", _("Service unreachable")),  # no se pudo comunicar con api
         ]
 
@@ -457,7 +458,6 @@ class AccountMove(models.Model):
 
         msg_body = "<ul>"
         try:
-            import ast
             error_message = ast.literal_eval(body)
             for msg in list(error_message.get("messages") or []):
                 msg_body += "<li>%s</li>" % msg
@@ -483,16 +483,25 @@ class AccountMove(models.Model):
             api_url = self.env['ir.config_parameter'].sudo().get_param('ecf.api.url')
             try:
                 response = requests.post(api_url, json=ecf_data)
-                if response.status_code >= 400:
+
+                if response.status_code == 400:  # XSD validation failed
                     self.log_error_message(response.text, ecf_data)
                     invoice.l10n_do_ecf_send_state = "invalid"
 
-                # if response.status_code == 401:
-                #     # TODO: cuáles son los status_code del API?
-                #     #  para saber si poner un rango de códigos
-                #
-                #     # Request could not authenticate with API
-                #     invoice.l10n_do_ecf_send_state = "service_unreachable"
+                elif response.status_code == 403:  # could not communicate with api
+                    invoice.l10n_do_ecf_send_state = "service_unreachable"
+
+                elif response.status_code == 200:
+                    success_status = ast.literal_eval(
+                        response.text).get("status", False)
+
+                    if success_status and success_status == "success":
+                        # everything is ok with e-cf
+                        invoice.l10n_do_ecf_send_state = "delivered_accepted"
+                    else:  # rejected by DGII
+                        invoice.l10n_do_ecf_send_state = "delivered_refused"
+                        self.log_error_message(response.text, ecf_data)
+
             except requests.exceptions.ConnectionError:
                 # Odoo cound not send the request
                 invoice.l10n_do_ecf_send_state = "not_sent"
