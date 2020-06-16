@@ -2,6 +2,7 @@
 #  See LICENSE file for full licensing details.
 
 import requests
+from collections import OrderedDict as od
 from datetime import datetime as dt
 
 from odoo import models, fields, api, _
@@ -131,37 +132,37 @@ class AccountMove(models.Model):
 
         # At this point, json only contains required
         # fields in all e-CF's types
-        ecf_json = {
-            "ECF": {
-                "Encabezado": {
+        ecf_json = od({
+            "ECF": od({
+                "Encabezado": od({
                     "Version": "1.0",  # TODO: is this value going to change anytime?
-                    "IdDoc": {
+                    "IdDoc": od({
                         "TipoeCF": l10n_do_ncf_type,
                         "eNCF": self.ref,
                         "FechaVencimientoSecuencia": "31-12-2020",
                         "IndicadorMontoGravado": None,
                         "TipoIngresos": "01",
                         "TipoPago": get_payment_type(self),
-                    },
-                    "Emisor": {
+                    }),
+                    "Emisor": od({
                         "RNCEmisor": self.company_id.vat,
                         "RazonSocialEmisor": self.company_id.name,
                         "NombreComercial": "",
                         "Sucursal": "",
                         "DireccionEmisor": "",
                         "FechaEmision": dt.strftime(self.invoice_date, "%d-%m-%Y"),
-                    },
-                    "Comprador": {},
-                    "Totales": {}
-                },
-                "DetallesItems": {
+                    }),
+                    "Comprador": od({}),
+                    "Totales": od({}),
+                }),
+                "DetallesItems": od({
                     "Item": []
                     # Items data would be added later
-                },
+                }),
                 "FechaHoraFirma": dt.strftime(dt.today(), "%d-%m-%Y %H:%M:%S"),
                 "_ANY_": "",
-            },
-        }
+            }),
+        })
 
         if self.company_id.street:
             ecf_json["ECF"]["Encabezado"]["Emisor"][
@@ -398,7 +399,7 @@ class AccountMove(models.Model):
             if "OtraMoneda" in ecf_json["ECF"]["Encabezado"]:
                 rate = ecf_json["ECF"]["Encabezado"]["OtraMoneda"]["TipoCambio"]
 
-            line_dict = {}
+            line_dict = od()
             product = line.product_id
             line_dict["NumeroLinea"] = i
             line_dict["IndicadorFacturacion"] = get_invoicing_indicator(line)
@@ -450,11 +451,7 @@ class AccountMove(models.Model):
             ecf_json["ECF"]["InformacionReferencia"][
                 "CodigoModificacion"] = self.l10n_do_ecf_modification_code
 
-        from collections import OrderedDict
-        ordered_ecf_json = OrderedDict()
-        ordered_ecf_json.update(ecf_json)
-
-        return ordered_ecf_json
+        return ecf_json
 
     def log_error_message(self, body, sent_data):
 
@@ -462,7 +459,7 @@ class AccountMove(models.Model):
         try:
             import ast
             error_message = ast.literal_eval(body)
-            for msg in list(error_message.get("messages")):
+            for msg in list(error_message.get("messages") or []):
                 msg_body += "<li>%s</li>" % msg
         except SyntaxError:
             msg_body += "<li>%s</li>" % body
