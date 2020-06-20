@@ -498,12 +498,26 @@ class AccountMove(models.Model):
                     invoice.l10n_do_ecf_send_state = "service_unreachable"
 
                 elif response.status_code == 200:
-                    success_status = ast.literal_eval(
-                        response.text).get("status", False)
 
+                    vals = ast.literal_eval(response.text)
+                    success_status = vals.get("status", False)
+
+                    # everything is ok with e-cf
                     if success_status and success_status == "success":
-                        # everything is ok with e-cf
-                        invoice.l10n_do_ecf_send_state = "delivered_accepted"
+                        sign_datetime = vals.get("signature_datetime", False)
+                        try:
+                            strp_sign_datetime = dt.strptime(
+                                sign_datetime, "%Y-%m-%d %H:%M:%S")
+                        except (TypeError, ValueError):
+                            strp_sign_datetime = False
+
+                        invoice.write({
+                            "l10n_do_ecf_send_state": "delivered_accepted",
+                            "l10n_do_ecf_trackid": vals.get("trackId"),
+                            "l10n_do_ecf_security_code": vals.get("security_code"),
+                            "l10n_do_ecf_sign_date": strp_sign_datetime,
+                        })
+
                     else:  # rejected by DGII
                         invoice.l10n_do_ecf_send_state = "delivered_refused"
                         self.log_error_message(response.text, ecf_data)
