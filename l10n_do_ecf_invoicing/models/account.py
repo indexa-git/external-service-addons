@@ -37,6 +37,12 @@ class AccountMove(models.Model):
         readonly=True,
         copy=False,
     )
+    l10n_do_ecf_security_code = fields.Char(
+        readonly=True,
+    )
+    l10n_do_ecf_sign_date = fields.Datetime(
+        readonly=True,
+    )
 
     def _get_invoice_ecf_json(self):
         """
