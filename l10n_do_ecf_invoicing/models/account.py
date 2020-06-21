@@ -16,14 +16,12 @@ class AccountMove(models.Model):
     def _get_l10n_do_ecf_send_state(self):
         return [
             ("to_send", _("Not send")),
-            ("invalid", _("Sent, but invalid")),  # no pasó validacion xsd
-            ("delivered_accepted", _("Delivered and accepted")),  # to' ta bien
-            ("delivered_refused", _("Delivered and refused")),  # rechazado por dgii
-            ("not_sent", _("Could not send the e-CF")),  # request no pudo salir de odoo
-            (
-                "service_unreachable",
-                _("Service unreachable"),
-            ),  # no se pudo comunicar con api
+            ("invalid", _("Sent, but invalid")),
+            ("delivered_accepted", _("Delivered and accepted")),
+            ("delivered_pending", _("Delivered and pending")),
+            ("delivered_refused", _("Delivered and refused")),
+            ("not_sent", _("Could not send the e-CF")),
+            ("service_unreachable", _("Service unreachable")),
         ]
 
     l10n_do_ecf_send_state = fields.Selection(
@@ -728,16 +726,17 @@ class AccountMove(models.Model):
                     self.log_error_message(response.text, ecf_data)
                     invoice.l10n_do_ecf_send_state = "invalid"
 
-                elif response.status_code == 403:  # could not communicate with api
-                    invoice.l10n_do_ecf_send_state = "service_unreachable"
-
                 elif response.status_code == 200:
 
-                    vals = ast.literal_eval(response.text)
-                    success_status = vals.get("status", False)
+                    # DGII return a 'null' as an empty message value. We convert it to
+                    # its python similar: None
+                    response_text = str(response.text).replace("null", "None")
 
-                    # everything is ok with e-cf
-                    if success_status and success_status == "success":
+                    vals = ast.literal_eval(response_text)
+                    status = vals.get("status", False)
+
+                    if status:
+
                         sign_datetime = vals.get("signature_datetime", False)
                         try:
                             strp_sign_datetime = dt.strptime(
@@ -746,18 +745,34 @@ class AccountMove(models.Model):
                         except (TypeError, ValueError):
                             strp_sign_datetime = False
 
-                        invoice.write(
-                            {
-                                "l10n_do_ecf_send_state": "delivered_accepted",
-                                "l10n_do_ecf_trackid": vals.get("trackId"),
-                                "l10n_do_ecf_security_code": vals.get("security_code"),
-                                "l10n_do_ecf_sign_date": strp_sign_datetime,
-                            }
-                        )
+                        vals = {
+                            "l10n_do_ecf_trackid": vals.get("trackId"),
+                            "l10n_do_ecf_security_code": vals.get("security_code"),
+                            "l10n_do_ecf_sign_date": strp_sign_datetime,
+                        }
 
-                    else:  # rejected by DGII
-                        invoice.l10n_do_ecf_send_state = "delivered_refused"
-                        self.log_error_message(response.text, ecf_data)
+                        if status == "Aceptado":  # everything is ok with e-cf
+                            vals["l10n_do_ecf_send_state"] = "delivered_accepted"
+
+                        elif status == "AceptadoCondicional":
+                            # accepted but should be improved
+                            vals["l10n_do_ecf_send_state"] = "delivered_accepted"
+                            self.log_error_message(response_text, ecf_data)
+
+                        elif status == "EnProceso":
+                            # DGII still validating e-cf. Status must be re-checked
+                            # again later
+                            vals["l10n_do_ecf_send_state"] = "delivered_pending"
+
+                        else:  # status == Rechazado. Rejected by DGII
+                            invoice.l10n_do_ecf_send_state = "delivered_refused"
+                            self.log_error_message(response_text, ecf_data)
+
+                        if status != "Rechazado":
+                            invoice.write(vals)
+
+                else:  # anything else will be treated as a communication issue
+                    invoice.l10n_do_ecf_send_state = "service_unreachable"
 
             except requests.exceptions.ConnectionError:
                 # Odoo cound not send the request

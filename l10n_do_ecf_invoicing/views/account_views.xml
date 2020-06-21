@@ -29,6 +29,7 @@
                            'to_send': 'default',
                            'invalid': 'danger',
                            'delivered_accepted': 'success',
+                           'delivered_pending': 'warning',
                            'delivered_refused': 'danger',
                            'not_sent': 'warning',
                            'service_unreachable': 'warning',
