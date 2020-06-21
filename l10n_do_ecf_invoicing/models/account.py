@@ -645,7 +645,6 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
 
-        itbis_group = self.get_itbis_tax_group()
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
         is_company_currency = self.is_company_currency()
 
