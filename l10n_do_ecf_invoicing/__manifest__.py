@@ -14,7 +14,8 @@
 
     'category': 'Accounting',
     'version': "13.0.1.0.0",
-    'depends': ['l10n_do_accounting'],
+    'depends': ['l10n_do_accounting',
+                'l10n_do_debit_note'],
     'data': [
         # 'security/ir.model.access.csv',
         'views/account_views.xml',
