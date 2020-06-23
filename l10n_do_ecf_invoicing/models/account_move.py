@@ -3,10 +3,10 @@
 
 import ast
 import requests
-from collections import OrderedDict as od
 from datetime import datetime as dt
+from collections import OrderedDict as od
 
-from odoo import models, fields, api, _
+from odoo import models, fields, _
 from odoo.exceptions import ValidationError
 
 
@@ -69,6 +69,10 @@ class AccountMove(models.Model):
         """
         Indicates the type of customer payment. Free delivery invoices (code 3)
         are not valid for Crédito Fiscal.
+
+        1 - Al Contado
+        2 - Crédito
+        3 - Gratuito
         """
         self.ensure_one()
         # TODO: evaluate payment type 3 <Gratuito> Check DGII docs
@@ -115,14 +119,32 @@ class AccountMove(models.Model):
             payment_id = self.env["account.payment"].browse(
                 payment.get("account_payment_id")
             )
+
+            payment_amount = payment.get("amount", 0)
+
+            # Convert payment amount to company currency if needed
+            if payment.get("currency") != self.company_id.currency_id.symbol:
+                currency_id = self.env["res.currency"].search([
+                    ('symbol', '=', payment.get("currency"))], limit=1)
+                payment_amount = currency_id._convert(
+                    payment_amount,
+                    self.currency_id,
+                    self.company_id,
+                    payment.get("date")
+                )
+
             move_id = False
             if payment_id:
                 if payment_id.journal_id.type in ["cash", "bank"]:
                     payment_form = payment_id.journal_id.l10n_do_payment_form
+                    if not payment_form:
+                        raise ValidationError(
+                            _("Missing *Payment Form* on %s journal" %
+                              payment_id.journal_id.name))
                     payments.append(
                         {
                             "FormaPago": payment_dict[payment_form],
-                            "MontoPago": payment.get("amount", 0),
+                            "MontoPago": payment_amount,
                         }
                     )
 
@@ -132,7 +154,7 @@ class AccountMove(models.Model):
                     payments.append(
                         {
                             "FormaPago": payment_dict["swap"],
-                            "MontoPago": payment.get("amount", 0),
+                            "MontoPago": payment_amount,
                         }
                     )
             elif not move_id:
@@ -141,11 +163,10 @@ class AccountMove(models.Model):
                 payments.append(
                     {
                         "FormaPago": payment_dict["credit_note"],
-                        "MontoPago": payment.get("amount", 0),
+                        "MontoPago": payment_amount,
                     }
                 )
 
-        # TODO: implement amount conversion to company currency
         return payments
 
     def _get_IdDoc_data(self):
@@ -162,7 +183,7 @@ class AccountMove(models.Model):
                 "FechaVencimientoSecuencia": "31-12-2020",  # TODO: get this from ncf_expiration_date
                 "IndicadorMontoGravado": None,
                 "TipoIngresos": self.l10n_do_income_type,
-                # "TipoPago": self.get_payment_type(),  # TODO: NOT YET IMPLEMENTED
+                "TipoPago": self.get_payment_type(),
             }
         )
 
@@ -793,22 +814,13 @@ class AccountMove(models.Model):
 
         return True
 
-    @api.depends("invoice_payment_state", "amount_residual")
-    def _send_ecf_after_payment(self):
-        for invoice in self.filtered(
-                lambda i: (
-                i.invoice_payment_state != "not_paid"
-                or i.amount_residual < i.amount_total)
-                and i.l10n_do_ecf_send_state != "delivered_accepted"):
-            invoice.send_ecf_data()
-
     def post(self):
 
         res = super(AccountMove, self).post()
 
         fiscal_invoices = self.filtered(
             lambda i: i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state != "delivered_accepted"
+            and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
