@@ -775,7 +775,7 @@ class AccountMove(models.Model):
                     invoice.l10n_do_ecf_send_state = "service_unreachable"
 
             except requests.exceptions.ConnectionError:
-                # Odoo cound not send the request
+                # Odoo could not send the request
                 invoice.l10n_do_ecf_send_state = "not_sent"
 
         return True
