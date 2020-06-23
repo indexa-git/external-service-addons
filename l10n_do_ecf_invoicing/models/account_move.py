@@ -6,7 +6,7 @@ import requests
 from collections import OrderedDict as od
 from datetime import datetime as dt
 
-from odoo import models, fields, _
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 
@@ -780,6 +780,28 @@ class AccountMove(models.Model):
 
         return True
 
+    def _do_immediate_send(self):
+        self.ensure_one()
+
+        # Invoices which will receive immediate full or partial payment based on
+        # payment terms won't be sent until payment is applied.
+        if not self.invoice_payment_term_id or \
+                self.invoice_payment_term_id == self.env.ref(
+                "account.account_payment_term_immediate") or \
+                self.invoice_payment_term_id.line_ids.filtered(lambda line: line.days):
+            return False
+
+        return True
+
+    @api.depends("invoice_payment_state", "amount_residual")
+    def _send_ecf_after_payment(self):
+        for invoice in self.filtered(
+                lambda i: (
+                i.invoice_payment_state != "not_paid"
+                or i.amount_residual < i.amount_total)
+                and i.l10n_do_ecf_send_state != "delivered_accepted"):
+            invoice.send_ecf_data()
+
     def post(self):
 
         res = super(AccountMove, self).post()
@@ -787,6 +809,7 @@ class AccountMove(models.Model):
         fiscal_invoices = self.filtered(
             lambda i: i.is_ecf_invoice
             and i.l10n_do_ecf_send_state != "delivered_accepted"
+            and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
 
