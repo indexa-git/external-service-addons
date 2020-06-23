@@ -15,7 +15,7 @@
                         attrs="{'invisible' : [
                         '|', '|',
                         ('is_ecf_invoice', '=', False),
-                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'delivered_pending')),
+                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'delivered_pending', 'contingency')),
                         ('state', '=', 'draft'),
                         ]}"/>
             </xpath>
@@ -30,6 +30,7 @@
                            options="{'classes': {
                            'to_send': 'default',
                            'invalid': 'danger',
+                           'contingency': 'warning',
                            'delivered_accepted': 'success',
                            'delivered_pending': 'warning',
                            'delivered_refused': 'danger',

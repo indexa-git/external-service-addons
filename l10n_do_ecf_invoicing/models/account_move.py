@@ -14,9 +14,23 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     def _get_l10n_do_ecf_send_state(self):
+        """Returns actual invoice ECF sending status
+
+        - to_send: default state.
+        - invalid: sent ecf didn't pass XSD validation.
+        - contingency: DGII unreachable by external service. Odoo should send it
+        later until delivered accepted state is received.
+        - delivered_accepted: expected state that indicate everything is ok with ecf
+        issuing.
+        - delivered_refused: ecf rejected by DGII.
+        - not_sent: Odoo have not connection.
+        - service_unreachable: external service may be down.
+
+        """
         return [
-            ("to_send", _("Not send")),
+            ("to_send", _("Not sent")),
             ("invalid", _("Sent, but invalid")),
+            ("contingency", _("Contingency")),
             ("delivered_accepted", _("Delivered and accepted")),
             ("delivered_pending", _("Delivered and pending")),
             ("delivered_refused", _("Delivered and refused")),
@@ -791,6 +805,9 @@ class AccountMove(models.Model):
 
                         if status != "Rechazado":
                             invoice.write(vals)
+
+                elif response.status_code == 402:  # DGII is fucked up
+                    invoice.l10n_do_ecf_send_state = "contingency"
 
                 else:  # anything else will be treated as a communication issue
                     invoice.l10n_do_ecf_send_state = "service_unreachable"
