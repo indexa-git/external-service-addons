@@ -15,7 +15,7 @@
                         attrs="{'invisible' : [
                         '|', '|',
                         ('is_ecf_invoice', '=', False),
-                        ('l10n_do_ecf_send_state', '=', 'delivered_accepted'),
+                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'delivered_pending')),
                         ('state', '=', 'draft'),
                         ]}"/>
             </xpath>
@@ -24,7 +24,9 @@
                 <div class="o_row" col="4">
                     <field name="l10n_do_ecf_send_state"
                            widget="label_selection"
-                           attrs="{'invisible': [('is_ecf_invoice', '=', False)]}"
+                           attrs="{'invisible': ['|',
+                           ('is_ecf_invoice', '=', False),
+                           ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice'))]}"
                            options="{'classes': {
                            'to_send': 'default',
                            'invalid': 'danger',
