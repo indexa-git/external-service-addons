@@ -6,7 +6,7 @@ import requests
 from datetime import datetime as dt
 from collections import OrderedDict as od
 
-from odoo import models, fields, _
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 
@@ -780,11 +780,15 @@ class AccountMove(models.Model):
                         except (TypeError, ValueError):
                             strp_sign_datetime = False
 
-                        vals = {
-                            "l10n_do_ecf_trackid": vals.get("trackId"),
-                            "l10n_do_ecf_security_code": vals.get("security_code"),
-                            "l10n_do_ecf_sign_date": strp_sign_datetime,
-                        }
+                        vals = {}
+                        if invoice.l10n_do_ecf_send_state != "contingency":
+                            # Contingency invoices already have trackid,
+                            # security_code and sign_date. Do not overwrite it.
+                            vals.update({
+                                "l10n_do_ecf_trackid": vals.get("trackId"),
+                                "l10n_do_ecf_security_code": vals.get("security_code"),
+                                "l10n_do_ecf_sign_date": strp_sign_datetime,
+                            })
 
                         if status == "Aceptado":  # everything is ok with e-cf
                             vals["l10n_do_ecf_send_state"] = "delivered_accepted"
@@ -817,6 +821,28 @@ class AccountMove(models.Model):
                 invoice.l10n_do_ecf_send_state = "not_sent"
 
         return True
+
+    def _check_ecf_status(self):
+        """
+        Invoices ecf send status may be pending after first send. This function re-check
+        its status and update if needed.
+        """
+        self.ensure_one()
+        # TODO: implement feature
+        return
+
+    @api.model
+    def resend_contingency_ecf(self):
+        """
+        This function is meant to be called from ir.cron. It will resend all
+        contingency invoices
+        """
+
+        contingency_invoices = self.search([
+            ('type', 'in', ('out_invoice', 'out_refund', 'in_invoice')),
+            ('l10n_do_ecf_send_state', '=', 'contingency'),
+        ])
+        contingency_invoices.send_ecf_data()
 
     def _do_immediate_send(self):
         self.ensure_one()
