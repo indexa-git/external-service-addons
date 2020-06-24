@@ -9,6 +9,13 @@ from collections import OrderedDict as od
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
+ECF_STATE_MAP = {
+    "Aceptado": "delivered_accepted",
+    "AceptadoCondicional": "delivered_accepted",
+    "EnProceso": "delivered_pending",
+    "Rechazado": "delivered_refused",
+}
+
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -790,23 +797,10 @@ class AccountMove(models.Model):
                                 "l10n_do_ecf_sign_date": strp_sign_datetime,
                             })
 
-                        if status == "Aceptado":  # everything is ok with e-cf
-                            vals["l10n_do_ecf_send_state"] = "delivered_accepted"
-
-                        elif status == "AceptadoCondicional":
-                            # accepted but should be improved
-                            vals["l10n_do_ecf_send_state"] = "delivered_accepted"
+                        if status in ("AceptadoCondicional", "Rechazado"):
                             self.log_error_message(response_text, ecf_data)
 
-                        elif status == "EnProceso":
-                            # DGII still validating e-cf. Status must be re-checked
-                            # again later
-                            vals["l10n_do_ecf_send_state"] = "delivered_pending"
-
-                        else:  # status == Rechazado. Rejected by DGII
-                            invoice.l10n_do_ecf_send_state = "delivered_refused"
-                            self.log_error_message(response_text, ecf_data)
-
+                        vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
                         if status != "Rechazado":
                             invoice.write(vals)
 
