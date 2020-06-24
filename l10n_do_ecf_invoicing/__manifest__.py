@@ -20,6 +20,7 @@
         # 'security/ir.model.access.csv',
         'views/account_views.xml',
         'data/ir_config_parameter_data.xml',
+        'data/ir_cron_data.xml',
     ],
     'demo': [
         'demo/demo.xml',

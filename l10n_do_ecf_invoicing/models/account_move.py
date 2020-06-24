@@ -810,6 +810,9 @@ class AccountMove(models.Model):
                         if status != "Rechazado":
                             invoice.write(vals)
 
+                    else:
+                        invoice.l10n_do_ecf_send_state = "service_unreachable"
+
                 elif response.status_code == 402:  # DGII is fucked up
                     invoice.l10n_do_ecf_send_state = "contingency"
 
