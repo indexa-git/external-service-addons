@@ -14,4 +14,17 @@
         <field name="doall" eval="False"/>
     </record>
 
+    <record id="check_pending_ecf" model="ir.cron">
+        <field name="name">Electronic Invoice: check pending ecf</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="state">code</field>
+        <field name="code">model.check_pending_ecf()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="nextcall"
+               eval="(datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="doall" eval="False"/>
+    </record>
+
 </odoo>

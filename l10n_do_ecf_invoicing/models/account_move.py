@@ -819,14 +819,48 @@ class AccountMove(models.Model):
 
         return True
 
-    def _check_ecf_status(self):
+    def update_ecf_status(self):
         """
-        Invoices ecf send status may be pending after first send. This function re-check
-        its status and update if needed.
+        Invoices ecf send status may be pending after first send.
+        This function re-check its status and update if needed.
         """
-        self.ensure_one()
-        # TODO: implement feature
-        return
+        for invoice in self:
+
+            trackid = invoice.l10n_do_ecf_trackid
+            api_url = self.env["ir.config_parameter"].sudo().get_param(
+                "ecf.result.api.url")
+
+            try:
+                response = requests.post(api_url, json={"trackId": trackid})
+                response_text = str(response.text).replace("null", "None")
+
+                try:
+                    vals = ast.literal_eval(response_text)
+                    status = vals.get("estado", "EnProceso")
+                    if status in ECF_STATE_MAP:
+                        invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
+                    else:
+                        continue
+
+                except (ValueError, TypeError):
+                    continue
+
+            except requests.exceptions.ConnectionError:
+                continue
+
+    @api.model
+    def check_pending_ecf(self):
+        """
+        This function is meant to be called from ir.cron. It will update pending ecf
+        status.
+        """
+
+        pending_invoices = self.search([
+            ('type', 'in', ('out_invoice', 'out_refund', 'in_invoice')),
+            ('l10n_do_ecf_send_state', '=', 'delivered_pending'),
+            ('l10n_do_ecf_trackid', '!=', False),
+        ])
+        pending_invoices.update_ecf_status()
 
     @api.model
     def resend_contingency_ecf(self):
