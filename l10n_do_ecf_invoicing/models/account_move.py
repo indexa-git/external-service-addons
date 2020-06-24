@@ -111,9 +111,6 @@ class AccountMove(models.Model):
     def get_payment_forms(self):
 
         """
-
-        NOT YET IMPLEMENTED
-
         1: Efectivo
         2: Cheque/Transferencia/Depósito
         3: Tarjeta de Débito/Crédito
