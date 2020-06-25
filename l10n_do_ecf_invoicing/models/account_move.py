@@ -57,6 +57,18 @@ class AccountMove(models.Model):
     l10n_do_ecf_trackid = fields.Char("e-CF Trackid", readonly=True, copy=False,)
     l10n_do_ecf_security_code = fields.Char(readonly=True,)
     l10n_do_ecf_sign_date = fields.Datetime(readonly=True,)
+    l10n_do_ecf_expecting_payment = fields.Boolean(
+        string="Payment expected to send ECF",
+        compute="_compute_l10n_do_ecf_expecting_payment",
+    )
+
+    def _compute_l10n_do_ecf_expecting_payment(self):
+        for invoice in self:
+            invoice.l10n_do_ecf_expecting_payment = bool(
+                not invoice._do_immediate_send()
+                and invoice.l10n_do_ecf_send_state == "to_send"
+                and invoice.state != "draft"
+            )
 
     def get_itbis_tax_group(self):
         return self.env.ref("l10n_do.group_itbis")

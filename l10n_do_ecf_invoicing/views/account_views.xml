@@ -6,6 +6,9 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
+            <field name="restrict_mode_hash_table" position="after">
+                <field name="l10n_do_ecf_expecting_payment" invisible="1"/>
+            </field>
             <xpath expr="//header" position="inside">
                 <button name="send_ecf_data"
                         string="Resend e-CF"
@@ -38,6 +41,16 @@
                            'service_unreachable': 'warning',
                            }}"
                     />
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='tax_lock_date_message']/.." position="after">
+                <div class="alert alert-info"
+                     role="alert" style="margin-bottom:0px;"
+                     attrs="{'invisible': ['|', '|',
+                     ('l10n_latam_country_code', '!=', 'DO'),
+                     ('l10n_do_ecf_expecting_payment', '=', False),
+                     ('l10n_do_company_in_contingency', '=', True)]}">
+                    Notice. This invoice is expecting a payment to be signed.
                 </div>
             </xpath>
         </field>
