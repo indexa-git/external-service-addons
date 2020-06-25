@@ -898,7 +898,8 @@ class AccountMove(models.Model):
         if not self.invoice_payment_term_id or \
                 self.invoice_payment_term_id == self.env.ref(
                 "account.account_payment_term_immediate") or \
-                self.invoice_payment_term_id.line_ids.filtered(lambda line: line.days):
+                self.invoice_payment_term_id.line_ids.filtered(
+                    lambda line: not line.days):
             return False
 
         return True
