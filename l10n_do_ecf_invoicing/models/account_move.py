@@ -761,11 +761,7 @@ class AccountMove(models.Model):
             try:
                 response = requests.post(api_url, json=ecf_data)
 
-                if response.status_code == 400:  # XSD validation failed
-                    self.log_error_message(response.text, ecf_data)
-                    invoice.l10n_do_ecf_send_state = "invalid"
-
-                elif response.status_code == 200:
+                if response.status_code == 200:
 
                     # DGII return a 'null' as an empty message value. We convert it to
                     # its python similar: None
@@ -806,6 +802,10 @@ class AccountMove(models.Model):
 
                 elif response.status_code == 402:  # DGII is fucked up
                     invoice.l10n_do_ecf_send_state = "contingency"
+
+                elif response.status_code == 403:  # XSD validation failed
+                    self.log_error_message(response.text, ecf_data)
+                    invoice.l10n_do_ecf_send_state = "invalid"
 
                 else:  # anything else will be treated as a communication issue
                     invoice.l10n_do_ecf_send_state = "service_unreachable"
