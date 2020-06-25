@@ -15,7 +15,7 @@
                         attrs="{'invisible' : [
                         '|', '|',
                         ('is_ecf_invoice', '=', False),
-                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'delivered_pending', 'contingency')),
+                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'contingency')),
                         ('state', '=', 'draft'),
                         ]}"/>
             </xpath>
