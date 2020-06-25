@@ -752,7 +752,10 @@ class AccountMove(models.Model):
         )
 
     def send_ecf_data(self):
+
         for invoice in self:
+
+            sending_model = self.env.context.get("ecf_sending_model", "account.move")
 
             if invoice.l10n_do_ecf_send_state == "delivered_accepted":
                 raise ValidationError(
@@ -897,6 +900,6 @@ class AccountMove(models.Model):
             and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
             and i._do_immediate_send()
         )
-        fiscal_invoices.send_ecf_data()
+        fiscal_invoices.with_context(ecf_sending_model=self._name).send_ecf_data()
 
         return res
