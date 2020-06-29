@@ -15,6 +15,6 @@ class AccountPayment(models.Model):
             lambda i: i.is_ecf_invoice
             and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
         )
-        fiscal_invoices.with_context(ecf_sending_model=self._name).send_ecf_data()
+        fiscal_invoices.send_ecf_data()
 
         return res

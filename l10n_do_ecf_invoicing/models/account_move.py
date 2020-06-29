@@ -763,15 +763,20 @@ class AccountMove(models.Model):
             }
         )
 
+    def _show_service_unreachable_message(self):
+        msg = _(
+            "ECF %s can not be sent due External Service communication issue. "
+            "Try again in while or enable company contingency status" % self.ref
+        )
+        raise ValidationError(msg)
+
     def send_ecf_data(self):
 
         for invoice in self:
 
-            sending_model = self.env.context.get("ecf_sending_model", "account.move")
-
             if invoice.l10n_do_ecf_send_state == "delivered_accepted":
                 raise ValidationError(
-                    _("Resend a Delivered and Accepted e-CF is not " "allowed.")
+                    _("Resend a Delivered and Accepted e-CF is not allowed.")
                 )
 
             ecf_data = invoice._get_invoice_data_object()
@@ -812,11 +817,11 @@ class AccountMove(models.Model):
                             self.log_error_message(response_text, ecf_data)
 
                         vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
-                        if status != "Rechazado":
-                            invoice.write(vals)
+                        invoice.write(vals)
 
                     else:
-                        invoice.l10n_do_ecf_send_state = "service_unreachable"
+                        # invoice.l10n_do_ecf_send_state = "service_unreachable"
+                        invoice._show_service_unreachable_message()
 
                 elif response.status_code == 402:  # DGII is fucked up
                     invoice.l10n_do_ecf_send_state = "contingency"
@@ -826,7 +831,8 @@ class AccountMove(models.Model):
                     invoice.l10n_do_ecf_send_state = "invalid"
 
                 else:  # anything else will be treated as a communication issue
-                    invoice.l10n_do_ecf_send_state = "service_unreachable"
+                    # invoice.l10n_do_ecf_send_state = "service_unreachable"
+                    invoice._show_service_unreachable_message()
 
             except requests.exceptions.ConnectionError:
                 # Odoo could not send the request
@@ -913,6 +919,6 @@ class AccountMove(models.Model):
             and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
             and i._do_immediate_send()
         )
-        fiscal_invoices.with_context(ecf_sending_model=self._name).send_ecf_data()
+        fiscal_invoices.send_ecf_data()
 
         return res
