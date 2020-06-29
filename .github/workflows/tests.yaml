@@ -173,7 +173,7 @@ jobs:
 #       GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
 #       GKE_ZONE: ${{ secrets.GKE_ZONE }}
 #       REPO_NAME: ${{ needs.dependencies.outputs.repo_name }}
-#       REPO_BRANCH: ${{ needs.dependencies.outputs.repo_branch }} 
+#       REPO_BRANCH: ${{ needs.dependencies.outputs.repo_branch }}
 #     if: ${{ github.event_name == 'pull_request' }}
 
 #     steps:
