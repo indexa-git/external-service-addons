@@ -136,7 +136,7 @@ msgstr "Intervalo"
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_l10n_do_currency_interval_unit
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings_l10n_do_currency_interval_unit
-msgid "Interval Unit"
+msgid "Currency Interval"
 msgstr "Intervalo"
 
 #. module: l10n_do_currency_update
@@ -164,7 +164,7 @@ msgstr "Mensual"
 #. module: l10n_do_currency_update
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_company_l10n_do_currency_next_execution_date
 #: model:ir.model.fields,field_description:l10n_do_currency_update.field_res_config_settings_l10n_do_currency_next_execution_date
-msgid "Next Execution Date"
+msgid "Following Execution Date"
 msgstr "Siguiente fecha de ejecución"
 
 #. module: l10n_do_currency_update
