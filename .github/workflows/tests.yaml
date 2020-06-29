@@ -148,7 +148,7 @@ jobs:
         dockerfile: ${{ needs.dependencies.outputs.repo_name }}/Dockerfile
         cache_froms: docker.pkg.github.com/${{ github.repository }}/${{ needs.dependencies.outputs.repo_name }}:${{ needs.dependencies.outputs.repo_branch }}
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.PACKAGES_SECRET }}
         registry: docker.pkg.github.com
         repository: ${{ github.repository }}/${{ needs.dependencies.outputs.repo_name }}
         tag_with_ref: true
