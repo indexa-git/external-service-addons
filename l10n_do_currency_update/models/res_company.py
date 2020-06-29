@@ -28,7 +28,7 @@ class ResCompany(models.Model):
         ('daily', 'Daily'),
         ('weekly', 'Weekly'),
         ('monthly', 'Monthly')],
-        default='daily', string='Interval Unit')
+        default='daily', string='Currency Interval')
     l10n_do_currency_provider = fields.Selection([
         ('bpd', 'Banco Popular Dominicano'),
         ('bnr', 'Banco de Reservas'),
@@ -41,7 +41,7 @@ class ResCompany(models.Model):
     ], default='bpd', string='Bank')
     currency_base = fields.Selection([('buyrate', 'Buy rate'), ('sellrate', 'Sell rate')], default='sellrate')
     rate_offset = fields.Float('Offset', default=0)
-    l10n_do_currency_next_execution_date = fields.Date(string="Next Execution Date")
+    l10n_do_currency_next_execution_date = fields.Date(string="Following Execution Date")
     last_currency_sync_date = fields.Date(string="Last Sync Date", readonly=True)
 
     def get_currency_rates(self, params, token):
