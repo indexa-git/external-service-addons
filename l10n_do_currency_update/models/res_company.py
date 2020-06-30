@@ -7,6 +7,7 @@ import requests
 import datetime
 import pytz
 from dateutil.relativedelta import relativedelta
+
 from odoo import models, fields, api, _
 
 _logger = logging.getLogger(__name__)
