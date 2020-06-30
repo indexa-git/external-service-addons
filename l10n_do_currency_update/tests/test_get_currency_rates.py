@@ -11,7 +11,8 @@ class GetCurrencyRatesTest(TransactionCase):
             {"bank": "bpd", "date": fields.Date.today()},
             "a79c2dfc-858d-4813-bb77-7695c1c320db"
         )
-
+        import ast
+        data = ast.literal_eval(data)
         status = data.get("status", False)
 
         assert status
