@@ -1,6 +1,5 @@
 ![Linting](https://github.com/indexa-git/external-service-addons/workflows/Linting/badge.svg)
 ![Unit Tests](https://github.com/indexa-git/external-service-addons/workflows/Unit%20Tests/badge.svg)
-[![codecov](https://codecov.io/gh/indexa-git/external-service-addons/branch/11.0/graph/badge.svg)](https://codecov.io/gh/indexa-git/external-service-addons)
 
 # external-service-addons
 
