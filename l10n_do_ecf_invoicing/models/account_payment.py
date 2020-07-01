@@ -13,7 +13,8 @@ class AccountPayment(models.Model):
 
         fiscal_invoices = self.invoice_ids.filtered(
             lambda i: i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
+            and i.l10n_do_ecf_send_state
+            not in ("delivered_accepted", "delivered_pending")
         )
         fiscal_invoices.send_ecf_data()
 

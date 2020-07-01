@@ -62,12 +62,15 @@ class AccountMove(models.Model):
         compute="_compute_l10n_do_ecf_expecting_payment",
     )
 
-    @api.depends('l10n_do_ecf_security_code', 'l10n_do_ecf_sign_date', 'invoice_date')
+    @api.depends("l10n_do_ecf_security_code", "l10n_do_ecf_sign_date", "invoice_date")
     @api.depends_context("l10n_do_ecf_service_env")
     def _compute_l10n_do_electronic_stamp(self):
-        return super(AccountMove, self.with_context(
-            l10n_do_ecf_service_env=self.env.user.company_id.l10n_do_ecf_service_env)
-                     )._compute_l10n_do_electronic_stamp()
+        return super(
+            AccountMove,
+            self.with_context(
+                l10n_do_ecf_service_env=self.env.user.company_id.l10n_do_ecf_service_env
+            ),
+        )._compute_l10n_do_electronic_stamp()
 
     def _compute_l10n_do_ecf_expecting_payment(self):
         for invoice in self:
@@ -164,13 +167,14 @@ class AccountMove(models.Model):
 
             # Convert payment amount to company currency if needed
             if payment.get("currency") != self.company_id.currency_id.symbol:
-                currency_id = self.env["res.currency"].search([
-                    ('symbol', '=', payment.get("currency"))], limit=1)
+                currency_id = self.env["res.currency"].search(
+                    [("symbol", "=", payment.get("currency"))], limit=1
+                )
                 payment_amount = currency_id._convert(
                     payment_amount,
                     self.currency_id,
                     self.company_id,
-                    payment.get("date")
+                    payment.get("date"),
                 )
 
             move_id = False
@@ -179,8 +183,11 @@ class AccountMove(models.Model):
                     payment_form = payment_id.journal_id.l10n_do_payment_form
                     if not payment_form:
                         raise ValidationError(
-                            _("Missing *Payment Form* on %s journal" %
-                              payment_id.journal_id.name))
+                            _(
+                                "Missing *Payment Form* on %s journal"
+                                % payment_id.journal_id.name
+                            )
+                        )
                     payments.append(
                         {
                             "FormaPago": payment_dict[payment_form],
@@ -736,7 +743,8 @@ class AccountMove(models.Model):
             if "OtraMoneda" not in ecf_object_data["ECF"]["Encabezado"]:
                 ecf_object_data["ECF"]["Encabezado"]["OtraMoneda"] = od({})
             ecf_object_data["ECF"]["Encabezado"][
-                "OtraMoneda"] = self._get_OtraMoneda_data(ecf_object_data)
+                "OtraMoneda"
+            ] = self._get_OtraMoneda_data(ecf_object_data)
 
         # Invoice lines
         ecf_object_data["ECF"]["DetallesItems"]["Item"] = self._get_Item_list(
@@ -814,11 +822,15 @@ class AccountMove(models.Model):
                         if invoice.l10n_do_ecf_send_state != "contingency":
                             # Contingency invoices already have trackid,
                             # security_code and sign_date. Do not overwrite it.
-                            vals.update({
-                                "l10n_do_ecf_trackid": vals.get("trackId"),
-                                "l10n_do_ecf_security_code": vals.get("security_code"),
-                                "l10n_do_ecf_sign_date": strp_sign_datetime,
-                            })
+                            vals.update(
+                                {
+                                    "l10n_do_ecf_trackid": vals.get("trackId"),
+                                    "l10n_do_ecf_security_code": vals.get(
+                                        "security_code"
+                                    ),
+                                    "l10n_do_ecf_sign_date": strp_sign_datetime,
+                                }
+                            )
 
                         if status in ("AceptadoCondicional", "Rechazado"):
                             self.log_error_message(response_text, ecf_data)
@@ -855,8 +867,9 @@ class AccountMove(models.Model):
         for invoice in self:
 
             trackid = invoice.l10n_do_ecf_trackid
-            api_url = self.env["ir.config_parameter"].sudo().get_param(
-                "ecf.result.api.url")
+            api_url = (
+                self.env["ir.config_parameter"].sudo().get_param("ecf.result.api.url")
+            )
 
             try:
                 response = requests.post(api_url, json={"trackId": trackid})
@@ -883,11 +896,13 @@ class AccountMove(models.Model):
         status.
         """
 
-        pending_invoices = self.search([
-            ('type', 'in', ('out_invoice', 'out_refund', 'in_invoice')),
-            ('l10n_do_ecf_send_state', '=', 'delivered_pending'),
-            ('l10n_do_ecf_trackid', '!=', False),
-        ])
+        pending_invoices = self.search(
+            [
+                ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
+                ("l10n_do_ecf_send_state", "=", "delivered_pending"),
+                ("l10n_do_ecf_trackid", "!=", False),
+            ]
+        )
         pending_invoices.update_ecf_status()
 
     @api.model
@@ -897,10 +912,12 @@ class AccountMove(models.Model):
         contingency invoices
         """
 
-        contingency_invoices = self.search([
-            ('type', 'in', ('out_invoice', 'out_refund', 'in_invoice')),
-            ('l10n_do_ecf_send_state', '=', 'contingency'),
-        ])
+        contingency_invoices = self.search(
+            [
+                ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
+                ("l10n_do_ecf_send_state", "=", "contingency"),
+            ]
+        )
         contingency_invoices.send_ecf_data()
 
     def _do_immediate_send(self):
@@ -908,11 +925,14 @@ class AccountMove(models.Model):
 
         # Invoices which will receive immediate full or partial payment based on
         # payment terms won't be sent until payment is applied.
-        if not self.invoice_payment_term_id or \
-                self.invoice_payment_term_id == self.env.ref(
-                "account.account_payment_term_immediate") or \
-                self.invoice_payment_term_id.line_ids.filtered(
-                    lambda line: not line.days):
+        if (
+            not self.invoice_payment_term_id
+            or self.invoice_payment_term_id
+            == self.env.ref("account.account_payment_term_immediate")
+            or self.invoice_payment_term_id.line_ids.filtered(
+                lambda line: not line.days
+            )
+        ):
             return False
 
         return True
@@ -923,7 +943,8 @@ class AccountMove(models.Model):
 
         fiscal_invoices = self.filtered(
             lambda i: i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state not in ("delivered_accepted", "delivered_pending")
+            and i.l10n_do_ecf_send_state
+            not in ("delivered_accepted", "delivered_pending")
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
