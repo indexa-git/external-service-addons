@@ -62,6 +62,13 @@ class AccountMove(models.Model):
         compute="_compute_l10n_do_ecf_expecting_payment",
     )
 
+    @api.depends('l10n_do_ecf_security_code', 'l10n_do_ecf_sign_date', 'invoice_date')
+    @api.depends_context("l10n_do_ecf_service_env")
+    def _compute_l10n_do_electronic_stamp(self):
+        return super(AccountMove, self.with_context(
+            l10n_do_ecf_service_env=self.env.user.company_id.l10n_do_ecf_service_env)
+                     )._compute_l10n_do_electronic_stamp()
+
     def _compute_l10n_do_ecf_expecting_payment(self):
         for invoice in self:
             invoice.l10n_do_ecf_expecting_payment = bool(
