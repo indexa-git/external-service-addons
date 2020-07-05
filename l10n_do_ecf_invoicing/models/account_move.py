@@ -818,11 +818,11 @@ class AccountMove(models.Model):
                         except (TypeError, ValueError):
                             strp_sign_datetime = False
 
-                        vals = {}
+                        invoice_vals = {}
                         if invoice.l10n_do_ecf_send_state != "contingency":
                             # Contingency invoices already have trackid,
                             # security_code and sign_date. Do not overwrite it.
-                            vals.update(
+                            invoice_vals.update(
                                 {
                                     "l10n_do_ecf_trackid": vals.get("trackId"),
                                     "l10n_do_ecf_security_code": vals.get(
@@ -835,8 +835,8 @@ class AccountMove(models.Model):
                         if status in ("AceptadoCondicional", "Rechazado"):
                             self.log_error_message(response_text, ecf_data)
 
-                        vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
-                        invoice.write(vals)
+                        invoice_vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
+                        invoice.write(invoice_vals)
 
                     else:
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
