@@ -62,25 +62,26 @@ class ResPartner(models.Model):
         }
         """
         if vat and vat.isdigit():
-            try:
-                _logger.info("Starting contact fiscal data request "
-                             "of res.partner vat: %s" % vat)
-                api_url = self.env['ir.config_parameter'].sudo().get_param(
-                    'rnc.indexa.api.url')
-                token = self.env['ir.config_parameter'].sudo().get_param(
-                    'rnc.indexa.api.token')
-                response = requests.get(
-                    api_url, {'rnc': vat},
-                    headers={'x-access-token': token}
-                )
-            except requests.exceptions.ConnectionError as e:
-                _logger.warning('API requests return the following '
-                                'error %s' % e)
-                return {"status": "error", "data": []}
-            try:
-                return json.loads(response.text)
-            except TypeError:
-                _logger.warning(_('No serializable data from API response'))
+            api_url = self.env['ir.config_parameter'].sudo().get_param(
+                'rnc.indexa.api.url')
+            token = self.env['ir.config_parameter'].sudo().get_param(
+                'rnc.indexa.api.token')
+            if api_url and token:
+                try:
+                    _logger.info("Starting contact fiscal data request "
+                                 "of res.partner vat: %s" % vat)
+                    response = requests.get(
+                        api_url, {'rnc': vat},
+                        headers={'x-access-token': token}
+                    )
+                except requests.exceptions.ConnectionError as e:
+                    _logger.warning('API requests return the following '
+                                    'error %s' % e)
+                    return {"status": "error", "data": []}
+                try:
+                    return json.loads(response.text)
+                except TypeError:
+                    _logger.warning(_('No serializable data from API response'))
         return False
 
     @api.model
