@@ -166,7 +166,8 @@ class ResPartner(models.Model):
             vat = vals["vat"] if vals.get('vat') else vals.get('name')
             result = self.with_context(model=self._name).validate_rnc_cedula(vat)
             if result is not None:
-                new_vals['name'] = result.get('name')
+                if 'name' in result:
+                    new_vals['name'] = result.get('name')
                 new_vals['vat'] = result.get('vat')
                 new_vals['is_company'] = result.get('is_company', False)
                 new_vals['company_type'] = 'company' if new_vals['is_company'] else 'person'
