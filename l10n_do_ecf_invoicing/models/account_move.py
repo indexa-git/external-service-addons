@@ -475,7 +475,7 @@ class AccountMove(models.Model):
             round(1 / (self.amount_total / self.amount_total_signed), 2)
         )
 
-        currency_data["MontoTotalOtraMoneda"] = self.amount_total
+        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
 
         rate = currency_data["TipoCambio"]
 
@@ -580,11 +580,11 @@ class AccountMove(models.Model):
             line_dict["IndicadorFacturacion"] = get_invoicing_indicator(line)
 
             # TODO: implementen Retencion
-            if l10n_do_ncf_type in ("41", "47"):
-                line_dict["Retencion"] = od()
-                line_dict["Retencion"]["IndicadorAgenteRetencionoPercepcion"] = 1
-                line_dict["Retencion"]["MontoITBISRetenido"] = 0.0
-                line_dict["Retencion"]["MontoISRRetenido"] = 9.72
+            # if l10n_do_ncf_type in ("41", "47"):
+            #     line_dict["Retencion"] = od()
+            #     line_dict["Retencion"]["IndicadorAgenteRetencionoPercepcion"] = 1
+            #     # line_dict["Retencion"]["MontoITBISRetenido"] = 0.0
+            #     line_dict["Retencion"]["MontoISRRetenido"] = 9.72
 
             # line_dict["NombreItem"] = product.name if product else line.name
             line_dict["NombreItem"] = (
