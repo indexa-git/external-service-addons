@@ -1,7 +1,8 @@
 {
     'name': "Dominican Banks Currency Update",
     'summary': """
-        Updates company secondary currency rates from dominican banks""",
+    Updates company secondary currency rates from dominican banks
+    """,
 
     'author': "Indexa",
     'website': "https://www.indexa.do",
