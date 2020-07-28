@@ -60,7 +60,7 @@ jobs:
       with:
         repository: odoo-dominicana/l10n-dominicana
         path: l10n-dominicana
-        ref: '13.0'
+        ref: '13.0-imp-000-jl'
 
     - name: python get_modules
       id: get_modules
