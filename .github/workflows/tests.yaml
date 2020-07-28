@@ -62,6 +62,14 @@ jobs:
         path: l10n-dominicana
         ref: '13.0-imp-000-jl'
 
+    - name: Odoo Enterprise
+      uses: actions/checkout@v2
+      with:
+        repository: odoo/enterprise
+        token: ${{ secrets.ACTIONS_PAT }}
+        path: enterprise
+        ref: '13.0'
+
     - name: python get_modules
       id: get_modules
       run: |
