@@ -147,13 +147,8 @@ class ResPartner(models.Model):
                 except:
                     pass
                 if dgii_vals is None:
-                    if is_rnc:
-                        self.sudo().message_post(
-                            subject=_("%s vat request" % self.name),
-                            body=_("External service could not find requested "
-                                   "contact data."))
                     result['vat'] = number
-                elif dgii_vals:
+                else:
                     result['name'] = dgii_vals.get('name', False)
                     result['vat'] = dgii_vals.get('rnc')
                     if model == 'res.partner':
