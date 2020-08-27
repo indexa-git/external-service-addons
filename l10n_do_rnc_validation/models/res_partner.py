@@ -130,11 +130,12 @@ class ResPartner(models.Model):
                     result['phone'] = data['phone']
                 if not result.get('street'):
                     address = ""
-                    if data.get('street'):
+                    if data.get('street') and not data.get('street').isspace():
                         address += data['street']
-                    if data.get('street_number'):
+                    if data.get('street_number') and not data.get(
+                            'street_number').isspace():
                         address += ", " + data['street_number']
-                    if data.get('sector'):
+                    if data.get('sector') and not data.get('sector').isspace():
                         address += ", " + data['sector']
                     result['street'] = address
 
