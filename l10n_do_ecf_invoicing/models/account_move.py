@@ -54,9 +54,17 @@ class AccountMove(models.Model):
         default="to_send",
         tracking=True,
     )
-    l10n_do_ecf_trackid = fields.Char("e-CF Trackid", readonly=True, copy=False,)
-    l10n_do_ecf_security_code = fields.Char(readonly=True,)
-    l10n_do_ecf_sign_date = fields.Datetime(readonly=True,)
+    l10n_do_ecf_trackid = fields.Char(
+        "e-CF Trackid",
+        readonly=True,
+        copy=False,
+    )
+    l10n_do_ecf_security_code = fields.Char(
+        readonly=True,
+    )
+    l10n_do_ecf_sign_date = fields.Datetime(
+        readonly=True,
+    )
     l10n_do_ecf_expecting_payment = fields.Boolean(
         string="Payment expected to send ECF",
         compute="_compute_l10n_do_ecf_expecting_payment",
@@ -760,7 +768,7 @@ class AccountMove(models.Model):
                         "InformacionReferencia": od({}),
                         # This is a dummy date. The one we use in the digital stamp
                         # is the one received from the external service
-                        "FechaHoraFirma": dt.strftime(dt.today(), "%d-%m-%Y %H:%M:%S")
+                        "FechaHoraFirma": dt.strftime(dt.today(), "%d-%m-%Y %H:%M:%S"),
                     }
                 ),
             }
@@ -831,7 +839,7 @@ class AccountMove(models.Model):
             try:
                 response = requests.post(
                     "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
-                    json=ecf_data
+                    json=ecf_data,
                 )
 
                 if response.status_code == 200:
