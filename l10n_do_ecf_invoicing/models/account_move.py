@@ -68,7 +68,7 @@ class AccountMove(models.Model):
         return super(
             AccountMove,
             self.with_context(
-                l10n_do_ecf_service_env=self.env.user.company_id.l10n_do_ecf_service_env
+                l10n_do_ecf_service_env=self.company_id.l10n_do_ecf_service_env
             ),
         )._compute_l10n_do_electronic_stamp()
 
