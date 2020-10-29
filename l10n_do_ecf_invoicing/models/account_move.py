@@ -910,7 +910,7 @@ class AccountMove(models.Model):
 
                 try:
                     vals = ast.literal_eval(response_text)
-                    status = vals.get("estado", "EnProceso")
+                    status = vals.get("estado", "EnProceso").replace(" ", "")
                     if status in ECF_STATE_MAP:
                         invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
                     else:
