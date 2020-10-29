@@ -424,11 +424,10 @@ class AccountMove(models.Model):
         # taxed_amount_3 = tax_data.get(0, {}).get("base", 0)  # TODO: correctly implement this tax
         taxed_amount_3 = 0
         exempt_amount = sum(
-            line.credit
-            for line in self.line_ids.filtered(
-                lambda l: (
-                    not l.tax_ids or (l.tax_line_id and not l.tax_line_id.amount)
-                )
+            line.price_subtotal
+            for line in self.invoice_line_ids.filtered(
+                lambda l: not l.tax_ids
+                or (len(l.tax_ids) == 1 and not l.tax_ids.amount)
             )
         )
 
