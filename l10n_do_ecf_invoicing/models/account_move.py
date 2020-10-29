@@ -809,13 +809,19 @@ class AccountMove(models.Model):
 
         msg_body += "</ul>"
         msg_body += "<p>%s</p>" % sent_data
-        self.env["mail.message"].sudo().create(
-            {
-                "record_name": self.ref,
-                "subject": _("e-CF Sending Error"),
-                "body": msg_body,
-            }
-        )
+
+        # When on a production environment, DGII error messages are logged in
+        # mail.message, otherwise, directly posted on invoice chatter
+        if self.company_id.l10n_do_ecf_service_env == "eCF":
+            self.env["mail.message"].sudo().create(
+                {
+                    "record_name": self.ref,
+                    "subject": _("e-CF Sending Error"),
+                    "body": msg_body,
+                }
+            )
+        else:
+            self.message_post(body=msg_body)
 
     def _show_service_unreachable_message(self):
         msg = _(
