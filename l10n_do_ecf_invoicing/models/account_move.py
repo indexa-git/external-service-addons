@@ -829,7 +829,10 @@ class AccountMove(models.Model):
             ecf_data = invoice._get_invoice_data_object()
             api_url = self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
             try:
-                response = requests.post(api_url, json=ecf_data)
+                response = requests.post(
+                    "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
+                    json=ecf_data
+                )
 
                 if response.status_code == 200:
 
