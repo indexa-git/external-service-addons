@@ -843,7 +843,7 @@ class AccountMove(models.Model):
                     status = vals.get("status", False)
 
                     if status:
-
+                        status = status.replace(" ", "")
                         sign_datetime = vals.get("signature_datetime", False)
                         try:
                             strp_sign_datetime = dt.strptime(
