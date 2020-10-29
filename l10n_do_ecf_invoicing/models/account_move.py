@@ -271,11 +271,13 @@ class AccountMove(models.Model):
             id_doc_data["TipoIngresos"] = self.l10n_do_income_type
 
         id_doc_data["TipoPago"] = self.get_payment_type()
-        if self.invoice_payment_state != "not_paid" and l10n_do_ncf_type not in (
-            "34",
-            "43",
-        ):
-            id_doc_data["TablaFormasPago"] = {"FormaDePago": self.get_payment_forms()}
+
+        # TODO: actually DGII is not allowing send TablaFormasPago
+        # if self.invoice_payment_state != "not_paid" and l10n_do_ncf_type not in (
+        #     "34",
+        #     "43",
+        # ):
+        #     id_doc_data["TablaFormasPago"] = {"FormaDePago": self.get_payment_forms()}
 
         if id_doc_data["TipoPago"] == 2:
             id_doc_data["FechaLimitePago"] = dt.strftime(
@@ -371,7 +373,7 @@ class AccountMove(models.Model):
 
     def get_taxed_amount_data(self):
         """ITBIS taxed amount
-        :param tax_rate: Intenger. According to the DGII, there are three types of
+        According to the DGII, there are three types of
         amounts taxed by ITBIS:
 
         18% -- Most common
