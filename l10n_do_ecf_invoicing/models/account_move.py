@@ -360,10 +360,7 @@ class AccountMove(models.Model):
                     buyer_data["RazonSocialComprador"] = self.partner_id.name
 
             if l10n_do_ncf_type in ("33", "34"):
-                if (
-                    self.debit_origin_id
-                    and self.debit_origin_id.amount_total_signed >= 250000
-                ):
+                if self.debit_origin_id:
                     buyer_data["RazonSocialComprador"] = self.partner_id.name
 
             else:  # 31, 41, 44, 45, 46
