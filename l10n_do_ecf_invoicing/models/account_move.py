@@ -663,6 +663,9 @@ class AccountMove(models.Model):
             else self.debit_origin_id
         )
 
+        if not origin_id:
+            raise ValidationError(_("Could not found origin document."))
+
         if "InformacionReferencia" not in ecf_object_data["ECF"]:
             ecf_object_data["ECF"]["InformacionReferencia"] = od({})
         reference_info_data["NCFModificado"] = origin_id.ref
