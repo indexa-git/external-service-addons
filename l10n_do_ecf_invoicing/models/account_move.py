@@ -845,6 +845,7 @@ class AccountMove(models.Model):
                 )
 
             ecf_data = invoice._get_invoice_data_object()
+            import json; print(json.dumps(ecf_data, indent=4, default=str))
             api_url = self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
             try:
                 response = requests.post(
