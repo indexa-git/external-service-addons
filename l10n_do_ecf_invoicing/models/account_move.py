@@ -545,6 +545,30 @@ class AccountMove(models.Model):
 
         return currency_data
 
+    def _get_item_withholding_vals(self, invoice_line):
+        """ Returns invoice line withholding taxes values """
+
+        line_withholding_vals = invoice_line.tax_ids.compute_all(
+            price_unit=invoice_line.price_unit,
+            currency=invoice_line.currency_id,
+            quantity=invoice_line.quantity,
+            product=invoice_line.product_id,
+            partner=invoice_line.move_id.partner_id,
+            is_refund=True if invoice_line.move_id.type == "in_refund" else False
+        )
+
+        return od([("IndicadorAgenteRetencionoPercepcion", 1),
+                   ("MontoITBISRetenido", abs(sum(
+                       tax["amount"] for tax in line_withholding_vals["taxes"] if
+                       tax["amount"] < 0 and self.env["account.tax"].browse(
+                           tax["id"]).tax_group_id == self.env.ref(
+                           "l10n_do.group_itbis")))),
+                   ("MontoISRRetenido", abs(sum(
+                       tax["amount"] for tax in line_withholding_vals["taxes"] if
+                       tax["amount"] < 0 and self.env["account.tax"].browse(
+                           tax["id"]).tax_group_id == self.env.ref(
+                           "l10n_do.group_isr"))))])
+
     def _get_Item_list(self, ecf_object_data):
         """Product lines related values"""
         self.ensure_one()
@@ -585,12 +609,9 @@ class AccountMove(models.Model):
             line_dict["NumeroLinea"] = i
             line_dict["IndicadorFacturacion"] = get_invoicing_indicator(line)
 
-            # TODO: implementen Retencion
-            # if l10n_do_ncf_type in ("41", "47"):
-            #     line_dict["Retencion"] = od()
-            #     line_dict["Retencion"]["IndicadorAgenteRetencionoPercepcion"] = 1
-            #     # line_dict["Retencion"]["MontoITBISRetenido"] = 0.0
-            #     line_dict["Retencion"]["MontoISRRetenido"] = 9.72
+            if l10n_do_ncf_type in ("41", "47") and any(
+                    [True for tax in line.tax_ids if tax.amount < 0]):
+                line_dict["Retencion"] = self._get_item_withholding_vals(line)
 
             # line_dict["NombreItem"] = product.name if product else line.name
             line_dict["NombreItem"] = (
