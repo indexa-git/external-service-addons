@@ -357,8 +357,7 @@ class AccountMove(models.Model):
                     buyer_data["RazonSocialComprador"] = self.partner_id.name
 
             if l10n_do_ncf_type in ("33", "34"):
-                if self.debit_origin_id:
-                    buyer_data["RazonSocialComprador"] = self.partner_id.name
+                buyer_data["RazonSocialComprador"] = self.partner_id.name
 
             else:  # 31, 41, 44, 45, 46
                 buyer_data["RazonSocialComprador"] = self.partner_id.name
@@ -436,8 +435,8 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         totals_data = od({})
-
         tax_data = self.get_taxed_amount_data()
+        l10n_do_ncf_type = self.get_l10n_do_ncf_type()
 
         total_taxed = sum(
             [
@@ -454,42 +453,49 @@ class AccountMove(models.Model):
             ]
         )
 
-        if total_taxed:
-            totals_data["MontoGravadoTotal"] = abs(round(total_taxed, 2))
-        if tax_data["18_taxed_base"]:
-            totals_data["MontoGravadoI1"] = abs(round(tax_data["18_taxed_base"], 2))
-        if tax_data["16_taxed_base"]:
-            totals_data["MontoGravadoI2"] = abs(round(tax_data["16_taxed_base"], 2))
-        if tax_data["0_taxed_base"]:
-            totals_data["MontoGravadoI3"] = abs(round(tax_data["0_taxed_base"], 2))
-        if tax_data["exempt_amount"]:
-            totals_data["MontoExento"] = abs(round(tax_data["exempt_amount"], 2))
+        if l10n_do_ncf_type not in ("43", "44"):
+            if total_taxed:
+                totals_data["MontoGravadoTotal"] = abs(round(total_taxed, 2))
+            if tax_data["18_taxed_base"]:
+                totals_data["MontoGravadoI1"] = abs(round(tax_data["18_taxed_base"], 2))
+            if tax_data["16_taxed_base"]:
+                totals_data["MontoGravadoI2"] = abs(round(tax_data["16_taxed_base"], 2))
+            if tax_data["0_taxed_base"]:
+                totals_data["MontoGravadoI3"] = abs(round(tax_data["0_taxed_base"], 2))
+            if tax_data["exempt_amount"]:
+                totals_data["MontoExento"] = abs(round(tax_data["exempt_amount"], 2))
 
-        if tax_data["18_taxed_base"]:
-            totals_data["ITBIS1"] = "18"
-        if tax_data["16_taxed_base"]:
-            totals_data["ITBIS2"] = "16"
-        if tax_data["0_taxed_base"]:
-            totals_data["ITBIS3"] = "0"
+            if tax_data["18_taxed_base"]:
+                totals_data["ITBIS1"] = "18"
+            if tax_data["16_taxed_base"]:
+                totals_data["ITBIS2"] = "16"
+            if tax_data["0_taxed_base"]:
+                totals_data["ITBIS3"] = "0"
+            if total_taxed:
+                totals_data["TotalITBIS"] = abs(round(total_itbis, 2))
+            if tax_data["18_taxed_base"]:
+                totals_data["TotalITBIS1"] = abs(round(tax_data["18_taxed_amount"], 2))
+            if tax_data["16_taxed_base"]:
+                totals_data["TotalITBIS2"] = abs(round(tax_data["16_taxed_amount"], 2))
+            if tax_data["0_taxed_base"]:
+                totals_data["TotalITBIS3"] = abs(round(tax_data["0_taxed_amount"], 2))
+        else:
+            if tax_data["exempt_amount"]:
+                totals_data["MontoExento"] = abs(round(tax_data["exempt_amount"], 2))
 
-        if total_taxed:
-            totals_data["TotalITBIS"] = abs(round(total_itbis, 2))
-        if tax_data["18_taxed_base"]:
-            totals_data["TotalITBIS1"] = abs(round(tax_data["18_taxed_amount"], 2))
-        if tax_data["16_taxed_base"]:
-            totals_data["TotalITBIS2"] = abs(round(tax_data["16_taxed_amount"], 2))
-        if tax_data["0_taxed_base"]:
-            totals_data["TotalITBIS3"] = abs(round(tax_data["0_taxed_amount"], 2))
+        if l10n_do_ncf_type not in ("43", "44"):
+            totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
+        else:
+            totals_data["MontoTotal"] = abs(round(self.amount_total_signed, 2))
 
-        totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
-
-        if tax_data["itbis_withholding_amount"] or tax_data["isr_withholding_amount"]:
-            totals_data["TotalITBISRetenido"] = abs(
-                round(tax_data["itbis_withholding_amount"], 2)
-            )
-            totals_data["TotalISRRetencion"] = abs(
-                round(tax_data["isr_withholding_amount"], 2)
-            )
+        if l10n_do_ncf_type not in ("43", "44"):
+            if tax_data["itbis_withholding_amount"] or tax_data["isr_withholding_amount"]:
+                totals_data["TotalITBISRetenido"] = abs(
+                    round(tax_data["itbis_withholding_amount"], 2)
+                )
+                totals_data["TotalISRRetencion"] = abs(
+                    round(tax_data["isr_withholding_amount"], 2)
+                )
 
         return totals_data
 
