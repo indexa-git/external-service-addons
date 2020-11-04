@@ -88,9 +88,6 @@ class AccountMove(models.Model):
                 and invoice.state != "draft"
             )
 
-    def get_itbis_tax_group(self):
-        return self.env.ref("l10n_do.group_itbis")
-
     def is_l10n_do_partner(self):
         return self.partner_id.country_id and self.partner_id.country_id.code == "DO"
 
@@ -229,7 +226,7 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
-        itbis_group = self.get_itbis_tax_group()
+        itbis_group = self.env.ref("l10n_do.group_itbis")
 
         id_doc_data = od(
             {
@@ -380,93 +377,119 @@ class AccountMove(models.Model):
         See Law No. 253-12, art. 343 of dominican Tributary Code for further info
         """
 
-        itbis_group = self.get_itbis_tax_group()
-        itbis_data = {}
-        itbis_taxed_lines = self.invoice_line_ids.filtered(
-            lambda l: itbis_group.id in l.tax_ids.mapped("tax_group_id").ids
+        itbis_data = {
+            "total_taxed_amount": 0,
+            "18_taxed_base": 0,
+            "18_taxed_amount": 0,
+            "16_taxed_base": 0,
+            "16_taxed_amount": 0,
+            "0_taxed_base": 0,
+            "0_taxed_amount": 0,
+            "exempt_amount": 0,
+            "itbis_withholding_amount": 0,
+            "isr_withholding_amount": 0,
+        }
+
+        tax_data = [
+            line.tax_ids.compute_all(
+                line.price_unit,
+                line.currency_id,
+                line.quantity,
+                line.product_id,
+                line.move_id.partner_id,
+            )
+            for line in self.invoice_line_ids
+        ]
+
+        itbis_data["total_taxed_amount"] = sum(
+            line["total_excluded"] for line in tax_data
         )
-        for line in itbis_taxed_lines:
-            for tax in line.tax_ids.filtered(lambda t: t.tax_group_id == itbis_group):
-                line_itbis_data = tax.compute_all(
-                    line.price_unit, quantity=line.quantity
-                )
-                if tax.amount not in itbis_data:
-                    itbis_data[tax.amount] = {
-                        "base": sum([t["base"] for t in line_itbis_data["taxes"]]),
-                        "amount": sum([t["amount"] for t in line_itbis_data["taxes"]]),
-                    }
-                else:
-                    itbis_data[tax.amount]["base"] += sum(
-                        [t["base"] for t in line_itbis_data["taxes"]]
-                    )
-                    itbis_data[tax.amount]["amount"] += sum(
-                        [t["amount"] for t in line_itbis_data["taxes"]]
-                    )
+
+        for line_taxes in tax_data:
+            for tax in line_taxes["taxes"]:
+                if not tax["amount"]:
+                    itbis_data["exempt_amount"] += tax["base"]
+
+                tax_id = self.env["account.tax"].browse(tax["id"])
+                if tax_id.amount == 18:
+                    itbis_data["18_taxed_base"] += tax["base"]
+                    itbis_data["18_taxed_amount"] += tax["amount"]
+                elif tax_id.amount == 16:
+                    itbis_data["16_taxed_base"] += tax["base"]
+                    itbis_data["16_taxed_amount"] += tax["amount"]
+                # elif tax_id.amount == 0:  # TODO: implement this tax
+                #     itbis_data["0_taxed_base"] += tax["base"]
+                #     itbis_data["0_taxed_amount"] += tax["amount"]
+                elif tax_id.amount < 0 and tax_id.tax_group_id == self.env.ref(
+                    "l10n_do.group_itbis"
+                ):
+                    itbis_data["itbis_withholding_amount"] += tax["amount"]
+                elif tax_id.amount < 0 and tax_id.tax_group_id == self.env.ref(
+                    "l10n_do.group_isr"
+                ):
+                    itbis_data["isr_withholding_amount"] += tax["amount"]
 
         return itbis_data
 
     def _get_Totales_data(self):
         """Invoice amounts related values"""
         self.ensure_one()
-        # l10n_do_ncf_type = self.get_l10n_do_ncf_type()
 
         totals_data = od({})
 
-        # if l10n_do_ncf_type not in ("43", "44", "47") and bool(self.amount_tax_signed):
-        # if l10n_do_ncf_type not in ("43", "44", "47"):
-
         tax_data = self.get_taxed_amount_data()
 
-        # Montos gravados con 18%, 16% y 0% de ITBIS
-        taxed_amount_1 = tax_data.get(18, {}).get("base", 0)
-        taxed_amount_2 = tax_data.get(16, {}).get("base", 0)
-        # taxed_amount_3 = tax_data.get(0, {}).get("base", 0)  # TODO: correctly implement this tax
-        taxed_amount_3 = 0
-        exempt_amount = sum(
-            line.price_subtotal
-            for line in self.invoice_line_ids.filtered(
-                lambda l: not l.tax_ids
-                or (len(l.tax_ids) == 1 and not l.tax_ids.amount)
-            )
+        total_taxed = sum(
+            [
+                tax_data["18_taxed_base"],
+                tax_data["16_taxed_base"],
+                tax_data["0_taxed_base"],
+            ]
         )
-
-        itbis1_total = tax_data.get(18, {}).get("amount", 0)
-        itbis2_total = tax_data.get(16, {}).get("amount", 0)
-        itbis3_total = tax_data.get(0, {}).get("amount", 0)
-
-        total_taxed = sum([taxed_amount_1, taxed_amount_2, taxed_amount_3])
-        total_itbis = sum([itbis1_total, itbis2_total, itbis3_total])
+        total_itbis = sum(
+            [
+                tax_data["18_taxed_amount"],
+                tax_data["16_taxed_amount"],
+                tax_data["0_taxed_amount"],
+            ]
+        )
 
         if total_taxed:
             totals_data["MontoGravadoTotal"] = abs(round(total_taxed, 2))
-        if taxed_amount_1:
-            totals_data["MontoGravadoI1"] = abs(round(taxed_amount_1, 2))
-        if taxed_amount_2:
-            totals_data["MontoGravadoI2"] = abs(round(taxed_amount_2, 2))
-        if taxed_amount_3:
-            totals_data["MontoGravadoI3"] = abs(round(taxed_amount_3, 2))
-        if exempt_amount:
-            totals_data["MontoExento"] = abs(round(exempt_amount, 2))
+        if tax_data["18_taxed_base"]:
+            totals_data["MontoGravadoI1"] = abs(round(tax_data["18_taxed_base"], 2))
+        if tax_data["16_taxed_base"]:
+            totals_data["MontoGravadoI2"] = abs(round(tax_data["16_taxed_base"], 2))
+        if tax_data["0_taxed_base"]:
+            totals_data["MontoGravadoI3"] = abs(round(tax_data["0_taxed_base"], 2))
+        if tax_data["exempt_amount"]:
+            totals_data["MontoExento"] = abs(round(tax_data["exempt_amount"], 2))
 
-        if taxed_amount_1:
+        if tax_data["18_taxed_base"]:
             totals_data["ITBIS1"] = "18"
-        if taxed_amount_2:
+        if tax_data["16_taxed_base"]:
             totals_data["ITBIS2"] = "16"
-        if taxed_amount_3:
+        if tax_data["0_taxed_base"]:
             totals_data["ITBIS3"] = "0"
 
         if total_taxed:
             totals_data["TotalITBIS"] = abs(round(total_itbis, 2))
-        if taxed_amount_1:
-            totals_data["TotalITBIS1"] = abs(round(itbis1_total, 2))
-        if taxed_amount_2:
-            totals_data["TotalITBIS2"] = abs(round(itbis2_total, 2))
-        if taxed_amount_3:
-            totals_data["TotalITBIS3"] = abs(round(itbis3_total, 2))
+        if tax_data["18_taxed_base"]:
+            totals_data["TotalITBIS1"] = abs(round(tax_data["18_taxed_amount"], 2))
+        if tax_data["16_taxed_base"]:
+            totals_data["TotalITBIS2"] = abs(round(tax_data["16_taxed_amount"], 2))
+        if tax_data["0_taxed_base"]:
+            totals_data["TotalITBIS3"] = abs(round(tax_data["0_taxed_amount"], 2))
 
-        totals_data["MontoTotal"] = abs(round(self.amount_total_signed, 2))
+        totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
 
-        # TODO: implement TotalITBISRetenido and TotalISRRetencion of Totales section
+        if tax_data["itbis_withholding_amount"] or tax_data["isr_withholding_amount"]:
+            totals_data["TotalITBISRetenido"] = abs(
+                round(tax_data["itbis_withholding_amount"], 2)
+            )
+            totals_data["TotalISRRetencion"] = abs(
+                round(tax_data["isr_withholding_amount"], 2)
+            )
 
         return totals_data
 
@@ -591,7 +614,7 @@ class AccountMove(models.Model):
         """Product lines related values"""
         self.ensure_one()
 
-        itbis_group = self.get_itbis_tax_group()
+        itbis_group = self.env.ref("l10n_do.group_itbis")
         is_company_currency = self.is_company_currency()
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
 
