@@ -276,7 +276,7 @@ class AccountMove(models.Model):
         # ):
         #     id_doc_data["TablaFormasPago"] = {"FormaDePago": self.get_payment_forms()}
 
-        if id_doc_data["TipoPago"] == 2:
+        if id_doc_data["TipoPago"] == 2 and l10n_do_ncf_type != "43":
             id_doc_data["FechaLimitePago"] = dt.strftime(
                 self.invoice_date_due, "%d-%m-%Y"
             )
