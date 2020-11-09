@@ -403,10 +403,11 @@ class AccountMove(models.Model):
         itbis_data["total_taxed_amount"] = sum(
             line["total_excluded"] for line in tax_data
         )
+        l10n_do_ncf_type = self.get_l10n_do_ncf_type()
 
         for line_taxes in tax_data:
             for tax in line_taxes["taxes"]:
-                if not tax["amount"]:
+                if not tax["amount"] and l10n_do_ncf_type != "46":
                     itbis_data["exempt_amount"] += tax["base"]
 
                 tax_id = self.env["account.tax"].browse(tax["id"])
@@ -416,9 +417,9 @@ class AccountMove(models.Model):
                 elif tax_id.amount == 16:
                     itbis_data["16_taxed_base"] += tax["base"]
                     itbis_data["16_taxed_amount"] += tax["amount"]
-                # elif tax_id.amount == 0:  # TODO: implement this tax
-                #     itbis_data["0_taxed_base"] += tax["base"]
-                #     itbis_data["0_taxed_amount"] += tax["amount"]
+                elif tax_id.amount == 0 and l10n_do_ncf_type == "46":
+                    itbis_data["0_taxed_base"] += tax["base"]
+                    itbis_data["0_taxed_amount"] += tax["amount"]
                 elif tax_id.amount < 0 and tax_id.tax_group_id == self.env.ref(
                     "l10n_do.group_itbis"
                 ):
@@ -486,7 +487,7 @@ class AccountMove(models.Model):
         if l10n_do_ncf_type not in ("43", "44"):
             totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
         else:
-            totals_data["MontoTotal"] = abs(round(self.amount_total_signed, 2))
+            totals_data["MontoTotal"] = abs(round(self.aMontoGravadoI1mount_total_signed, 2))
 
         if l10n_do_ncf_type not in ("43", "44"):
             if tax_data["itbis_withholding_amount"] or tax_data["isr_withholding_amount"]:
