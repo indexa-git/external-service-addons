@@ -249,7 +249,7 @@ class AccountMove(models.Model):
         if self.company_id.l10n_do_ecf_deferred_submissions:
             id_doc_data["IndicadorEnvioDiferido"] = 1
 
-        if l10n_do_ncf_type not in ("43", "44", "46"):
+        if l10n_do_ncf_type not in ("43", "44", "46", "47"):
             if "IndicadorMontoGravado" not in id_doc_data:
                 id_doc_data["IndicadorMontoGravado"] = None
             id_doc_data["IndicadorMontoGravado"] = int(
@@ -492,13 +492,11 @@ class AccountMove(models.Model):
             )
 
         if l10n_do_ncf_type not in ("43", "44"):
-            if (
-                tax_data["itbis_withholding_amount"]
-                or tax_data["isr_withholding_amount"]
-            ):
+            if tax_data["itbis_withholding_amount"]:
                 totals_data["TotalITBISRetenido"] = abs(
                     round(tax_data["itbis_withholding_amount"], 2)
                 )
+            if tax_data["isr_withholding_amount"]:
                 totals_data["TotalISRRetencion"] = abs(
                     round(tax_data["isr_withholding_amount"], 2)
                 )
@@ -570,10 +568,9 @@ class AccountMove(models.Model):
                     2,
                 )
 
-        if (
-            "MontoExento" in ecf_object_data["ECF"]["Encabezado"]["Totales"]
-            and l10n_do_ncf_type != "46"
-        ):
+        if "MontoExento" in ecf_object_data["ECF"]["Encabezado"][
+            "Totales"
+        ] and l10n_do_ncf_type not in ("46", "47"):
             currency_data["MontoExentoOtraMoneda"] = round(
                 ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoExento"] / rate, 2
             )
@@ -592,35 +589,32 @@ class AccountMove(models.Model):
             is_refund=True if invoice_line.move_id.type == "in_refund" else False,
         )
 
-        return od(
-            [
-                ("IndicadorAgenteRetencionoPercepcion", 1),
-                (
-                    "MontoITBISRetenido",
-                    abs(
-                        sum(
-                            tax["amount"]
-                            for tax in line_withholding_vals["taxes"]
-                            if tax["amount"] < 0
-                            and self.env["account.tax"].browse(tax["id"]).tax_group_id
-                            == self.env.ref("l10n_do.group_itbis")
-                        )
-                    ),
-                ),
-                (
-                    "MontoISRRetenido",
-                    abs(
-                        sum(
-                            tax["amount"]
-                            for tax in line_withholding_vals["taxes"]
-                            if tax["amount"] < 0
-                            and self.env["account.tax"].browse(tax["id"]).tax_group_id
-                            == self.env.ref("l10n_do.group_isr")
-                        )
-                    ),
-                ),
-            ]
+        withholding_vals = od([("IndicadorAgenteRetencionoPercepcion", 1)])
+        itbis_withhold_amount = abs(
+            sum(
+                tax["amount"]
+                for tax in line_withholding_vals["taxes"]
+                if tax["amount"] < 0
+                and self.env["account.tax"].browse(tax["id"]).tax_group_id
+                == self.env.ref("l10n_do.group_itbis")
+            )
         )
+        isr_withhold_amount = abs(
+            sum(
+                tax["amount"]
+                for tax in line_withholding_vals["taxes"]
+                if tax["amount"] < 0
+                and self.env["account.tax"].browse(tax["id"]).tax_group_id
+                == self.env.ref("l10n_do.group_isr")
+            )
+        )
+
+        if itbis_withhold_amount:
+            withholding_vals["MontoITBISRetenido"] = itbis_withhold_amount
+        if isr_withhold_amount:
+            withholding_vals["MontoISRRetenido"] = isr_withhold_amount
+
+        return withholding_vals
 
     def _get_Item_list(self, ecf_object_data):
         """Product lines related values"""
@@ -675,9 +669,7 @@ class AccountMove(models.Model):
                 "2" if product and product.type == "service" else "1"
             )
             line_dict["DescripcionItem"] = line.name
-            line_dict["CantidadItem"] = ("%f" % line.quantity).rstrip(
-                "0"
-            ).rstrip(".")
+            line_dict["CantidadItem"] = ("%f" % line.quantity).rstrip("0").rstrip(".")
 
             line_dict["PrecioUnitarioItem"] = abs(
                 line.price_unit
