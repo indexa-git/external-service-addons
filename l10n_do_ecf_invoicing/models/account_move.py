@@ -487,10 +487,15 @@ class AccountMove(models.Model):
         if l10n_do_ncf_type not in ("43", "44"):
             totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
         else:
-            totals_data["MontoTotal"] = abs(round(self.aMontoGravadoI1mount_total_signed, 2))
+            totals_data["MontoTotal"] = abs(
+                round(self.aMontoGravadoI1mount_total_signed, 2)
+            )
 
         if l10n_do_ncf_type not in ("43", "44"):
-            if tax_data["itbis_withholding_amount"] or tax_data["isr_withholding_amount"]:
+            if (
+                tax_data["itbis_withholding_amount"]
+                or tax_data["isr_withholding_amount"]
+            ):
                 totals_data["TotalITBISRetenido"] = abs(
                     round(tax_data["itbis_withholding_amount"], 2)
                 )
@@ -638,10 +643,10 @@ class AccountMove(models.Model):
                 return 1
             elif 16 in tax_set:
                 return 2
-            elif 0 in tax_set:
-                return 4
-            else:
+            elif l10n_do_ncf_type == "46" and 0 in tax_set:
                 return 3
+            else:
+                return 4
 
         lines_data = []
 
@@ -670,7 +675,9 @@ class AccountMove(models.Model):
                 "2" if product and product.type == "service" else "1"
             )
             line_dict["DescripcionItem"] = line.name
-            line_dict["CantidadItem"] = line.quantity
+            line_dict["CantidadItem"] = ("%f" % line.quantity).rstrip(
+                "0"
+            ).rstrip(".")
 
             line_dict["PrecioUnitarioItem"] = abs(
                 line.price_unit
@@ -912,7 +919,9 @@ class AccountMove(models.Model):
                 )
 
             ecf_data = invoice._get_invoice_data_object()
-            import json; print(json.dumps(ecf_data, indent=4, default=str))
+            import json
+
+            print(json.dumps(ecf_data, indent=4, default=str))
             api_url = self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
             try:
                 response = requests.post(
