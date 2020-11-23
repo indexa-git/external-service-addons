@@ -484,11 +484,11 @@ class AccountMove(models.Model):
             if tax_data["exempt_amount"]:
                 totals_data["MontoExento"] = abs(round(tax_data["exempt_amount"], 2))
 
-        if l10n_do_ncf_type not in ("43", "44"):
+        if l10n_do_ncf_type not in ("43", "44") and total_taxed:
             totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
         else:
             totals_data["MontoTotal"] = abs(
-                round(self.aMontoGravadoI1mount_total_signed, 2)
+                round(self.amount_untaxed_signed, 2)
             )
 
         if l10n_do_ncf_type not in ("43", "44"):
