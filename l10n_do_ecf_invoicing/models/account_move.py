@@ -589,7 +589,7 @@ class AccountMove(models.Model):
             is_refund=True if invoice_line.move_id.type == "in_refund" else False,
         )
 
-        withholding_vals = od([("IndicadorAgenteRetencionoPercepcion", 1)])
+        withholding_vals = od()
         itbis_withhold_amount = abs(
             sum(
                 tax["amount"]
@@ -659,7 +659,12 @@ class AccountMove(models.Model):
             if l10n_do_ncf_type in ("41", "47") and any(
                 [True for tax in line.tax_ids if tax.amount < 0]
             ):
-                line_dict["Retencion"] = self._get_item_withholding_vals(line)
+                withholding_vals = od([("IndicadorAgenteRetencionoPercepcion", 1)])
+                for k, v in self._get_item_withholding_vals(line).items():
+                    withholding_vals[k] = round(
+                        v if is_company_currency else v * rate, 2
+                    )
+                line_dict["Retencion"] = withholding_vals
 
             # line_dict["NombreItem"] = product.name if product else line.name
             line_dict["NombreItem"] = (
@@ -676,13 +681,13 @@ class AccountMove(models.Model):
             line_dict["PrecioUnitarioItem"] = abs(
                 line.price_unit
                 if is_company_currency
-                else round(line.price_unit / rate, 2)
+                else round(line.price_unit * rate, 2)
             )
 
             price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
             discount_amount = abs(
                 round(price_unit_wo_discount - line.price_subtotal, 2)
-            )
+            ) if line.discount else 0
             if line.discount:
                 line_dict["TablaSubDescuento"] = {
                     "SubDescuento": [
@@ -711,7 +716,7 @@ class AccountMove(models.Model):
                 round(
                     line.price_subtotal
                     if is_company_currency
-                    else line.price_subtotal / rate,
+                    else line.price_subtotal * rate,
                     2,
                 )
             )
