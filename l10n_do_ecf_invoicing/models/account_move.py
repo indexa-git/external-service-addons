@@ -845,7 +845,12 @@ class AccountMove(models.Model):
                         "InformacionReferencia": od({}),
                         # This is a dummy date. The one we use in the digital stamp
                         # is the one received from the external service
-                        "FechaHoraFirma": dt.strftime(dt.today(), "%d-%m-%Y %H:%M:%S"),
+                        "FechaHoraFirma": fields.Datetime.to_string(
+                            fields.Datetime.context_timestamp(
+                                self.with_context(tz=self.env.user.tz),
+                                fields.Datetime.now()
+                            )
+                        ),
                     }
                 ),
             }
