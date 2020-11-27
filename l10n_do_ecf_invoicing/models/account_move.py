@@ -960,7 +960,12 @@ class AccountMove(models.Model):
                                     "l10n_do_ecf_security_code": vals.get(
                                         "security_code"
                                     ),
-                                    "l10n_do_ecf_sign_date": strp_sign_datetime,
+                                    "l10n_do_ecf_sign_date": strp_sign_datetime.replace(
+                                        hour=strp_sign_datetime.hour + 4
+                                        # this is a shitty way to get an UTC datetime,
+                                        # I know. I'll improve it later
+                                        # TODO: improve this
+                                    ),
                                 }
                             )
 
