@@ -1,7 +1,7 @@
 from odoo import models, fields
 
 
-class ResConfigSettings(models.Model):
+class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
     ncf_validation_target = fields.Selection(
