@@ -2,7 +2,7 @@ import requests
 from odoo.tools import safe_eval
 
 from odoo import models, _
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import ValidationError
 
 
 class AccountMove(models.Model):
@@ -98,7 +98,7 @@ class AccountMove(models.Model):
                     continue
 
             if not invoice._has_valid_ncf():
-                raise UserError(
+                raise ValidationError(
                     _(
                         "Cannot validate Fiscal Invoice "
                         "because %s is not a valid NCF" % invoice.ref
