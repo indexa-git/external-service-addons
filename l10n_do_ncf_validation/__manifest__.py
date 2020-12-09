@@ -6,5 +6,8 @@
     "author": "Indexa",
     "website": "https://www.indexa.do",
     "depends": ["l10n_do_accounting"],
-    "data": ["views/res_config_settings_views.xml"],
+    "data": [
+        "data/ir_config_parameter_data.xml",
+        "views/res_config_settings_views.xml",
+    ],
 }
