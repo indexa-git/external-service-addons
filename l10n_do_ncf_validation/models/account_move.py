@@ -45,9 +45,9 @@ class AccountMove(models.Model):
 
                 if (
                     ncf_validation_target == "internal"
-                    and invoice._is_internal_generated_ncf()
+                    and not invoice._is_internal_generated_ncf()
                 ):
-                    pass
+                    continue
                 elif (
                     ncf_validation_target == "external"
                     and invoice._is_internal_generated_ncf()
