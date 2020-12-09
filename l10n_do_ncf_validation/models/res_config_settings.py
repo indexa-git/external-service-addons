@@ -7,4 +7,5 @@ class ResConfigSettings(models.TransientModel):
     ncf_validation_target = fields.Selection(
         related="company_id.ncf_validation_target",
         readonly=False,
+        required=True,
     )
