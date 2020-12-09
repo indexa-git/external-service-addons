@@ -1,5 +1,8 @@
+import requests
+from odoo.tools import safe_eval
+
 from odoo import models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class AccountMove(models.Model):
@@ -11,7 +14,47 @@ class AccountMove(models.Model):
         :return: boolean: True if valid NCF, otherwise False
         """
         self.ensure_one()
-        # TODO: implement external service request
+
+        rnc = self.partner_id.vat
+        if not rnc or not str(rnc).isdigit() or len(rnc) not in (9, 11):
+            raise ValidationError(
+                _("A valid RNC/Cédula is required to request a NCF validation.")
+            )
+
+        ncf = self.ref
+        if not ncf or not len(ncf) in (11, 13) or ncf[0] not in ("B", "E"):
+            raise ValidationError(
+                _("NCF %s has a invalid format. Please fix it and try again." % ncf)
+            )
+
+        get_param = self.env["ir.config_parameter"].sudo().get_param
+        payload = {"ncf": ncf, "rnc": rnc}
+
+        try:
+            response = requests.get(
+                get_param("ncf.api.url"),
+                payload,
+                headers={"x-access-token": get_param("ncf.api.token")},
+            )
+        except requests.exceptions.ConnectionError:
+            raise ValidationError(
+                _(
+                    "Could not establish communication with external service.\n"
+                    "Try again later."
+                )
+            )
+
+        if response.status_code == 403:
+            raise ValidationError(
+                _("Odoo couldn't authenticate with external service.")
+            )
+
+        response_text = (
+            str(response.text).replace("true", "True").replace("false", "False")
+        )
+        if safe_eval(response_text).get("valid", False):
+            return True
+
         return False
 
     def _is_internal_generated_ncf(self):
