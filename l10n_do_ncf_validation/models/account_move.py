@@ -57,24 +57,6 @@ class AccountMove(models.Model):
 
         return False
 
-    def _is_internal_generated_ncf(self):
-        """
-        Returns True if NCF is internally generated, otherwise False
-        """
-        self.ensure_one()
-        if self.type in (
-            "out_invoice",
-            "out_refund",
-        ) or self.l10n_latam_document_type_id.l10n_do_ncf_type in (
-            "minor",
-            "e-minor",
-            "informal",
-            "e-informal",
-        ):
-            return True
-
-        return False
-
     def post(self):
 
         l10n_do_fiscal_invoice = self.filtered(
@@ -88,12 +70,12 @@ class AccountMove(models.Model):
 
                 if (
                     ncf_validation_target == "internal"
-                    and not invoice._is_internal_generated_ncf()
+                    and not invoice.is_l10n_do_internal_sequence
                 ):
                     continue
                 elif (
                     ncf_validation_target == "external"
-                    and invoice._is_internal_generated_ncf()
+                    and invoice.is_l10n_do_internal_sequence
                 ):
                     continue
 
