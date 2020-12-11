@@ -15,11 +15,18 @@ class AccountMove(models.Model):
         """
         self.ensure_one()
 
-        rnc = self.partner_id.vat
-        if not rnc or not str(rnc).isdigit() or len(rnc) not in (9, 11):
-            raise ValidationError(
-                _("A valid RNC/Cédula is required to request a NCF validation.")
-            )
+        def check_rnc_format(vat):
+            if not vat or not str(vat).isdigit() or len(vat) not in (9, 11):
+                raise ValidationError(
+                    _("A valid RNC/Cédula is required to request a NCF validation.")
+                )
+
+        rnc = (
+            self.company_id.vat
+            if self.type not in ("in_invoice", "in_refund")
+            else self.partner_id.vat
+        )
+        check_rnc_format(rnc)
 
         ncf = self.ref
         if not ncf or not len(ncf) in (11, 13) or ncf[0] not in ("B", "E"):
@@ -29,6 +36,29 @@ class AccountMove(models.Model):
 
         get_param = self.env["ir.config_parameter"].sudo().get_param
         payload = {"ncf": ncf, "rnc": rnc}
+
+        if self.is_ecf_invoice:
+            l10n_do_ecf_security_code = self.l10n_do_ecf_security_code
+            if (
+                not str(l10n_do_ecf_security_code).strip()
+                or len(l10n_do_ecf_security_code) != 6
+            ):
+                raise ValidationError(
+                    _("ECF Security Code must be a 6 character length alphanumeric")
+                )
+            buyer_rnc = (
+                self.company_id.vat
+                if self.type in ("in_invoice", "in_refund")
+                else self.partner_id.vat
+            )
+            check_rnc_format(buyer_rnc)
+
+            payload.update(
+                {
+                    "buyerRNC": buyer_rnc,
+                    "securityCode": self.l10n_do_ecf_security_code,
+                }
+            )
 
         try:
             response = requests.get(
