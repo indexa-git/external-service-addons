@@ -60,7 +60,7 @@ class AccountMove(models.Model):
         copy=False,
     )
     l10n_do_ecf_security_code = fields.Char(
-        readonly=True,
+        states={"draft": [("readonly", False)]},
     )
     l10n_do_ecf_sign_date = fields.Datetime(
         readonly=True,
