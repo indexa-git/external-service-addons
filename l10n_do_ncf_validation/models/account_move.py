@@ -29,7 +29,7 @@ class AccountMove(models.Model):
         check_rnc_format(rnc)
 
         ncf = self.ref
-        if not ncf or not len(ncf) in (11, 13) or ncf[0] not in ("B", "E"):
+        if not ncf or len(ncf) not in (11, 13) or ncf[0] not in ("B", "E"):
             raise ValidationError(
                 _("NCF %s has a invalid format. Please fix it and try again." % ncf)
             )
