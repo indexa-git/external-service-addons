@@ -18,6 +18,13 @@
                         </div>
                         <field name="ncf_validation_target"/>
                     </div>
+                    <div class="o_setting_right_pane">
+                        <label for="validate_ecf"/>
+                        <div class="text-muted">
+                            Keep this option disabled until all issued ECF Printed Representation are standardized
+                        </div>
+                        <field name="validate_ecf"/>
+                    </div>
                 </div>
             </xpath>
         </field>
