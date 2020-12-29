@@ -37,7 +37,7 @@ class AccountMove(models.Model):
         get_param = self.env["ir.config_parameter"].sudo().get_param
         payload = {"ncf": ncf, "rnc": rnc}
 
-        if self.is_ecf_invoice:
+        if self.is_ecf_invoice and self.company_id.validate_ecf:
             l10n_do_ecf_security_code = self.l10n_do_ecf_security_code
             if (
                 not str(l10n_do_ecf_security_code).strip()

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-11 02:31+0000\n"
-"PO-Revision-Date: 2020-12-10 22:39-0400\n"
+"POT-Creation-Date: 2020-12-28 14:14+0000\n"
+"PO-Revision-Date: 2020-12-28 10:15-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -65,7 +65,8 @@ msgstr ""
 #: code:addons/l10n_do_ncf_validation/models/account_move.py:0
 #, python-format
 msgid "ECF Security Code must be a 6 character length alphanumeric"
-msgstr "El Código de Seguridad del ECF debe ser un alfanumérico de 6 caractéres"
+msgstr ""
+"El Código de Seguridad del ECF debe ser un alfanumérico de 6 caractéres"
 
 #. module: l10n_do_ncf_validation
 #: model:ir.model.fields.selection,name:l10n_do_ncf_validation.selection__res_company__ncf_validation_target__external
@@ -88,10 +89,21 @@ msgid "Journal Entries"
 msgstr "Asientos contables"
 
 #. module: l10n_do_ncf_validation
+#: model_terms:ir.ui.view,arch_db:l10n_do_ncf_validation.res_config_settings_view_form
+msgid ""
+"Keep this option disabled until all issued ECF Printed Representation are "
+"standardized"
+msgstr ""
+"Mantener esta opción deshabilitada hasta que todas las Representaciones "
+"Impresas de ECF emitidas estén estandarizadas"
+
+#. module: l10n_do_ncf_validation
 #: code:addons/l10n_do_ncf_validation/models/account_move.py:0
 #, python-format
 msgid "NCF %s has a invalid format. Please fix it and try again."
-msgstr "El formato del NCF %s es inválido. Por favor corríjalo y vuelva a intentarlo."
+msgstr ""
+"El formato del NCF %s es inválido. Por favor corríjalo y vuelva a "
+"intentarlo."
 
 #. module: l10n_do_ncf_validation
 #: model:ir.model.fields,field_description:l10n_do_ncf_validation.field_res_company__ncf_validation_target
@@ -109,6 +121,12 @@ msgstr "Ninguno"
 #, python-format
 msgid "Odoo couldn't authenticate with external service."
 msgstr "Odoo no pudo autenticarse con el servicio externo."
+
+#. module: l10n_do_ncf_validation
+#: model:ir.model.fields,field_description:l10n_do_ncf_validation.field_res_company__validate_ecf
+#: model:ir.model.fields,field_description:l10n_do_ncf_validation.field_res_config_settings__validate_ecf
+msgid "Validate Ecf"
+msgstr "Validar ECF"
 
 #. module: l10n_do_ncf_validation
 #: model_terms:ir.ui.view,arch_db:l10n_do_ncf_validation.res_config_settings_view_form
