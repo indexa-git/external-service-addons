@@ -10,7 +10,10 @@
                 <div class="col-12 col-lg-6 o_setting_box"
                      attrs="{'invisible': [('group_multi_currency', '=', False)]}">
                     <div class="o_setting_right_pane">
-                        <label for="id" string="Dominican Banks Rates"/>
+                        <label for="l10n_do_currency_provider" string="Dominican Banks Rates"/>
+                        <div class="text-muted">
+                            Record transactions in foreign currencies from Dominican Bank
+                        </div>
 
                         <div class="row mt16">
                             <label string="Bank" for="l10n_do_currency_provider" class="col-md-3 o_light_label"/>
