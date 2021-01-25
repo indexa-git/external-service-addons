@@ -10,4 +10,5 @@
         "data/ir_config_parameter_data.xml",
         "views/res_config_settings_views.xml",
     ],
+    'installable': False,
 }
