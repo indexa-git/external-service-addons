@@ -125,6 +125,7 @@ class ResPartner(models.Model):
             if partner_json and partner_json.get('data'):
                 data = dict(partner_json['data'][0])
                 result['name'] = data['business_name']
+                result['ref'] = data.get('tradename')
                 result['vat'] = number
                 if not result.get('phone') and data.get('phone'):
                     result['phone'] = data['phone']
@@ -165,6 +166,7 @@ class ResPartner(models.Model):
                 if 'name' in result:
                     new_vals['name'] = result.get('name')
                 new_vals['vat'] = result.get('vat')
+                new_vals['ref'] = result.get('ref')
                 new_vals['is_company'] = result.get('is_company', False)
                 new_vals['company_type'] = 'company' if new_vals['is_company'] else 'person'
                 if not vals.get('phone'):
