@@ -148,7 +148,7 @@ class ResPartner(models.Model):
                     dgii_vals = rnc.check_dgii(number)
                 except:
                     pass
-                if dgii_vals is None:
+                if not bool(dgii_vals):
                     result['vat'] = number
                 else:
                     result['name'] = dgii_vals.get('name', False)
