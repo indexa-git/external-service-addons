@@ -7,7 +7,7 @@
     'author': "Indexa",
     'website': "https://www.indexa.do",
     'category': 'Accounting',
-    'version': "13.0.1.0.0",
+    'version': "14.0.1.0.0",
     'depends': ['account'],
     'data': [
         'data/ir_cron_data.xml',
@@ -17,5 +17,5 @@
     'demo': [
         'demo/res_company_demo.xml',
     ],
-    'installable': False,
+    'installable': True,
 }
