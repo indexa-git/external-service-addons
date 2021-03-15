@@ -1,9 +1,10 @@
-
 from odoo import fields
-from odoo.tests.common import TransactionCase
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+from odoo.tests import tagged
 
 
-class GetCurrencyRatesTest(TransactionCase):
+@tagged("post_install", "-at_install")
+class GetCurrencyRatesTest(AccountTestInvoicingCommon):
 
     def test_001_get_currency_rates(self):
 
