@@ -48,7 +48,7 @@ jobs:
       - name: Check Flake8
         uses: TrueBrain/actions-flake8@master
         with:
-          ignore: E123,E133,E226,E241,E242,F811,F601,W503,W504,E203,F401
+          ignore: E123,E133,E226,E241,E242,F811,F601,W503,W504,E203,F401,E722
           max_line_length: 120
 
       - name: Download python addons script
