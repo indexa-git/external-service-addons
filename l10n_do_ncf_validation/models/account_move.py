@@ -87,7 +87,7 @@ class AccountMove(models.Model):
 
         return False
 
-    def _post(self):
+    def action_post(self):
 
         l10n_do_fiscal_invoice = self.filtered(
             lambda inv: inv.company_id.country_id == self.env.ref("base.do")
@@ -117,4 +117,4 @@ class AccountMove(models.Model):
                     )
                 )
 
-        return super(AccountMove, self)._post()
+        return super(AccountMove, self).action_post()
