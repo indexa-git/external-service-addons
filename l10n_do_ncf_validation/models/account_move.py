@@ -23,7 +23,7 @@ class AccountMove(models.Model):
 
         rnc = (
             self.company_id.vat
-            if self.type not in ("in_invoice", "in_refund")
+            if self.move_type not in ("in_invoice", "in_refund")
             else self.partner_id.vat
         )
         check_rnc_format(rnc)
@@ -48,7 +48,7 @@ class AccountMove(models.Model):
                 )
             buyer_rnc = (
                 self.company_id.vat
-                if self.type in ("in_invoice", "in_refund")
+                if self.move_type in ("in_invoice", "in_refund")
                 else self.partner_id.vat
             )
             check_rnc_format(buyer_rnc)
@@ -87,7 +87,7 @@ class AccountMove(models.Model):
 
         return False
 
-    def post(self):
+    def action_post(self):
 
         l10n_do_fiscal_invoice = self.filtered(
             lambda inv: inv.company_id.country_id == self.env.ref("base.do")
@@ -117,4 +117,4 @@ class AccountMove(models.Model):
                     )
                 )
 
-        return super(AccountMove, self).post()
+        return super(AccountMove, self).action_post()
