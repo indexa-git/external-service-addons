@@ -157,7 +157,7 @@ class ResPartner(models.Model):
             else:
                 try:
                     dgii_vals = rnc.check_dgii(number)
-                except:
+                except Exception:
                     pass
                 if not bool(dgii_vals):
                     result["vat"] = number
