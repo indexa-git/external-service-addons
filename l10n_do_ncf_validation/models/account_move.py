@@ -105,7 +105,7 @@ class AccountMove(models.Model):
                     continue
                 elif (
                     ncf_validation_target == "external"
-                    and invoice.is_l10n_do_internal_sequence
+                    and not invoice.l10n_latam_manual_document_number
                 ):
                     continue
 
