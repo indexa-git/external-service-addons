@@ -1,5 +1,5 @@
 import requests
-from odoo.tools import safe_eval
+from odoo.tools.safe_eval import safe_eval
 
 from odoo import models, _
 from odoo.exceptions import ValidationError
