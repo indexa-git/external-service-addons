@@ -55,12 +55,12 @@ jobs:
     - name: Download python addons script
       run: curl https://raw.githubusercontent.com/iterativo-git/dockerdoo/13.0/resources/getaddons.py -o getaddons.py
 
-    - name: l10n-dominicana
+    - name: Odoo Dominicana l10n-dominicana
       uses: actions/checkout@v2
       with:
         repository: odoo-dominicana/l10n-dominicana
         path: l10n-dominicana
-        ref: '13.0-imp-000-jl'
+        ref: '13.0'
 
     - name: Odoo Enterprise
       uses: actions/checkout@v2

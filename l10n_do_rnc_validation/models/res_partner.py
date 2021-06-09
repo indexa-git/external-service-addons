@@ -125,16 +125,18 @@ class ResPartner(models.Model):
             if partner_json and partner_json.get('data'):
                 data = dict(partner_json['data'][0])
                 result['name'] = data['business_name']
+                result['ref'] = data.get('tradename')
                 result['vat'] = number
                 if not result.get('phone') and data.get('phone'):
                     result['phone'] = data['phone']
                 if not result.get('street'):
                     address = ""
-                    if data.get('street'):
+                    if data.get('street') and not data.get('street').isspace():
                         address += data['street']
-                    if data.get('street_number'):
+                    if data.get('street_number') and not data.get(
+                            'street_number').isspace():
                         address += ", " + data['street_number']
-                    if data.get('sector'):
+                    if data.get('sector') and not data.get('sector').isspace():
                         address += ", " + data['sector']
                     result['street'] = address
 
@@ -146,14 +148,9 @@ class ResPartner(models.Model):
                     dgii_vals = rnc.check_dgii(number)
                 except:
                     pass
-                if dgii_vals is None:
-                    if is_rnc:
-                        self.sudo().message_post(
-                            subject=_("%s vat request" % self.name),
-                            body=_("External service could not find requested "
-                                   "contact data."))
+                if not bool(dgii_vals):
                     result['vat'] = number
-                elif dgii_vals:
+                else:
                     result['name'] = dgii_vals.get('name', False)
                     result['vat'] = dgii_vals.get('rnc')
                     if model == 'res.partner':
@@ -166,8 +163,10 @@ class ResPartner(models.Model):
             vat = vals["vat"] if vals.get('vat') else vals.get('name')
             result = self.with_context(model=self._name).validate_rnc_cedula(vat)
             if result is not None:
-                new_vals['name'] = result.get('name')
+                if 'name' in result:
+                    new_vals['name'] = result.get('name')
                 new_vals['vat'] = result.get('vat')
+                new_vals['ref'] = result.get('ref')
                 new_vals['is_company'] = result.get('is_company', False)
                 new_vals['company_type'] = 'company' if new_vals['is_company'] else 'person'
                 if not vals.get('phone'):

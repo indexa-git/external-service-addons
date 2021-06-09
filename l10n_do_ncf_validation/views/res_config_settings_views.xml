@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherited</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="l10n_do_accounting.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='l10n_do_title']" position="attributes">
+                <attribute name="attrs">{'invisible': False}</attribute>
+            </xpath>
+            <xpath expr="//div[@id='l10n_do_section']" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_right_pane">
+                        <label for="ncf_validation_target"/>
+                        <div class="text-muted">
+                            Which type of NCF will be validated
+                        </div>
+                        <field name="ncf_validation_target"/>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="validate_ecf"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="validate_ecf"/>
+                        <div class="text-muted">
+                            Keep this option disabled until all issued ECF Printed Representation are standardized
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
