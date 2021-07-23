@@ -7,7 +7,7 @@ from datetime import datetime as dt
 from collections import OrderedDict as od
 
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, RedirectWarning
 
 ECF_STATE_MAP = {
     "Aceptado": "delivered_accepted",
@@ -301,8 +301,12 @@ class AccountMove(models.Model):
             }
         )
 
-        if self.company_id.street:
-            issuer_data["DireccionEmisor"] = self.company_id.street
+        if not self.company_id.street or not len(str(self.company_id.street).strip()):
+            action = self.env.ref("base.action_res_company_form")
+            msg = _("Cannot send an ECF if company has no address.")
+            raise RedirectWarning(msg, action.id, _("Go to Companies"))
+
+        issuer_data["DireccionEmisor"] = self.company_id.street
 
         return issuer_data
 
