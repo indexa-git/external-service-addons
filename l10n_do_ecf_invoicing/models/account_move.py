@@ -491,9 +491,7 @@ class AccountMove(models.Model):
         if l10n_do_ncf_type not in ("43", "44") and total_taxed:
             totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
         else:
-            totals_data["MontoTotal"] = abs(
-                round(self.amount_untaxed_signed, 2)
-            )
+            totals_data["MontoTotal"] = abs(round(self.amount_untaxed_signed, 2))
 
         if l10n_do_ncf_type not in ("43", "44"):
             if tax_data["itbis_withholding_amount"]:
@@ -689,9 +687,11 @@ class AccountMove(models.Model):
             )
 
             price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
-            discount_amount = abs(
-                round(price_unit_wo_discount - line.price_subtotal, 2)
-            ) if line.discount else 0
+            discount_amount = (
+                abs(round(price_unit_wo_discount - line.price_subtotal, 2))
+                if line.discount
+                else 0
+            )
             if line.discount:
                 line_dict["TablaSubDescuento"] = {
                     "SubDescuento": [
@@ -851,8 +851,8 @@ class AccountMove(models.Model):
                         # is the one received from the external service
                         "FechaHoraFirma": fields.Datetime.context_timestamp(
                             self.with_context(tz=self.env.user.tz),
-                            fields.Datetime.now()
-                        ).strftime("%d-%m-%Y %H:%M:%S")
+                            fields.Datetime.now(),
+                        ).strftime("%d-%m-%Y %H:%M:%S"),
                     }
                 ),
             }
@@ -965,7 +965,8 @@ class AccountMove(models.Model):
                                         "security_code"
                                     ),
                                     "l10n_do_ecf_sign_date": strp_sign_datetime.replace(
-                                        hour=strp_sign_datetime.hour + 4
+                                        hour=strp_sign_datetime.hour
+                                        + 4
                                         # this is a shitty way to get an UTC datetime,
                                         # I know. I'll improve it later
                                         # TODO: improve this
