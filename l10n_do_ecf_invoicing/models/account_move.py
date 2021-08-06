@@ -232,7 +232,7 @@ class AccountMove(models.Model):
             {
                 "TipoeCF": self.get_l10n_do_ncf_type(),
                 "eNCF": self.ref,
-                "FechaVencimientoSecuencia": "31-12-2021",  # TODO: get this from ncf_expiration_date
+                "FechaVencimientoSecuencia": self.ncf_expiration_date,
             }
         )
 
