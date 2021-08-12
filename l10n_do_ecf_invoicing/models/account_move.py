@@ -1081,6 +1081,26 @@ class AccountMove(models.Model):
 
         return True
 
+    @api.depends(
+        "line_ids.debit",
+        "line_ids.credit",
+        "line_ids.currency_id",
+        "line_ids.amount_currency",
+        "line_ids.amount_residual",
+        "line_ids.amount_residual_currency",
+        "line_ids.payment_id.state",
+        "l10n_do_ecf_send_state",
+    )
+    def _compute_amount(self):
+        super(AccountMove, self)._compute_amount()
+        fiscal_invoices = self.filtered(
+            lambda i: i.is_ecf_invoice
+            and i.l10n_do_ecf_send_state
+            not in ("delivered_accepted", "delivered_pending")
+            and i.invoice_payment_state != "not_paid"
+        )
+        fiscal_invoices.send_ecf_data()
+
     def post(self):
 
         res = super(AccountMove, self).post()
