@@ -648,7 +648,12 @@ class AccountMove(models.Model):
 
         lines_data = []
 
-        for i, line in enumerate(self.invoice_line_ids.sorted("sequence"), 1):
+        for i, line in enumerate(
+            self.invoice_line_ids.filtered(lambda l: not l.display_type).sorted(
+                "sequence"
+            ),
+            1,
+        ):
 
             rate = 1
             if "OtraMoneda" in ecf_object_data["ECF"]["Encabezado"]:
