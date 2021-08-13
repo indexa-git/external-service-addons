@@ -10,3 +10,6 @@ class ResCompany(models.Model):
         required=True,
         default="TesteCF",
     )
+    l10n_do_send_ecf_on_payment = fields.Boolean(
+        "Send ECF On Payment",
+    )

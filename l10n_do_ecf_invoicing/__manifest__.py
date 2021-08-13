@@ -14,7 +14,7 @@
     "data": [
         # 'security/ir.model.access.csv',
         "views/account_views.xml",
-        "views/res_company_views.xml",
+        "views/res_config_settings_views.xml",
         "data/ir_config_parameter_data.xml",
         "data/ir_cron_data.xml",
     ],

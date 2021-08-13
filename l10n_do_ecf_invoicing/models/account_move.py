@@ -1074,7 +1074,7 @@ class AccountMove(models.Model):
 
         # Invoices which will receive immediate full or partial payment based on
         # payment terms won't be sent until payment is applied.
-        if (
+        if self.company_id.l10n_do_send_ecf_on_payment and (
             not self.invoice_payment_term_id
             or self.invoice_payment_term_id
             == self.env.ref("account.account_payment_term_immediate")
