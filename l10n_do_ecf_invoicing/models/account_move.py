@@ -1065,6 +1065,7 @@ class AccountMove(models.Model):
             [
                 ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
                 ("l10n_do_ecf_send_state", "=", "contingency"),
+                ("is_l10n_do_internal_sequence", "=", True),
             ]
         )
         contingency_invoices.send_ecf_data()
@@ -1099,7 +1100,8 @@ class AccountMove(models.Model):
     def _compute_amount(self):
         super(AccountMove, self)._compute_amount()
         fiscal_invoices = self.filtered(
-            lambda i: i.is_ecf_invoice
+            lambda i: i.is_l10n_do_internal_sequence
+            and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
             not in ("delivered_accepted", "delivered_pending")
             and i.invoice_payment_state != "not_paid"
@@ -1111,7 +1113,8 @@ class AccountMove(models.Model):
         res = super(AccountMove, self).post()
 
         fiscal_invoices = self.filtered(
-            lambda i: i.is_ecf_invoice
+            lambda i: i.is_l10n_do_internal_sequence
+            and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
             not in ("delivered_accepted", "delivered_pending")
             and i._do_immediate_send()
