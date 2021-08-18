@@ -444,6 +444,7 @@ class AccountMove(models.Model):
         totals_data = od({})
         tax_data = self.get_taxed_amount_data()
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
+        is_company_currency = self.is_company_currency()
 
         total_taxed = sum(
             [
@@ -493,7 +494,7 @@ class AccountMove(models.Model):
         if l10n_do_ncf_type not in ("43", "44") and total_taxed:
             totals_data["MontoTotal"] = abs(round(total_taxed + total_itbis, 2))
         else:
-            totals_data["MontoTotal"] = abs(round(self.amount_untaxed_signed, 2))
+            totals_data["MontoTotal"] = abs(round(self.amount_untaxed, 2))
 
         if l10n_do_ncf_type not in ("43", "44"):
             if tax_data["itbis_withholding_amount"]:
@@ -504,6 +505,12 @@ class AccountMove(models.Model):
                 totals_data["TotalISRRetencion"] = abs(
                     round(tax_data["isr_withholding_amount"], 2)
                 )
+
+        if not is_company_currency:
+            rate = abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
+            totals_data = od(
+                {f: round(float(v) * rate, 2) for f, v in totals_data.items()}
+            )
 
         return totals_data
 
