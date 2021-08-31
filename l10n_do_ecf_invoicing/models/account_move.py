@@ -1003,6 +1003,9 @@ class AccountMove(models.Model):
                     # invoice.l10n_do_ecf_send_state = "service_unreachable"
                     invoice._show_service_unreachable_message()
 
+            except requests.exceptions.MissingSchema:
+                raise ValidationError(_("Wrong external service URL"))
+
             except requests.exceptions.ConnectionError:
                 # Odoo could not send the request
                 invoice.l10n_do_ecf_send_state = "not_sent"
