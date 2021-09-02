@@ -509,7 +509,7 @@ class AccountMove(models.Model):
         if not is_company_currency:
             rate = abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
             totals_data = od(
-                {f: round(float(v) * rate, 2) for f, v in totals_data.items()}
+                {f: round(v * rate, 2) if not isinstance(v, str) else v for f, v in totals_data.items()}
             )
 
         return totals_data
