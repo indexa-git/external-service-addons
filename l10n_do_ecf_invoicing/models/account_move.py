@@ -525,8 +525,6 @@ class AccountMove(models.Model):
             round(1 / (self.amount_total / self.amount_total_signed), 2)
         )
 
-        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
-
         rate = currency_data["TipoCambio"]
 
         if l10n_do_ncf_type not in ("43", "44", "47"):
@@ -537,20 +535,10 @@ class AccountMove(models.Model):
                     / rate,
                     2,
                 )
-                currency_data["TotalITBISOtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS"]
-                    / rate,
-                    2,
-                )
 
             if "MontoGravadoI1" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
                 currency_data["MontoGravado1OtraMoneda"] = round(
                     ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoGravadoI1"]
-                    / rate,
-                    2,
-                )
-                currency_data["TotalITBIS1OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"]
                     / rate,
                     2,
                 )
@@ -561,20 +549,10 @@ class AccountMove(models.Model):
                     / rate,
                     2,
                 )
-                currency_data["TotalITBIS2OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"]
-                    / rate,
-                    2,
-                )
 
             if "MontoGravadoI3" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
                 currency_data["MontoGravado3OtraMoneda"] = round(
                     ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoGravadoI3"]
-                    / rate,
-                    2,
-                )
-                currency_data["TotalITBIS3OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"]
                     / rate,
                     2,
                 )
@@ -585,6 +563,29 @@ class AccountMove(models.Model):
             currency_data["MontoExentoOtraMoneda"] = round(
                 ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoExento"] / rate, 2
             )
+
+        if "MontoGravadoTotal" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBISOtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS"] / rate,
+                2,
+            )
+        if "MontoGravadoI1" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS1OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"] / rate,
+                2,
+            )
+        if "MontoGravadoI2" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS2OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"] / rate,
+                2,
+            )
+        if "MontoGravadoI3" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS3OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"] / rate,
+                2,
+            )
+
+        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
 
         return currency_data
 
