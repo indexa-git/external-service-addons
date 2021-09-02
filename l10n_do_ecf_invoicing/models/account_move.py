@@ -509,7 +509,10 @@ class AccountMove(models.Model):
         if not is_company_currency:
             rate = abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
             totals_data = od(
-                {f: round(v * rate, 2) if not isinstance(v, str) else v for f, v in totals_data.items()}
+                {
+                    f: round(v * rate, 2) if not isinstance(v, str) else v
+                    for f, v in totals_data.items()
+                }
             )
 
         return totals_data
@@ -525,8 +528,6 @@ class AccountMove(models.Model):
             round(1 / (self.amount_total / self.amount_total_signed), 2)
         )
 
-        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
-
         rate = currency_data["TipoCambio"]
 
         if l10n_do_ncf_type not in ("43", "44", "47"):
@@ -537,20 +538,10 @@ class AccountMove(models.Model):
                     / rate,
                     2,
                 )
-                currency_data["TotalITBISOtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS"]
-                    / rate,
-                    2,
-                )
 
             if "MontoGravadoI1" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
                 currency_data["MontoGravado1OtraMoneda"] = round(
                     ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoGravadoI1"]
-                    / rate,
-                    2,
-                )
-                currency_data["TotalITBIS1OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"]
                     / rate,
                     2,
                 )
@@ -561,20 +552,10 @@ class AccountMove(models.Model):
                     / rate,
                     2,
                 )
-                currency_data["TotalITBIS2OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"]
-                    / rate,
-                    2,
-                )
 
             if "MontoGravadoI3" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
                 currency_data["MontoGravado3OtraMoneda"] = round(
                     ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoGravadoI3"]
-                    / rate,
-                    2,
-                )
-                currency_data["TotalITBIS3OtraMoneda"] = round(
-                    ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"]
                     / rate,
                     2,
                 )
@@ -585,6 +566,29 @@ class AccountMove(models.Model):
             currency_data["MontoExentoOtraMoneda"] = round(
                 ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoExento"] / rate, 2
             )
+
+        if "MontoGravadoTotal" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBISOtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS"] / rate,
+                2,
+            )
+        if "MontoGravadoI1" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS1OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS1"] / rate,
+                2,
+            )
+        if "MontoGravadoI2" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS2OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS2"] / rate,
+                2,
+            )
+        if "MontoGravadoI3" in ecf_object_data["ECF"]["Encabezado"]["Totales"]:
+            currency_data["TotalITBIS3OtraMoneda"] = round(
+                ecf_object_data["ECF"]["Encabezado"]["Totales"]["TotalITBIS3"] / rate,
+                2,
+            )
+
+        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
 
         return currency_data
 
@@ -978,7 +982,7 @@ class AccountMove(models.Model):
                                     "l10n_do_ecf_security_code": vals.get(
                                         "security_code"
                                     ),
-                                    "l10n_do_ecf_sign_date": strp_sign_datetime
+                                    "l10n_do_ecf_sign_date": strp_sign_datetime,
                                 }
                             )
 
@@ -992,10 +996,10 @@ class AccountMove(models.Model):
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
                         invoice._show_service_unreachable_message()
 
-                elif response.status_code == 402:  # DGII is fucked up
+                elif response.status_code == 503:  # DGII is fucked up
                     invoice.l10n_do_ecf_send_state = "contingency"
 
-                elif response.status_code == 403:  # XSD validation failed
+                elif response.status_code == 400:  # XSD validation failed
                     self.log_error_message(response.text, ecf_data)
                     invoice.l10n_do_ecf_send_state = "invalid"
 
