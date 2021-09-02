@@ -992,10 +992,10 @@ class AccountMove(models.Model):
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
                         invoice._show_service_unreachable_message()
 
-                elif response.status_code == 402:  # DGII is fucked up
+                elif response.status_code == 503:  # DGII is fucked up
                     invoice.l10n_do_ecf_send_state = "contingency"
 
-                elif response.status_code == 403:  # XSD validation failed
+                elif response.status_code == 400:  # XSD validation failed
                     self.log_error_message(response.text, ecf_data)
                     invoice.l10n_do_ecf_send_state = "invalid"
 
