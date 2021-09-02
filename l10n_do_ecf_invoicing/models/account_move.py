@@ -509,7 +509,10 @@ class AccountMove(models.Model):
         if not is_company_currency:
             rate = abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
             totals_data = od(
-                {f: round(v * rate, 2) if not isinstance(v, str) else v for f, v in totals_data.items()}
+                {
+                    f: round(v * rate, 2) if not isinstance(v, str) else v
+                    for f, v in totals_data.items()
+                }
             )
 
         return totals_data
@@ -979,7 +982,7 @@ class AccountMove(models.Model):
                                     "l10n_do_ecf_security_code": vals.get(
                                         "security_code"
                                     ),
-                                    "l10n_do_ecf_sign_date": strp_sign_datetime
+                                    "l10n_do_ecf_sign_date": strp_sign_datetime,
                                 }
                             )
 
