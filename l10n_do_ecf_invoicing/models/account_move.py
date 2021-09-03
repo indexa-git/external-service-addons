@@ -1000,8 +1000,11 @@ class AccountMove(models.Model):
                     invoice.l10n_do_ecf_send_state = "contingency"
 
                 elif response.status_code == 400:  # XSD validation failed
-                    self.log_error_message(response.text, ecf_data)
-                    invoice.l10n_do_ecf_send_state = "invalid"
+                    msg_body = _("External Service XSD Validation Error:\n\n")
+                    error_message = ast.literal_eval(response.text)
+                    for msg in list(error_message.get("messages") or []):
+                        msg_body += "%s\n" % msg
+                    raise ValidationError(msg_body)
 
                 else:  # anything else will be treated as a communication issue
                     # invoice.l10n_do_ecf_send_state = "service_unreachable"
