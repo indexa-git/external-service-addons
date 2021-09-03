@@ -125,7 +125,9 @@ class AccountMove(models.Model):
         self.ensure_one()
         # TODO: evaluate payment type 3 <Gratuito> Check DGII docs
         if not self.invoice_payment_term_id and self.invoice_date_due:
-            if self.invoice_date_due > self.invoice_date:
+            if (
+                self.invoice_date_due and self.invoice_date
+            ) and self.invoice_date_due > self.invoice_date:
                 return 2
             else:
                 return 1
@@ -1000,8 +1002,11 @@ class AccountMove(models.Model):
                     invoice.l10n_do_ecf_send_state = "contingency"
 
                 elif response.status_code == 400:  # XSD validation failed
-                    self.log_error_message(response.text, ecf_data)
-                    invoice.l10n_do_ecf_send_state = "invalid"
+                    msg_body = _("External Service XSD Validation Error:\n\n")
+                    error_message = ast.literal_eval(response.text)
+                    for msg in list(error_message.get("messages") or []):
+                        msg_body += "%s\n" % msg
+                    raise ValidationError(msg_body)
 
                 else:  # anything else will be treated as a communication issue
                     # invoice.l10n_do_ecf_send_state = "service_unreachable"
