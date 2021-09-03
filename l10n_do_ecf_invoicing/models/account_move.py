@@ -125,7 +125,9 @@ class AccountMove(models.Model):
         self.ensure_one()
         # TODO: evaluate payment type 3 <Gratuito> Check DGII docs
         if not self.invoice_payment_term_id and self.invoice_date_due:
-            if self.invoice_date_due > self.invoice_date:
+            if (
+                self.invoice_date_due and self.invoice_date
+            ) and self.invoice_date_due > self.invoice_date:
                 return 2
             else:
                 return 1
