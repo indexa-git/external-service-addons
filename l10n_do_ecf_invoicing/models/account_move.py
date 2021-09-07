@@ -951,7 +951,7 @@ class AccountMove(models.Model):
             api_url = self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
             try:
                 response = requests.post(
-                    "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
+                    "%s?env=%s" % (api_url, invoice.company_id.l10n_do_ecf_service_env),
                     json=ecf_data,
                 )
 
@@ -989,7 +989,7 @@ class AccountMove(models.Model):
                             )
 
                         if status in ("AceptadoCondicional", "Rechazado"):
-                            self.log_error_message(response_text, ecf_data)
+                            invoice.log_error_message(response_text, ecf_data)
 
                         invoice_vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
                         invoice.write(invoice_vals)
@@ -1034,7 +1034,10 @@ class AccountMove(models.Model):
             )
 
             try:
-                response = requests.post(api_url, json={"trackId": trackid})
+                response = requests.post(
+                    "%s?env=%s" % (api_url, invoice.company_id.l10n_do_ecf_service_env),
+                    json={"trackId": trackid},
+                )
                 response_text = str(response.text).replace("null", "None")
 
                 try:
@@ -1133,5 +1136,6 @@ class AccountMove(models.Model):
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
+        fiscal_invoices._compute_l10n_do_electronic_stamp()
 
         return res
