@@ -1003,7 +1003,8 @@ class AccountMove(models.Model):
 
                 elif response.status_code == 400:  # XSD validation failed
                     msg_body = _("External Service XSD Validation Error:\n\n")
-                    error_message = ast.literal_eval(response.text)
+                    response_text = str(response.text).replace("null", "None")
+                    error_message = ast.literal_eval(response_text)
                     for msg in list(error_message.get("messages") or []):
                         msg_body += "%s\n" % msg
                     raise ValidationError(msg_body)
