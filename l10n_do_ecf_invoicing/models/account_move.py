@@ -902,22 +902,26 @@ class AccountMove(models.Model):
 
         return ecf_object_data
 
-    def log_error_message(self, body, sent_data):
+    def log_error_message(self, body, sent_data=""):
+        self.ensure_one()
 
         msg_body = "<ul>"
         try:
             error_message = ast.literal_eval(body)
             for msg in list(error_message.get("messages") or []):
-                msg_body += "<li>%s</li>" % msg
+                msg_body += "<li>%s</li>" % msg.get("valor")
         except SyntaxError:
             msg_body += "<li>%s</li>" % body
 
         msg_body += "</ul>"
-        msg_body += "<p>%s</p>" % sent_data
 
-        # When on a production environment, DGII error messages are logged in
-        # mail.message, otherwise, directly posted on invoice chatter
-        if self.company_id.l10n_do_ecf_service_env == "eCF":
+        if self.l10n_do_ecf_send_state == "delivered_refused":
+            refused_msg = _("DGII has rejected this ECF. Details:\n")
+            refused_msg += msg_body
+            self.message_post(body=refused_msg)
+
+        else:
+            msg_body += "<p>%s</p>" % sent_data
             self.env["mail.message"].sudo().create(
                 {
                     "record_name": self.ref,
@@ -925,8 +929,6 @@ class AccountMove(models.Model):
                     "body": msg_body,
                 }
             )
-        else:
-            self.message_post(body=msg_body)
 
     def _show_service_unreachable_message(self):
         msg = _(
@@ -988,11 +990,12 @@ class AccountMove(models.Model):
                                 }
                             )
 
-                        if status in ("AceptadoCondicional", "Rechazado"):
-                            invoice.log_error_message(response_text, ecf_data)
-
                         invoice_vals["l10n_do_ecf_send_state"] = ECF_STATE_MAP[status]
                         invoice.write(invoice_vals)
+
+                        if status in ("AceptadoCondicional", "Rechazado"):
+                            invoice.log_error_message(response_text, ecf_data)
+                            invoice.button_cancel()
 
                     else:
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
@@ -1046,6 +1049,9 @@ class AccountMove(models.Model):
                     status = vals.get("estado", "EnProceso").replace(" ", "")
                     if status in ECF_STATE_MAP:
                         invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
+                        if invoice.l10n_do_ecf_send_state == "delivered_refused":
+                            invoice.log_error_message(response_text)
+                            invoice.button_cancel()
                     else:
                         continue
 
