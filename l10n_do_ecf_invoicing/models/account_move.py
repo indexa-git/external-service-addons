@@ -327,7 +327,7 @@ class AccountMove(models.Model):
             if l10n_do_ncf_type in ("31", "41", "45"):
                 buyer_data["RNCComprador"] = partner_vat
 
-            if l10n_do_ncf_type == "32" or partner_vat:
+            if l10n_do_ncf_type == "32" and partner_vat:
                 buyer_data["RNCComprador"] = partner_vat
 
             if l10n_do_ncf_type in ("33", "34"):
