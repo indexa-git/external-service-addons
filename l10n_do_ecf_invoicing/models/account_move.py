@@ -954,7 +954,7 @@ class AccountMove(models.Model):
             try:
                 response = requests.post(
                     "%s?env=%s" % (api_url, invoice.company_id.l10n_do_ecf_service_env),
-                    json=ecf_data,
+                    files={"data": json.dumps(ecf_data)},
                 )
 
                 if response.status_code == 200:
