@@ -1099,12 +1099,18 @@ class AccountMove(models.Model):
 
         # Invoices which will receive immediate full or partial payment based on
         # payment terms won't be sent until payment is applied.
-        if self.company_id.l10n_do_send_ecf_on_payment and (
-            not self.invoice_payment_term_id
-            or self.invoice_payment_term_id
-            == self.env.ref("account.account_payment_term_immediate")
-            or self.invoice_payment_term_id.line_ids.filtered(
-                lambda line: not line.days
+        # Note: E41 invoices will be never sent on post. These are sent on payment
+        # because this type of ECF must have withholding data included.
+        if (
+            self.get_l10n_do_ncf_type() == "41"
+            or self.company_id.l10n_do_send_ecf_on_payment
+            and (
+                not self.invoice_payment_term_id
+                or self.invoice_payment_term_id
+                == self.env.ref("account.account_payment_term_immediate")
+                or self.invoice_payment_term_id.line_ids.filtered(
+                    lambda line: not line.days
+                )
             )
         ):
             return False
