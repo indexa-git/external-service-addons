@@ -334,6 +334,7 @@ class AccountMove(models.Model):
                 if (
                     self.debit_origin_id
                     and self.debit_origin_id.amount_total_signed >= 250000
+                    or self.type == "out_refund"
                 ):
                     if is_l10n_do_partner:
                         buyer_data["RNCComprador"] = partner_vat
