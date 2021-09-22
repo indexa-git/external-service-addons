@@ -18,9 +18,7 @@
                     <div class="o_setting_right_pane">
                         <label for="l10n_do_ecf_service_env"/>
                         <div class="text-muted">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                            sed do eiusmod tempor incididunt ut labore et dolore magna
-                            aliqua.
+                            DGII environment on which ECF invoices are going to be sent
                         </div>
                     </div>
                     <div class="o_setting_right_pane">
@@ -37,7 +35,8 @@
                         <label for="l10n_do_send_ecf_on_payment"/>
                         <div class="text-muted">
                             Whether or not an invoice ECF will wait for a payment to be
-                            sent
+                            sent. This options doesn't apply on E41 invoices; these will
+                            be always sent on payment.
                         </div>
                     </div>
                 </div>
