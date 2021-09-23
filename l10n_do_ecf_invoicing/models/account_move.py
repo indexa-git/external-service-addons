@@ -1140,6 +1140,35 @@ class AccountMove(models.Model):
         )
         fiscal_invoices.send_ecf_data()
 
+    def l10n_do_ecf_unreconcile_payments(self):
+        self.ensure_one()
+        for payment_info in self._get_reconciled_info_JSON_values():
+            move_lines = self.env["account.move.line"]
+            if payment_info["account_payment_id"]:
+                move_lines += (
+                    self.env["account.payment"]
+                    .browse(payment_info["account_payment_id"])
+                    .move_line_ids
+                )
+            else:
+                move_lines += (
+                    self.env["account.move"].browse(payment_info["payment_id"]).line_ids
+                )
+            move_lines.with_context(move_id=self.id).remove_move_reconcile()
+            self._compute_amount()  # recompute invoice_payment_state
+
+    def button_cancel(self):
+
+        # Because ECF's are automatically cancelled when DGII refuse them,
+        # undo payments reconcile before cancelling
+        for inv in self.filtered(
+            lambda i: i.is_ecf_invoice
+            and i.l10n_do_ecf_send_state == "delivered_refused"
+        ):
+            inv.l10n_do_ecf_unreconcile_payments()
+
+        return super(AccountMove, self).button_cancel()
+
     def post(self):
 
         res = super(AccountMove, self).post()
