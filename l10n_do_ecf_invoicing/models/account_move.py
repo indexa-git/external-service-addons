@@ -81,12 +81,14 @@ class AccountMove(models.Model):
         )._compute_l10n_do_electronic_stamp()
 
     def _compute_l10n_do_ecf_expecting_payment(self):
-        for invoice in self:
+        invoices = self.filtered(lambda i: i.type != "entry")
+        for invoice in invoices:
             invoice.l10n_do_ecf_expecting_payment = bool(
                 not invoice._do_immediate_send()
                 and invoice.l10n_do_ecf_send_state == "to_send"
                 and invoice.state != "draft"
             )
+        (self - invoices).l10n_do_ecf_expecting_payment = False
 
     def is_l10n_do_partner(self):
         return self.partner_id.country_id and self.partner_id.country_id.code == "DO"
