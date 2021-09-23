@@ -81,12 +81,14 @@ class AccountMove(models.Model):
         )._compute_l10n_do_electronic_stamp()
 
     def _compute_l10n_do_ecf_expecting_payment(self):
-        for invoice in self:
+        invoices = self.filtered(lambda i: i.type != "entry")
+        for invoice in invoices:
             invoice.l10n_do_ecf_expecting_payment = bool(
                 not invoice._do_immediate_send()
                 and invoice.l10n_do_ecf_send_state == "to_send"
                 and invoice.state != "draft"
             )
+        (self - invoices).l10n_do_ecf_expecting_payment = False
 
     def is_l10n_do_partner(self):
         return self.partner_id.country_id and self.partner_id.country_id.code == "DO"
@@ -1099,12 +1101,18 @@ class AccountMove(models.Model):
 
         # Invoices which will receive immediate full or partial payment based on
         # payment terms won't be sent until payment is applied.
-        if self.company_id.l10n_do_send_ecf_on_payment and (
-            not self.invoice_payment_term_id
-            or self.invoice_payment_term_id
-            == self.env.ref("account.account_payment_term_immediate")
-            or self.invoice_payment_term_id.line_ids.filtered(
-                lambda line: not line.days
+        # Note: E41 invoices will be never sent on post. These are sent on payment
+        # because this type of ECF must have withholding data included.
+        if (
+            self.get_l10n_do_ncf_type() == "41"
+            or self.company_id.l10n_do_send_ecf_on_payment
+            and (
+                not self.invoice_payment_term_id
+                or self.invoice_payment_term_id
+                == self.env.ref("account.account_payment_term_immediate")
+                or self.invoice_payment_term_id.line_ids.filtered(
+                    lambda line: not line.days
+                )
             )
         ):
             return False
@@ -1131,6 +1139,35 @@ class AccountMove(models.Model):
             and i.invoice_payment_state != "not_paid"
         )
         fiscal_invoices.send_ecf_data()
+
+    def l10n_do_ecf_unreconcile_payments(self):
+        self.ensure_one()
+        for payment_info in self._get_reconciled_info_JSON_values():
+            move_lines = self.env["account.move.line"]
+            if payment_info["account_payment_id"]:
+                move_lines += (
+                    self.env["account.payment"]
+                    .browse(payment_info["account_payment_id"])
+                    .move_line_ids
+                )
+            else:
+                move_lines += (
+                    self.env["account.move"].browse(payment_info["payment_id"]).line_ids
+                )
+            move_lines.with_context(move_id=self.id).remove_move_reconcile()
+            self._compute_amount()  # recompute invoice_payment_state
+
+    def button_cancel(self):
+
+        # Because ECF's are automatically cancelled when DGII refuse them,
+        # undo payments reconcile before cancelling
+        for inv in self.filtered(
+            lambda i: i.is_ecf_invoice
+            and i.l10n_do_ecf_send_state == "delivered_refused"
+        ):
+            inv.l10n_do_ecf_unreconcile_payments()
+
+        return super(AccountMove, self).button_cancel()
 
     def post(self):
 
