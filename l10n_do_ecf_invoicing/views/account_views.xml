@@ -9,19 +9,6 @@
             <field name="restrict_mode_hash_table" position="after">
                 <field name="l10n_do_ecf_expecting_payment" invisible="1"/>
             </field>
-            <xpath expr="//header" position="inside">
-                <button name="send_ecf_data"
-                        string="Resend e-CF"
-                        type="object"
-                        icon="fa-refresh"
-                        groups="account.group_account_invoice"
-                        attrs="{'invisible' : [
-                        '|', '|',
-                        ('is_ecf_invoice', '=', False),
-                        ('l10n_do_ecf_send_state', 'not in', ('delivered_accepted', 'contingency')),
-                        ('state', '=', 'draft'),
-                        ]}"/>
-            </xpath>
             <xpath expr="//field[@name='currency_id']" position="after">
                 <label for="l10n_do_ecf_send_state" invisible="1"/>
                 <div class="o_row" col="4">
