@@ -46,16 +46,6 @@
                     ECF refected by DGII
                 </h4>
             </xpath>
-            <xpath expr="//button[@name='button_draft']" position="attributes">
-                <attribute name="attrs">{
-                    'invisible' : ['|', '|',
-                    ('restrict_mode_hash_table', '=', True),
-                    ('state', 'not in', ('posted', 'cancel')),
-                    '&amp;',
-                    ('is_ecf_invoice', '=', True),
-                    ('is_l10n_do_internal_sequence', '=', True)
-                ]}</attribute>
-            </xpath>
         </field>
     </record>
 
