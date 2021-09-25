@@ -7,7 +7,7 @@ from datetime import datetime as dt
 from collections import OrderedDict as od
 
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError, RedirectWarning
+from odoo.exceptions import ValidationError, RedirectWarning, UserError
 
 ECF_STATE_MAP = {
     "Aceptado": "delivered_accepted",
@@ -998,7 +998,7 @@ class AccountMove(models.Model):
 
                         if status in ("AceptadoCondicional", "Rechazado"):
                             invoice.log_error_message(response_text, ecf_data)
-                            invoice.button_cancel()
+                            invoice.with_context(cancelled_by_dgii=True).button_cancel()
 
                     else:
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
@@ -1054,7 +1054,7 @@ class AccountMove(models.Model):
                         invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
                         if invoice.l10n_do_ecf_send_state == "delivered_refused":
                             invoice.log_error_message(response_text)
-                            invoice.button_cancel()
+                            invoice.with_context(cancelled_by_dgii=True).button_cancel()
                     else:
                         continue
 
@@ -1159,15 +1159,29 @@ class AccountMove(models.Model):
 
     def button_cancel(self):
 
-        # Because ECF's are automatically cancelled when DGII refuse them,
-        # undo payments reconcile before cancelling
         for inv in self.filtered(
-            lambda i: i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state == "delivered_refused"
+            lambda i: i.is_ecf_invoice and i.is_l10n_do_internal_sequence
         ):
-            inv.l10n_do_ecf_unreconcile_payments()
+            if not self._context.get("cancelled_by_dgii", False):
+                raise UserError(_("Error. Only DGII can cancel an Electronic Invoice"))
+
+            if inv.l10n_do_ecf_send_state == "delivered_refused":
+                # Because ECF's are automatically cancelled when DGII refuse them,
+                # undo payments reconcile before cancelling
+                inv.l10n_do_ecf_unreconcile_payments()
 
         return super(AccountMove, self).button_cancel()
+
+    def button_draft(self):
+        if self.filtered(
+            lambda i: i.is_ecf_invoice
+            and i.is_l10n_do_internal_sequence
+            and i.l10n_do_ecf_send_state not in ("not_sent", "to_send")
+        ) and not self._context.get("cancelled_by_dgii", False):
+            raise UserError(
+                _("Error. A sent Electronic Invoice cannot be set to Draft")
+            )
+        return super(AccountMove, self).button_draft()
 
     def post(self):
 
