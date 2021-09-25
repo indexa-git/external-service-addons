@@ -81,7 +81,7 @@ class AccountMove(models.Model):
         )._compute_l10n_do_electronic_stamp()
 
     def _compute_l10n_do_ecf_expecting_payment(self):
-        invoices = self.filtered(lambda i: i.type != "entry")
+        invoices = self.filtered(lambda i: i.type != "entry" and i.is_ecf_invoice)
         for invoice in invoices:
             invoice.l10n_do_ecf_expecting_payment = bool(
                 not invoice._do_immediate_send()
