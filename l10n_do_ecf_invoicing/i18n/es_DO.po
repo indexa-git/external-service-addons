@@ -1,0 +1,274 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_do_ecf_invoicing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-09-28 20:01+0000\n"
+"PO-Revision-Date: 2021-09-28 16:02-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: es_DO\n"
+"X-Generator: Poedit 3.0\n"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Cannot send an ECF if company has no address."
+msgstr "No puede enviar un ECF si la compañía no tiene dirección."
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields.selection,name:l10n_do_ecf_invoicing.selection__res_company__l10n_do_ecf_service_env__certecf
+msgid "Certification"
+msgstr "Certificación"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model,name:l10n_do_ecf_invoicing.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Conditionally Accepted"
+msgstr "Aceptado Condicional"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model,name:l10n_do_ecf_invoicing.model_res_config_settings
+msgid "Config Settings"
+msgstr "Opciones de Configuración"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Contingency"
+msgstr "Contingencia"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Could not found origin document."
+msgstr "No se pudo encontrar el documento origen."
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Could not send the e-CF"
+msgstr "No se pudo enviar el e-CF"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_country_code
+msgid "Country Code"
+msgstr "Código País"
+
+#. module: l10n_do_ecf_invoicing
+#: model_terms:ir.ui.view,arch_db:l10n_do_ecf_invoicing.res_config_settings_view_form
+msgid "DGII environment on which ECF invoices are going to be sent"
+msgstr "Ambiente de la DGII al cual se enviarán las facturas"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "DGII has %s this ECF. Details:\n"
+msgstr "La DGII ha %s este ECF. Detalles:\n"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Delivered and accepted"
+msgstr "Entregado y aceptado"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Delivered and pending"
+msgstr "Entregado y pendiente"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Delivered and refused"
+msgstr "Entregado y rechazado"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid ""
+"ECF %s can not be sent due External Service communication issue. Try again "
+"in while or enable company contingency status"
+msgstr ""
+"El ECF %s no pudo ser enviado debido a problemas de comunicación con el "
+"Servicio Externo. Inténtelo más tarde o active el estado de Contingencia de "
+"la compañía"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_company__l10n_do_ecf_service_env
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_ecf_service_env
+msgid "ECF Service Environment"
+msgstr "Ambiente del servicio de ECF"
+
+#. module: l10n_do_ecf_invoicing
+#: model_terms:ir.ui.view,arch_db:l10n_do_ecf_invoicing.view_move_form_inherited
+msgid "ECF rejected by DGII"
+msgstr "ECF rechazado por la DGII"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.actions.server,name:l10n_do_ecf_invoicing.check_pending_ecf_ir_actions_server
+#: model:ir.cron,cron_name:l10n_do_ecf_invoicing.check_pending_ecf
+#: model:ir.cron,name:l10n_do_ecf_invoicing.check_pending_ecf
+msgid "Electronic Invoice: check pending ecf"
+msgstr "Facturación electrónica: Actualizar ECF pendientes"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.actions.server,name:l10n_do_ecf_invoicing.resend_contingency_ecf_ir_actions_server
+#: model:ir.cron,cron_name:l10n_do_ecf_invoicing.resend_contingency_ecf
+#: model:ir.cron,name:l10n_do_ecf_invoicing.resend_contingency_ecf
+msgid "Electronic Invoice: resend contingency invoices"
+msgstr "Facturación electrónica: reenviar facturas en contingencia"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Error. A sent Electronic Invoice cannot be set to Draft"
+msgstr "Error. Una Factura Electrónica enviada no puede volver a borrador"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Error. Only DGII can cancel an Electronic Invoice"
+msgstr "Error. Solo la DGII puede cancelar una Factura Electrónica"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid ""
+"External Service XSD Validation Error:\n"
+"\n"
+msgstr ""
+"Error de validación de XSD:\n"
+"\n"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Go to Companies"
+msgstr "Ir a Compañías"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model,name:l10n_do_ecf_invoicing.model_account_move
+msgid "Journal Entries"
+msgstr "Asientos contables"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Missing *Payment Form* on %s journal"
+msgstr "El diario %s no tiene Forma de Pago"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Not sent"
+msgstr "No enviado"
+
+#. module: l10n_do_ecf_invoicing
+#: model_terms:ir.ui.view,arch_db:l10n_do_ecf_invoicing.view_move_form_inherited
+msgid "Notice. This invoice is expecting a payment to be signed."
+msgstr "Aviso. Esta factura espera ser pagada para ser firmada."
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_account_move__l10n_do_ecf_expecting_payment
+msgid "Payment expected to send ECF"
+msgstr "Esperando pago para enviar ECF"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields.selection,name:l10n_do_ecf_invoicing.selection__res_company__l10n_do_ecf_service_env__ecf
+msgid "Production"
+msgstr "Producción"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Resend a Delivered and Accepted e-CF is not allowed."
+msgstr "Reenviar un ECF Recibido y Aceptado no está permitido."
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_company__l10n_do_send_ecf_on_payment
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_send_ecf_on_payment
+msgid "Send ECF On Payment"
+msgstr "Enviar ECF en el pago"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Sent, but invalid"
+msgstr "Enviado, pero inválido"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Service unreachable"
+msgstr "Servicio inaccesible"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields.selection,name:l10n_do_ecf_invoicing.selection__res_company__l10n_do_ecf_service_env__testecf
+msgid "Test"
+msgstr "Prueba"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,help:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_country_code
+msgid ""
+"The ISO country code in two chars. \n"
+"You can use this field for quick search."
+msgstr ""
+"El código del país ISO es de dos caracteres. \n"
+"Puede usar este campo para búsquedas rápidas."
+
+#. module: l10n_do_ecf_invoicing
+#: model_terms:ir.ui.view,arch_db:l10n_do_ecf_invoicing.res_config_settings_view_form
+msgid ""
+"Whether or not an invoice ECF will wait for a payment to be\n"
+"                            sent. This options doesn't apply on E41 "
+"invoices; these will\n"
+"                            be always sent on payment."
+msgstr ""
+"Si la Factura Electrónica esperará ser pagada para ser enviada. Esta opción "
+"no aplica para facturas tipo E41; estas siempre serán enviadas en el pago."
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Wrong external service URL"
+msgstr "URL del Servicio Externo incorrecta"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_account_move__l10n_do_ecf_security_code
+msgid "e-CF Security Code"
+msgstr "Código Seguridad e-CF"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_account_move__l10n_do_ecf_send_state
+msgid "e-CF Send State"
+msgstr "Estado de envío de ECF"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_account_move__l10n_do_ecf_sign_date
+msgid "e-CF Sign Date"
+msgstr "Fecha Firmado e-CF"
+
+#. module: l10n_do_ecf_invoicing
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_account_move__l10n_do_ecf_trackid
+msgid "e-CF Trackid"
+msgstr "Trackid del ECF"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "rejected"
+msgstr "rechazado"
