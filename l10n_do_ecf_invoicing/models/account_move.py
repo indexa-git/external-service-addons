@@ -991,8 +991,11 @@ class AccountMove(models.Model):
                         invoice.write(invoice_vals)
 
                         if status in ("AceptadoCondicional", "Rechazado"):
-                            invoice.log_error_message(response_text, ecf_data)
-                            invoice.with_context(cancelled_by_dgii=True).button_cancel()
+                            invoice.log_error_message(response_text)
+                            if status == "Rechazado":
+                                invoice.with_context(
+                                    cancelled_by_dgii=True
+                                ).button_cancel()
 
                     else:
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
