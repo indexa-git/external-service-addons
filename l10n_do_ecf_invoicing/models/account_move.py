@@ -905,7 +905,7 @@ class AccountMove(models.Model):
 
         return ecf_object_data
 
-    def log_error_message(self, body, sent_data=""):
+    def log_error_message(self, body):
         self.ensure_one()
 
         msg_body = "<ul>"
@@ -917,21 +917,15 @@ class AccountMove(models.Model):
             msg_body += "<li>%s</li>" % body
 
         msg_body += "</ul>"
+        dgii_action = (
+            _("rejected")
+            if self.l10n_do_ecf_send_state == "delivered_refused"
+            else _("Conditionally Accepted")
+        )
+        refused_msg = _("DGII has %s this ECF. Details:\n") % dgii_action
 
-        if self.l10n_do_ecf_send_state == "delivered_refused":
-            refused_msg = _("DGII has rejected this ECF. Details:\n")
-            refused_msg += msg_body
-            self.message_post(body=refused_msg)
-
-        else:
-            msg_body += "<p>%s</p>" % sent_data
-            self.env["mail.message"].sudo().create(
-                {
-                    "record_name": self.ref,
-                    "subject": _("e-CF Sending Error"),
-                    "body": msg_body,
-                }
-            )
+        refused_msg += msg_body
+        self.message_post(body=refused_msg)
 
     def _show_service_unreachable_message(self):
         msg = _(
