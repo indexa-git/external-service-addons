@@ -43,7 +43,7 @@
             </xpath>
             <xpath expr="//h4[@name='l10n_do_cancellation_reason']" position="after">
                 <h4 name="l10n_do_cancellation_reason" attrs="{'invisible':['|','|', '|', ('state','!=','cancel'),('l10n_latam_country_code', '!=', 'DO'), ('is_ecf_invoice', '=', False), ('type', '=', 'entry')]}">
-                    ECF refected by DGII
+                    ECF rejected by DGII
                 </h4>
             </xpath>
         </field>
