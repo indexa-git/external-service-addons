@@ -709,28 +709,24 @@ class AccountMove(models.Model):
                 else round(line.price_unit * rate, 2)
             )
 
-            price_unit_wo_discount = line.price_unit * (1 - (line.discount / 100.0))
+            price_wo_discount = line.quantity * line.price_unit
+            price_with_discount = price_wo_discount * (1 - (line.discount / 100.0))
             discount_amount = (
-                abs(round(price_unit_wo_discount - line.price_subtotal, 2))
+                abs(round(price_with_discount - price_wo_discount, 2))
                 if line.discount
                 else 0
             )
             if line.discount:
+                line_dict["DescuentoMonto"] = discount_amount
                 line_dict["TablaSubDescuento"] = {
                     "SubDescuento": [
                         {
                             "TipoSubDescuento": "%",
                             "SubDescuentoPorcentaje": line.discount,
                             "MontoSubDescuento": discount_amount
-                            if is_company_currency
-                            else round(discount_amount / rate, 2),
                         }
                     ]
                 }
-                line_dict["DescuentoMonto"] = sum(
-                    d["MontoSubDescuento"]
-                    for d in line_dict["TablaSubDescuento"]["SubDescuento"]
-                )
 
             if not is_company_currency:
                 line_dict["OtraMonedaDetalle"] = {
