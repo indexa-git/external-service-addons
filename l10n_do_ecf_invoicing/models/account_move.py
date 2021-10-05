@@ -365,13 +365,13 @@ class AccountMove(models.Model):
             # TODO: are those If really needed?
             if l10n_do_ncf_type == "32":
                 if self.amount_total_signed >= 250000 or partner_vat:
-                    buyer_data["RazonSocialComprador"] = self.partner_id.name
+                    buyer_data["RazonSocialComprador"] = self.commercial_partner_id.name
 
             if l10n_do_ncf_type in ("33", "34"):
-                buyer_data["RazonSocialComprador"] = self.partner_id.name
+                buyer_data["RazonSocialComprador"] = self.commercial_partner_id.name
 
             else:  # 31, 41, 44, 45, 46
-                buyer_data["RazonSocialComprador"] = self.partner_id.name
+                buyer_data["RazonSocialComprador"] = self.commercial_partner_id.name
 
         return buyer_data
 
