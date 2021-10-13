@@ -921,7 +921,10 @@ class AccountMove(models.Model):
         refused_msg = _("DGII has %s this ECF. Details:\n") % dgii_action
 
         refused_msg += msg_body
-        self.message_post(body=refused_msg)
+
+        # Use sudo to post message because we want user actions
+        # separated of ECF messages posts
+        self.sudo().message_post(body=refused_msg)
 
     def _show_service_unreachable_message(self):
         msg = _(
