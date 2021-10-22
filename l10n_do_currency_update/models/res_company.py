@@ -48,14 +48,18 @@ class ResCompany(models.Model):
         default="bpd",
         string="Bank",
     )
-    currency_base = fields.Selection(
-        [("buyrate", "Buy rate"), ("sellrate", "Sell rate")], default="sellrate"
+    l10n_do_currency_base = fields.Selection(
+        [("buyrate", "Buy rate"), ("sellrate", "Sell rate")],
+        string="Base",
+        default="sellrate",
     )
-    rate_offset = fields.Float("Offset", default=0)
+    l10n_do_rate_offset = fields.Float("Offset", default=0)
     l10n_do_currency_next_execution_date = fields.Date(
         string="Following Execution Date"
     )
-    last_currency_sync_date = fields.Date(string="Last Sync Date", readonly=True)
+    l10n_do_last_currency_sync_date = fields.Date(
+        string="Last Sync Date", readonly=True
+    )
 
     def get_currency_rates(self, params, token):
         api_url = self.env["ir.config_parameter"].sudo().get_param("indexa.api.url")
@@ -98,11 +102,13 @@ class ResCompany(models.Model):
                 if "data" in d:
                     for currency in d["data"]:
                         if (
-                            str(currency["name"]).endswith(company.currency_base or "x")
+                            str(currency["name"]).endswith(
+                                company.l10n_do_currency_base or "x"
+                            )
                             and currency["rate"]
                         ):
                             inverse_rate = 1 / (
-                                float(currency["rate"]) + company.rate_offset
+                                float(currency["rate"]) + company.l10n_do_rate_offset
                             )
 
                             currency_id = self.env.ref(
@@ -126,7 +132,7 @@ class ResCompany(models.Model):
                                             "company_id": company.id,
                                         }
                                     )
-                    company.last_currency_sync_date = fields.Date.today()
+                    company.l10n_do_last_currency_sync_date = fields.Date.today()
                 else:
                     res = False
             else:
