@@ -23,12 +23,12 @@
                             <field name="l10n_do_currency_interval_unit"/>
                         </div>
                         <div class="row">
-                            <label string="Base" for="currency_base" class="col-md-3 o_light_label"/>
-                            <field name="currency_base"/>
+                            <label string="Base" for="l10n_do_currency_base" class="col-md-3 o_light_label"/>
+                            <field name="l10n_do_currency_base"/>
                         </div>
                         <div class="row">
-                            <label string="Offset" for="rate_offset" class="col-md-3 o_light_label"/>
-                            <field name="rate_offset"/>
+                            <label string="Offset" for="l10n_do_rate_offset" class="col-md-3 o_light_label"/>
+                            <field name="l10n_do_rate_offset"/>
                         </div>
                         <div class="row">
                             <label string="Next Run" for="l10n_do_currency_next_execution_date"
@@ -39,10 +39,10 @@
                             </button>
                         </div>
                         <div class="row">
-                            <label string="Last Sync Date" for="last_currency_sync_date" class="col-md-3 o_light_label"
-                                   attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
-                            <field name="last_currency_sync_date"
-                                   attrs="{'invisible': [('last_currency_sync_date','=',False)]}"/>
+                            <label string="Last Sync Date" for="l10n_do_last_currency_sync_date" class="col-md-3 o_light_label"
+                                   attrs="{'invisible': [('l10n_do_last_currency_sync_date','=',False)]}"/>
+                            <field name="l10n_do_last_currency_sync_date"
+                                   attrs="{'invisible': [('l10n_do_last_currency_sync_date','=',False)]}"/>
                         </div>
                     </div>
                 </div>
