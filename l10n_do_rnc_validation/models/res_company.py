@@ -4,6 +4,7 @@ from odoo import fields, models
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    can_validate_rnc = fields.Boolean(
+    l10_do_can_validate_rnc = fields.Boolean(
+        "Validate RNC",
         default=True,
     )
