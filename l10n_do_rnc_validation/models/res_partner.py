@@ -94,7 +94,7 @@ class ResPartner(models.Model):
             number
             and str(number).isdigit()
             and len(number) in (9, 11)
-            and company_id.can_validate_rnc
+            and company_id.l10_do_can_validate_rnc
         ):
             result, dgii_vals = {}, False
             model = self.env.context.get("model")
