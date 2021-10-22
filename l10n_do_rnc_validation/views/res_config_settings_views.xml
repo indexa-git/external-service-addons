@@ -9,10 +9,10 @@
             <xpath expr="//div[@name='integration']" position="inside">
                 <div class="col-12 col-lg-6 o_setting_box">
                     <div class="o_setting_left_pane">
-                        <field name="can_validate_rnc"/>
+                        <field name="l10_do_can_validate_rnc"/>
                     </div>
                     <div class="o_setting_right_pane">
-                        <label for="can_validate_rnc" string="Indexa API RNC data"/>
+                        <label for="l10_do_can_validate_rnc" string="Indexa API RNC data"/>
                         <div class="text-muted">
                             Get Contact data from Indexa API
                         </div>
