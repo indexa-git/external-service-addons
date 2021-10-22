@@ -75,7 +75,7 @@ jobs:
         repository: indexa-git/l10n-dominicana
         path: l10n-dominicana
         ref: '14.0'
-    
+
     - name: Select Odoo modules to install
       id: get_modules
       run: |
@@ -228,7 +228,7 @@ jobs:
         retention-days: 10
 
     - name: Setup gcloud CLI
-      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      uses: google-github-actions/setup-gcloud@master
       with:
         version: '290.0.1'
         service_account_key: ${{ secrets.GKE_SA_KEY }}
