@@ -63,7 +63,7 @@ msgid "Could not send the e-CF"
 msgstr "No se pudo enviar el e-CF"
 
 #. module: l10n_do_ecf_invoicing
-#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_country_code
+#: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_config_settings__country_code
 msgid "Country Code"
 msgstr "Código País"
 
@@ -222,7 +222,7 @@ msgid "Test"
 msgstr "Prueba"
 
 #. module: l10n_do_ecf_invoicing
-#: model:ir.model.fields,help:l10n_do_ecf_invoicing.field_res_config_settings__l10n_do_country_code
+#: model:ir.model.fields,help:l10n_do_ecf_invoicing.field_res_config_settings__country_code
 msgid ""
 "The ISO country code in two chars. \n"
 "You can use this field for quick search."

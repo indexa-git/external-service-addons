@@ -11,9 +11,8 @@
                 <attribute name="attrs">{'invisible': False}</attribute>
             </xpath>
             <xpath expr="//div[@id='l10n_do_section']" position="inside">
-                <field name="l10n_do_country_code" invisible="1"/>
                 <div class="col-xs-12 col-md-6 o_setting_box"
-                     attrs="{'invisible': [('l10n_do_country_code', '!=', 'DO')]}"
+                     attrs="{'invisible': [('country_code', '!=', 'DO')]}"
                      groups="base.group_no_one">
                     <div class="o_setting_right_pane">
                         <label for="l10n_do_ecf_service_env"/>
@@ -26,7 +25,7 @@
                     </div>
                 </div>
                 <div class="col-xs-12 col-md-6 o_setting_box"
-                     attrs="{'invisible': [('l10n_do_country_code', '!=', 'DO')]}"
+                     attrs="{'invisible': [('country_code', '!=', 'DO')]}"
                      groups="base.group_no_one">
                     <div class="o_setting_left_pane">
                         <field name="l10n_do_send_ecf_on_payment"/>
