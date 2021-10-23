@@ -81,7 +81,7 @@ class AccountMove(models.Model):
         )._compute_l10n_do_electronic_stamp()
 
     def _compute_l10n_do_ecf_expecting_payment(self):
-        invoices = self.filtered(lambda i: i.type != "entry" and i.is_ecf_invoice)
+        invoices = self.filtered(lambda i: i.move_type != "entry" and i.is_ecf_invoice)
         for invoice in invoices:
             invoice.l10n_do_ecf_expecting_payment = bool(
                 not invoice._do_immediate_send()
@@ -235,9 +235,9 @@ class AccountMove(models.Model):
         id_doc_data = od(
             {
                 "TipoeCF": self.get_l10n_do_ncf_type(),
-                "eNCF": self.ref,
+                "eNCF": self.l10n_do_fiscal_number,
                 "FechaVencimientoSecuencia": dt.strftime(
-                    self.ncf_expiration_date, "%d-%m-%Y"
+                    self.l10n_do_ncf_expiration_date, "%d-%m-%Y"
                 ),
             }
         )
@@ -247,7 +247,7 @@ class AccountMove(models.Model):
 
         if l10n_do_ncf_type == "34":
             credit_origin_id = self.search(
-                [("ref", "=", self.l10n_do_origin_ncf)], limit=1
+                [("l10n_do_fiscal_number", "=", self.l10n_do_origin_ncf)], limit=1
             )
             delta = credit_origin_id.invoice_date - fields.Date.context_today(self)
             id_doc_data["IndicadorNotaCredito"] = int(delta.days > 30)
@@ -276,7 +276,7 @@ class AccountMove(models.Model):
         id_doc_data["TipoPago"] = self.get_payment_type()
 
         # TODO: actually DGII is not allowing send TablaFormasPago
-        # if self.invoice_payment_state != "not_paid" and l10n_do_ncf_type not in (
+        # if self.payment_state != "not_paid" and l10n_do_ncf_type not in (
         #     "34",
         #     "43",
         # ):
@@ -335,8 +335,12 @@ class AccountMove(models.Model):
             if l10n_do_ncf_type in ("33", "34"):
                 if (
                     self.debit_origin_id
-                    and self.debit_origin_id.amount_total_signed >= 250000
-                    or self.type == "out_refund"
+                    and self.debit_origin_id.get_l10n_do_ncf_type != "32"
+                    or (
+                        self.debit_origin_id.get_l10n_do_ncf_type == "32"
+                        and self.debit_origin_id.amount_total_signed >= 250000
+                    )
+                    or self.move_type == "out_refund"
                 ):
                     if is_l10n_do_partner:
                         buyer_data["RNCComprador"] = partner_vat
@@ -606,7 +610,7 @@ class AccountMove(models.Model):
             quantity=invoice_line.quantity,
             product=invoice_line.product_id,
             partner=invoice_line.move_id.partner_id,
-            is_refund=True if invoice_line.move_id.type == "in_refund" else False,
+            is_refund=True if invoice_line.move_id.move_type == "in_refund" else False,
         )
 
         withholding_vals = od()
@@ -723,7 +727,7 @@ class AccountMove(models.Model):
                         {
                             "TipoSubDescuento": "%",
                             "SubDescuentoPorcentaje": line.discount,
-                            "MontoSubDescuento": discount_amount
+                            "MontoSubDescuento": discount_amount,
                         }
                     ]
                 }
@@ -754,7 +758,9 @@ class AccountMove(models.Model):
         reference_info_data = od({})
 
         origin_id = (
-            self.search([("ref", "=", self.l10n_do_origin_ncf)], limit=1)
+            self.search(
+                [("l10n_do_fiscal_number", "=", self.l10n_do_origin_ncf)], limit=1
+            )
             if self.get_l10n_do_ncf_type() == "34"
             else self.debit_origin_id
         )
@@ -764,7 +770,7 @@ class AccountMove(models.Model):
 
         if "InformacionReferencia" not in ecf_object_data["ECF"]:
             ecf_object_data["ECF"]["InformacionReferencia"] = od({})
-        reference_info_data["NCFModificado"] = origin_id.ref
+        reference_info_data["NCFModificado"] = origin_id.l10n_do_fiscal_number
         reference_info_data["FechaNCFModificado"] = dt.strftime(
             origin_id.invoice_date, "%d-%m-%Y"
         )
@@ -929,7 +935,8 @@ class AccountMove(models.Model):
     def _show_service_unreachable_message(self):
         msg = _(
             "ECF %s can not be sent due External Service communication issue. "
-            "Try again in while or enable company contingency status" % self.ref
+            "Try again in while or enable company contingency status"
+            % self.l10n_do_fiscal_number
         )
         raise ValidationError(msg)
 
@@ -1069,7 +1076,7 @@ class AccountMove(models.Model):
 
         pending_invoices = self.search(
             [
-                ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
+                ("move_type", "in", ("out_invoice", "out_refund", "in_invoice")),
                 ("l10n_do_ecf_send_state", "=", "delivered_pending"),
                 ("l10n_do_ecf_trackid", "!=", False),
             ]
@@ -1085,9 +1092,9 @@ class AccountMove(models.Model):
 
         contingency_invoices = self.search(
             [
-                ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
+                ("move_type", "in", ("out_invoice", "out_refund", "in_invoice")),
                 ("l10n_do_ecf_send_state", "=", "contingency"),
-                ("is_l10n_do_internal_sequence", "=", True),
+                ("l10n_latam_manual_document_number", "=", False),
             ]
         )
         contingency_invoices.send_ecf_data()
@@ -1128,11 +1135,11 @@ class AccountMove(models.Model):
     def _compute_amount(self):
         super(AccountMove, self)._compute_amount()
         fiscal_invoices = self.filtered(
-            lambda i: i.is_l10n_do_internal_sequence
+            lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
             not in ("delivered_accepted", "delivered_pending")
-            and i.invoice_payment_state != "not_paid"
+            and i.payment_state != "not_paid"
         )
         fiscal_invoices.send_ecf_data()
 
@@ -1151,12 +1158,12 @@ class AccountMove(models.Model):
                     self.env["account.move"].browse(payment_info["payment_id"]).line_ids
                 )
             move_lines.with_context(move_id=self.id).remove_move_reconcile()
-            self._compute_amount()  # recompute invoice_payment_state
+            self._compute_amount()  # recompute payment_state
 
     def button_cancel(self):
 
         for inv in self.filtered(
-            lambda i: i.is_ecf_invoice and i.is_l10n_do_internal_sequence
+            lambda i: i.is_ecf_invoice and not i.l10n_latam_manual_document_number
         ):
             if not self._context.get("cancelled_by_dgii", False):
                 raise UserError(_("Error. Only DGII can cancel an Electronic Invoice"))
@@ -1171,7 +1178,7 @@ class AccountMove(models.Model):
     def button_draft(self):
         if self.filtered(
             lambda i: i.is_ecf_invoice
-            and i.is_l10n_do_internal_sequence
+            and not i.l10n_latam_manual_document_number
             and i.l10n_do_ecf_send_state not in ("not_sent", "to_send")
         ) and not self._context.get("cancelled_by_dgii", False):
             raise UserError(
@@ -1179,12 +1186,12 @@ class AccountMove(models.Model):
             )
         return super(AccountMove, self).button_draft()
 
-    def post(self):
+    def _post(self, soft=True):
 
-        res = super(AccountMove, self).post()
+        res = super(AccountMove, self)._post(soft=soft)
 
         fiscal_invoices = self.filtered(
-            lambda i: i.is_l10n_do_internal_sequence
+            lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
             not in ("delivered_accepted", "delivered_pending")
