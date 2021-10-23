@@ -9,7 +9,7 @@
             <field name="restrict_mode_hash_table" position="after">
                 <field name="l10n_do_ecf_expecting_payment" invisible="1"/>
             </field>
-            <xpath expr="//div[@name='journal_div']" position="after">
+            <xpath expr="//field[@name='l10n_do_electronic_stamp']" position="after">
                 <label for="l10n_do_ecf_send_state" invisible="1"/>
                 <div class="o_row" col="4">
                     <field name="l10n_do_ecf_send_state"
@@ -18,8 +18,9 @@
                        decoration-warning="l10n_do_ecf_send_state in ('contingency', 'delivered_pending', 'delivered_pending', 'not_sent', 'service_unreachable')"
                        decoration-success="l10n_do_ecf_send_state == 'delivered_accepted'"
                        decoration-info="l10n_do_ecf_send_state == 'to_send'"
-                       attrs="{'invisible': ['|',
+                       attrs="{'invisible': ['|', '|',
                            ('is_ecf_invoice', '=', False),
+                           ('l10n_latam_manual_document_number', '=', True),
                            ('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice'))]}"
                     />
                 </div>
