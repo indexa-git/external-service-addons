@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherited</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id"
+               ref="l10n_do_accounting.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='l10n_do_title']" position="attributes">
+                <attribute name="attrs">{'invisible': False}</attribute>
+            </xpath>
+            <xpath expr="//div[@id='l10n_do_section']" position="inside">
+                <field name="l10n_do_country_code" invisible="1"/>
+                <div class="col-xs-12 col-md-6 o_setting_box"
+                     attrs="{'invisible': [('l10n_do_country_code', '!=', 'DO')]}"
+                     groups="base.group_no_one">
+                    <div class="o_setting_right_pane">
+                        <label for="l10n_do_ecf_service_env"/>
+                        <div class="text-muted">
+                            DGII environment on which ECF invoices are going to be sent
+                        </div>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <field name="l10n_do_ecf_service_env"/>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-6 o_setting_box"
+                     attrs="{'invisible': [('l10n_do_country_code', '!=', 'DO')]}"
+                     groups="base.group_no_one">
+                    <div class="o_setting_left_pane">
+                        <field name="l10n_do_send_ecf_on_payment"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="l10n_do_send_ecf_on_payment"/>
+                        <div class="text-muted">
+                            Whether or not an invoice ECF will wait for a payment to be
+                            sent. This options doesn't apply on E41 invoices; these will
+                            be always sent on payment.
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

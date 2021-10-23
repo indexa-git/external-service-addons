@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="l10n_do_ecf_api_url" model="ir.config_parameter">
+        <field name="key">ecf.api.url</field>
+        <field name="value"></field>
+    </record>
+    <record id="l10n_do_ecf_result_api_url" model="ir.config_parameter">
+        <field name="key">ecf.result.api.url</field>
+        <field name="value"></field>
+    </record>
+    <record id="l10n_do_ecf_api_key" model="ir.config_parameter">
+        <!--TODO: este param no va a nivel de compañía? -->
+        <field name="key">ecf.api.key</field>
+        <field name="value">False</field>
+    </record>
+
+</odoo>
