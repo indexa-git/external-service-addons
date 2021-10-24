@@ -950,6 +950,11 @@ class AccountMove(models.Model):
                 )
 
             ecf_data = invoice._get_invoice_data_object()
+
+            l10n_do_ncf_type = self.get_l10n_do_ncf_type()
+            if l10n_do_ncf_type == "47":
+                del ecf_data["ECF"]["Encabezado"]["Comprador"]
+
             import json
 
             print(json.dumps(ecf_data, indent=4, default=str))
