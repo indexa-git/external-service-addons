@@ -631,8 +631,8 @@ class AccountMove(models.Model):
 
         if itbis_withhold_amount:
             withholding_vals["MontoITBISRetenido"] = itbis_withhold_amount
-        if isr_withhold_amount:
-            withholding_vals["MontoISRRetenido"] = isr_withhold_amount
+
+        withholding_vals["MontoISRRetenido"] = isr_withhold_amount
 
         return withholding_vals
 
@@ -681,9 +681,7 @@ class AccountMove(models.Model):
             line_dict["NumeroLinea"] = i
             line_dict["IndicadorFacturacion"] = get_invoicing_indicator(line)
 
-            if l10n_do_ncf_type in ("41", "47") and any(
-                [True for tax in line.tax_ids if tax.amount < 0]
-            ):
+            if l10n_do_ncf_type in ("41", "47"):
                 withholding_vals = od([("IndicadorAgenteRetencionoPercepcion", 1)])
                 for k, v in self._get_item_withholding_vals(line).items():
                     withholding_vals[k] = round(
