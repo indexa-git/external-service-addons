@@ -326,7 +326,7 @@ class AccountMove(models.Model):
         buyer_data = od({})
         if l10n_do_ncf_type not in ("43", "47"):
 
-            if l10n_do_ncf_type in ("31", "41", "45"):
+            if l10n_do_ncf_type in ("31", "41", "45", "46"):
                 buyer_data["RNCComprador"] = partner_vat
 
             if l10n_do_ncf_type == "32" and partner_vat:
@@ -335,8 +335,12 @@ class AccountMove(models.Model):
             if l10n_do_ncf_type in ("33", "34"):
                 if (
                     self.debit_origin_id
-                    and self.debit_origin_id.amount_total_signed >= 250000
-                    or self.type == "out_refund"
+                    and self.debit_origin_id.get_l10n_do_ncf_type != "32"
+                    or (
+                        self.debit_origin_id.get_l10n_do_ncf_type == "32"
+                        and self.debit_origin_id.amount_total_signed >= 250000
+                    )
+                    or self.move_type == "out_refund"
                 ):
                     if is_l10n_do_partner:
                         buyer_data["RNCComprador"] = partner_vat
@@ -941,6 +945,11 @@ class AccountMove(models.Model):
                 )
 
             ecf_data = invoice._get_invoice_data_object()
+
+            l10n_do_ncf_type = self.get_l10n_do_ncf_type()
+            if l10n_do_ncf_type == "47":
+                del ecf_data["ECF"]["Encabezado"]["Comprador"]
+
             import json
 
             print(json.dumps(ecf_data, indent=4, default=str))
