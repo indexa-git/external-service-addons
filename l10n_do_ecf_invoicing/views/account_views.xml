@@ -23,6 +23,10 @@
                            ('l10n_latam_manual_document_number', '=', True),
                            ('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice'))]}"
                     />
+                    <field name="l10n_do_ecf_edi_file" filename="l10n_do_ecf_edi_file_name"
+                           attrs="{'invisible': [('l10n_do_ecf_edi_file', '=', False)]}"
+                           groups="base.group_no_one"/>
+                    <field name="l10n_do_ecf_edi_file_name" invisible="1"/>
                 </div>
             </xpath>
             <xpath expr="//field[@name='tax_lock_date_message']/.." position="after">
