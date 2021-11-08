@@ -10,6 +10,10 @@
                 <field name="l10n_do_ecf_expecting_payment" invisible="1"/>
             </field>
             <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="l10n_do_ecf_edi_file" filename="l10n_do_ecf_edi_file_name"
+                       attrs="{'invisible': [('l10n_do_ecf_edi_file', '=', False)]}"
+                       groups="base.group_no_one"/>
+                <field name="l10n_do_ecf_edi_file_name" invisible="1"/>
                 <label for="l10n_do_ecf_send_state" invisible="1"/>
                 <div class="o_row" col="4">
                     <field name="l10n_do_ecf_send_state"
