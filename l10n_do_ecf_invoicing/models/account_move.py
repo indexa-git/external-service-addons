@@ -2,6 +2,7 @@
 #  See LICENSE file for full licensing details.
 
 import ast
+import base64
 import requests
 from datetime import datetime as dt
 from collections import OrderedDict as od
@@ -972,6 +973,10 @@ class AccountMove(models.Model):
                     vals = ast.literal_eval(response_text)
                     status = vals.get("status", False)
 
+                    ecf_xml = b""
+                    if "xml" in vals:
+                        ecf_xml += str(vals["xml"]).encode("utf-8")
+
                     if status:
                         status = status.replace(" ", "")
                         sign_datetime = vals.get("signature_datetime", False)
@@ -993,6 +998,9 @@ class AccountMove(models.Model):
                                         "security_code"
                                     ),
                                     "l10n_do_ecf_sign_date": strp_sign_datetime,
+                                    "l10n_do_ecf_edi_file_name": "%s.xml"
+                                    % invoice.l10n_do_fiscal_number,
+                                    "l10n_do_ecf_edi_file": base64.b64encode(ecf_xml),
                                 }
                             )
 
