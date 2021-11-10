@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!--  DO NOT FORWARD PORT -->
+    <function model="account.journal" name="generate_missing_ecf_sequences"/>
+
+</odoo>
