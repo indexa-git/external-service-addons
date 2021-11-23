@@ -1174,7 +1174,9 @@ class AccountMove(models.Model):
     def button_cancel(self):
 
         for inv in self.filtered(
-            lambda i: i.is_ecf_invoice and not i.l10n_latam_manual_document_number
+            lambda i: i.is_ecf_invoice
+            and not i.l10n_latam_manual_document_number
+            and i.l10n_do_ecf_send_state not in ("not_sent", "to_send")
         ):
             if not self._context.get("cancelled_by_dgii", False):
                 raise UserError(_("Error. Only DGII can cancel an Electronic Invoice"))
