@@ -2,13 +2,18 @@
 #  See LICENSE file for full licensing details.
 
 import ast
+import json
 import base64
+import logging
 import requests
 from datetime import datetime as dt
 from collections import OrderedDict as od
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, RedirectWarning, UserError
+
+
+_logger = logging.getLogger(__name__)
 
 ECF_STATE_MAP = {
     "Aceptado": "delivered_accepted",
@@ -939,6 +944,13 @@ class AccountMove(models.Model):
         )
         raise ValidationError(msg)
 
+    def _send_ecf_submit_request(self, ecf_data, api_url):
+        self.ensure_one()
+        return requests.post(
+            "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
+            files={"data": json.dumps(ecf_data)},
+        )
+
     def send_ecf_data(self):
 
         for invoice in self:
@@ -950,18 +962,15 @@ class AccountMove(models.Model):
 
             ecf_data = invoice._get_invoice_data_object()
 
-            l10n_do_ncf_type = self.get_l10n_do_ncf_type()
+            l10n_do_ncf_type = invoice.get_l10n_do_ncf_type()
             if l10n_do_ncf_type == "47":
                 del ecf_data["ECF"]["Encabezado"]["Comprador"]
 
-            import json
-
-            print(json.dumps(ecf_data, indent=4, default=str))
-            api_url = self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
             try:
-                response = requests.post(
-                    "%s?env=%s" % (api_url, invoice.company_id.l10n_do_ecf_service_env),
-                    files={"data": json.dumps(ecf_data)},
+                _logger.info(json.dumps(ecf_data, indent=4, default=str))
+                response = invoice._send_ecf_submit_request(
+                    ecf_data,
+                    self.env["ir.config_parameter"].sudo().get_param("ecf.api.url"),
                 )
 
                 if response.status_code == 200:
