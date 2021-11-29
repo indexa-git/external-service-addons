@@ -37,7 +37,10 @@ class ResCompany(models.Model):
             current_service_env = urls.url_unquote(
                 signed_invoice.l10n_do_electronic_stamp
             ).split("/")[3]
-            if company_service_env != current_service_env:
+            if (
+                    company_service_env == "eCF"
+                    and current_service_env != company_service_env
+            ):
                 raise ValidationError(
                     _(
                         "You cannot change company ECF Environment since there "
