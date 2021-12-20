@@ -412,11 +412,10 @@ class AccountMove(models.Model):
 
         tax_data = [
             line.tax_ids.compute_all(
-                line.price_unit,
-                line.currency_id,
-                line.quantity,
-                line.product_id,
-                line.move_id.partner_id,
+                price_unit=line.price_subtotal,
+                currency=line.currency_id,
+                product=line.product_id,
+                partner=line.move_id.partner_id,
             )
             for line in self.invoice_line_ids
         ]
