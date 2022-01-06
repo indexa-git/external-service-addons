@@ -17,7 +17,7 @@ _logger = logging.getLogger(__name__)
 
 ECF_STATE_MAP = {
     "Aceptado": "delivered_accepted",
-    "AceptadoCondicional": "delivered_accepted",
+    "AceptadoCondicional": "conditionally_accepted",
     "EnProceso": "delivered_pending",
     "Rechazado": "delivered_refused",
 }
@@ -31,10 +31,11 @@ class AccountMove(models.Model):
 
         - to_send: default state.
         - invalid: sent ecf didn't pass XSD validation.
-        - contingency: DGII unreachable by external service. Odoo should send it
-        later until delivered accepted state is received.
+        - contingency: DGII unreachable by external service. Odoo should send it later
+          until delivered accepted state is received.
         - delivered_accepted: expected state that indicate everything is ok with ecf
-        issuing.
+          issuing.
+        - conditionally_accepted: DGII has accepted the ECF but has some remarks
         - delivered_refused: ecf rejected by DGII.
         - not_sent: Odoo have not connection.
         - service_unreachable: external service may be down.
@@ -45,6 +46,7 @@ class AccountMove(models.Model):
             ("invalid", _("Sent, but invalid")),
             ("contingency", _("Contingency")),
             ("delivered_accepted", _("Delivered and accepted")),
+            ("conditionally_accepted", _("Conditionally accepted")),
             ("delivered_pending", _("Delivered and pending")),
             ("delivered_refused", _("Delivered and refused")),
             ("not_sent", _("Could not send the e-CF")),
@@ -962,10 +964,11 @@ class AccountMove(models.Model):
 
         for invoice in self:
 
-            if invoice.l10n_do_ecf_send_state == "delivered_accepted":
-                raise ValidationError(
-                    _("Resend a Delivered and Accepted e-CF is not allowed.")
-                )
+            if invoice.l10n_do_ecf_send_state in (
+                "delivered_accepted",
+                "conditionally_accepted",
+            ):
+                raise ValidationError(_("Resend a Delivered e-CF is not allowed."))
 
             ecf_data = invoice._get_invoice_data_object()
 
@@ -1177,7 +1180,7 @@ class AccountMove(models.Model):
             lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
-            not in ("delivered_accepted", "delivered_pending")
+            not in ("delivered_accepted", "conditionally_accepted", "delivered_pending")
             and i.payment_state != "not_paid"
         )
         fiscal_invoices.send_ecf_data()
@@ -1235,7 +1238,7 @@ class AccountMove(models.Model):
             lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
-            not in ("delivered_accepted", "delivered_pending")
+            not in ("delivered_accepted", "conditionally_accepted", "delivered_pending")
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
