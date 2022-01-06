@@ -26,6 +26,7 @@
                            'invalid': 'danger',
                            'contingency': 'warning',
                            'delivered_accepted': 'success',
+                           'conditionally_accepted': 'success',
                            'delivered_pending': 'warning',
                            'delivered_refused': 'danger',
                            'not_sent': 'warning',
