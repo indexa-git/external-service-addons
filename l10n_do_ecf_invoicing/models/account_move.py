@@ -1074,9 +1074,15 @@ class AccountMove(models.Model):
                     status = vals.get("estado", "EnProceso").replace(" ", "")
                     if status in ECF_STATE_MAP:
                         invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
-                        if invoice.l10n_do_ecf_send_state == "delivered_refused":
+                        if ECF_STATE_MAP[status] in (
+                            "delivered_refused",
+                            "conditionally_accepted",
+                        ):
                             invoice.log_error_message(response_text)
-                            invoice.with_context(cancelled_by_dgii=True).button_cancel()
+                            if ECF_STATE_MAP[status] == "delivered_refused":
+                                invoice.with_context(
+                                    cancelled_by_dgii=True
+                                ).button_cancel()
                     else:
                         continue
 
