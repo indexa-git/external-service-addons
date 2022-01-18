@@ -20,7 +20,7 @@
                            widget="label_selection"
                            attrs="{'invisible': ['|',
                            ('is_ecf_invoice', '=', False),
-                           ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice'))]}"
+                           ('type', '=', 'entry')]}"
                            options="{'classes': {
                            'to_send': 'default',
                            'invalid': 'danger',
