@@ -346,7 +346,7 @@ class AccountMove(models.Model):
                         self.debit_origin_id.get_l10n_do_ncf_type == "32"
                         and self.debit_origin_id.amount_total_signed >= 250000
                     )
-                    or self.move_type == "out_refund"
+                    or self.move_type in ("out_refund", "in_refund")
                 ):
                     if is_l10n_do_partner:
                         buyer_data["RNCComprador"] = partner_vat
@@ -1018,6 +1018,12 @@ class AccountMove(models.Model):
                         if status in ("AceptadoCondicional", "Rechazado"):
                             invoice.log_error_message(response_text)
                             if status == "Rechazado":
+
+                                # remove ref field value so duplicated constraint
+                                # error is not raised when posting a new document
+                                # with same ref
+                                invoice.ref = False
+
                                 invoice.with_context(
                                     cancelled_by_dgii=True
                                 ).button_cancel()
