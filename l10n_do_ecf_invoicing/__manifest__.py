@@ -5,7 +5,7 @@
     "author": "Indexa",
     "website": "https://www.indexa.do",
     "category": "Accounting",
-    "version": "13.0.1.9.7",
+    "version": "13.0.1.10.7",
     "depends": ["l10n_do_accounting", "l10n_do_debit_note"],
     "data": [
         "views/account_views.xml",
