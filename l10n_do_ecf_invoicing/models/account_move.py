@@ -255,7 +255,7 @@ class AccountMove(models.Model):
             credit_origin_id = self.search(
                 [("l10n_do_fiscal_number", "=", self.l10n_do_origin_ncf)], limit=1
             )
-            delta = abs(fields.Date.context_today(self) - credit_origin_id.invoice_date)
+            delta = abs(self.invoice_date - credit_origin_id.invoice_date)
             id_doc_data["IndicadorNotaCredito"] = int(delta.days > 30)
 
         if self.company_id.l10n_do_ecf_deferred_submissions:
