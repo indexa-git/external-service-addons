@@ -6,7 +6,7 @@ import json
 import base64
 import logging
 import requests
-from datetime import datetime as dt, timedelta as td
+from datetime import datetime as dt
 from collections import OrderedDict as od
 
 from odoo import models, fields, api, _
@@ -257,16 +257,8 @@ class AccountMove(models.Model):
             credit_origin_id = self.search(
                 [("ref", "=", self.l10n_do_origin_ncf)], limit=1
             )
-
-            # Calc IndicadorNotaCredito based on business days
-            start_date = credit_origin_id.invoice_date
-            dates = (
-                start_date + td(idx + 1)
-                for idx in range((self.invoice_date - start_date).days)
-            )
-            id_doc_data["IndicadorNotaCredito"] = int(
-                sum(1 for day in dates if day.weekday() < 5) > 30
-            )
+            delta = abs(self.invoice_date - credit_origin_id.invoice_date)
+            id_doc_data["IndicadorNotaCredito"] = int(delta.days > 30)
 
         if self.company_id.l10n_do_ecf_deferred_submissions:
             id_doc_data["IndicadorEnvioDiferido"] = 1
