@@ -723,6 +723,14 @@ class AccountMove(models.Model):
                 if line.discount
                 else 0
             )
+
+            currency_discount_amount = discount_amount
+            discount_amount = (
+                discount_amount
+                if is_company_currency
+                else round(discount_amount * rate, 2)
+            )
+
             if line.discount:
                 line_dict["DescuentoMonto"] = discount_amount
                 line_dict["TablaSubDescuento"] = {
@@ -738,7 +746,7 @@ class AccountMove(models.Model):
             if not is_company_currency:
                 line_dict["OtraMonedaDetalle"] = {
                     "PrecioOtraMoneda": abs(line.price_unit),
-                    "DescuentoOtraMoneda": discount_amount,
+                    "DescuentoOtraMoneda": currency_discount_amount,
                     "MontoItemOtraMoneda": abs(round(line.price_subtotal, 2)),
                 }
 
