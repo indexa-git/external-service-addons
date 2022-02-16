@@ -332,7 +332,7 @@ class AccountMove(models.Model):
         """Buyer (invoice partner) values """
         self.ensure_one()
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
-        partner_vat = self.partner_id.vat
+        partner_vat = self.partner_id.vat or ""
         is_l10n_do_partner = self.is_l10n_do_partner()
 
         buyer_data = od({})
@@ -354,9 +354,9 @@ class AccountMove(models.Model):
                     )
                     or self.type in ("out_refund", "in_refund")
                 ):
-                    if is_l10n_do_partner:
+                    if is_l10n_do_partner and partner_vat:
                         buyer_data["RNCComprador"] = partner_vat
-                    else:
+                    elif partner_vat:
                         buyer_data["IdentificadorExtranjero"] = partner_vat
 
             if l10n_do_ncf_type == "44":
