@@ -15,8 +15,8 @@
                     <field name="l10n_do_ecf_send_state"
                        widget="badge"
                        decoration-danger="l10n_do_ecf_send_state in ('invalid', 'delivered_refused')"
-                       decoration-warning="l10n_do_ecf_send_state in ('contingency', 'delivered_pending', 'delivered_pending', 'not_sent', 'service_unreachable')"
-                       decoration-success="l10n_do_ecf_send_state == 'delivered_accepted'"
+                       decoration-warning="l10n_do_ecf_send_state in ('contingency', 'delivered_pending', 'delivered_pending', 'not_sent', 'service_unreachable', 'signed_pending')"
+                       decoration-success="l10n_do_ecf_send_state in ('delivered_accepted', 'conditionally_accepted')"
                        decoration-info="l10n_do_ecf_send_state == 'to_send'"
                        attrs="{'invisible': ['|', '|',
                            ('is_ecf_invoice', '=', False),
