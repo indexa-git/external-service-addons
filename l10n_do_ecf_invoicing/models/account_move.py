@@ -721,9 +721,10 @@ class AccountMove(models.Model):
             line_dict["CantidadItem"] = ("%f" % line.quantity).rstrip("0").rstrip(".")
 
             line_dict["PrecioUnitarioItem"] = abs(
-                line.price_unit
-                if is_company_currency
-                else round(line.price_unit * rate, 2)
+                round(
+                    line.price_unit if is_company_currency else line.price_unit * rate,
+                    4,
+                )
             )
 
             price_wo_discount = line.quantity * line.price_unit
