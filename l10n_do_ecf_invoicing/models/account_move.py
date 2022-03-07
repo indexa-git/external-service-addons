@@ -17,9 +17,10 @@ _logger = logging.getLogger(__name__)
 
 ECF_STATE_MAP = {
     "Aceptado": "delivered_accepted",
-    "AceptadoCondicional": "delivered_accepted",
+    "AceptadoCondicional": "conditionally_accepted",
     "EnProceso": "delivered_pending",
     "Rechazado": "delivered_refused",
+    "FirmadoPendiente": "signed_pending",
 }
 
 
@@ -31,13 +32,16 @@ class AccountMove(models.Model):
 
         - to_send: default state.
         - invalid: sent ecf didn't pass XSD validation.
-        - contingency: DGII unreachable by external service. Odoo should send it
-        later until delivered accepted state is received.
+        - contingency: DGII unreachable by external service. Odoo should send it later
+          until delivered accepted state is received.
         - delivered_accepted: expected state that indicate everything is ok with ecf
-        issuing.
+          issuing.
+        - conditionally_accepted: DGII has accepted the ECF but has some remarks
         - delivered_refused: ecf rejected by DGII.
         - not_sent: Odoo have not connection.
         - service_unreachable: external service may be down.
+        - signed_pending: ECF was signed but API could not reach DGII. May be resend
+          later.
 
         """
         return [
@@ -45,10 +49,12 @@ class AccountMove(models.Model):
             ("invalid", _("Sent, but invalid")),
             ("contingency", _("Contingency")),
             ("delivered_accepted", _("Delivered and accepted")),
+            ("conditionally_accepted", _("Conditionally accepted")),
             ("delivered_pending", _("Delivered and pending")),
             ("delivered_refused", _("Delivered and refused")),
             ("not_sent", _("Could not send the e-CF")),
             ("service_unreachable", _("Service unreachable")),
+            ("signed_pending", _("Signed and pending")),
         ]
 
     l10n_do_ecf_send_state = fields.Selection(
@@ -962,10 +968,11 @@ class AccountMove(models.Model):
 
         for invoice in self:
 
-            if invoice.l10n_do_ecf_send_state == "delivered_accepted":
-                raise ValidationError(
-                    _("Resend a Delivered and Accepted e-CF is not allowed.")
-                )
+            if invoice.l10n_do_ecf_send_state in (
+                "delivered_accepted",
+                "conditionally_accepted",
+            ):
+                raise ValidationError(_("Resend a Delivered e-CF is not allowed."))
 
             ecf_data = invoice._get_invoice_data_object()
 
@@ -1004,8 +1011,8 @@ class AccountMove(models.Model):
                             strp_sign_datetime = False
 
                         invoice_vals = {}
-                        if invoice.l10n_do_ecf_send_state != "contingency":
-                            # Contingency invoices already have trackid,
+                        if invoice.l10n_do_ecf_send_state != "signed_pending":
+                            # Signed and pending invoices already have trackid,
                             # security_code and sign_date. Do not overwrite it.
                             invoice_vals.update(
                                 {
@@ -1040,8 +1047,8 @@ class AccountMove(models.Model):
                         # invoice.l10n_do_ecf_send_state = "service_unreachable"
                         invoice._show_service_unreachable_message()
 
-                elif response.status_code == 503:  # DGII is fucked up
-                    invoice.l10n_do_ecf_send_state = "contingency"
+                elif response.status_code == 408:  # API could not reach DGII
+                    invoice.l10n_do_ecf_send_state = "signed_pending"
 
                 elif response.status_code == 400:  # XSD validation failed
                     msg_body = _("External Service XSD Validation Error:\n\n")
@@ -1115,28 +1122,16 @@ class AccountMove(models.Model):
 
         pending_invoices = self.search(
             [
-                ("move_type", "in", ("out_invoice", "out_refund", "in_invoice")),
-                ("l10n_do_ecf_send_state", "=", "delivered_pending"),
+                ("type", "in", ("out_invoice", "out_refund", "in_invoice")),
+                (
+                    "l10n_do_ecf_send_state",
+                    "in",
+                    ("delivered_pending", "signed_pending"),
+                ),
                 ("l10n_do_ecf_trackid", "!=", False),
             ]
         )
         pending_invoices.update_ecf_status()
-
-    @api.model
-    def resend_contingency_ecf(self):
-        """
-        This function is meant to be called from ir.cron. It will resend all
-        contingency invoices
-        """
-
-        contingency_invoices = self.search(
-            [
-                ("move_type", "in", ("out_invoice", "out_refund", "in_invoice")),
-                ("l10n_do_ecf_send_state", "=", "contingency"),
-                ("l10n_latam_manual_document_number", "=", False),
-            ]
-        )
-        contingency_invoices.send_ecf_data()
 
     def _do_immediate_send(self):
         self.ensure_one()
@@ -1177,7 +1172,7 @@ class AccountMove(models.Model):
             lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
-            not in ("delivered_accepted", "delivered_pending")
+            not in ("delivered_accepted", "conditionally_accepted", "delivered_pending")
             and i.payment_state != "not_paid"
         )
         fiscal_invoices.send_ecf_data()
@@ -1235,7 +1230,12 @@ class AccountMove(models.Model):
             lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
             and i.l10n_do_ecf_send_state
-            not in ("delivered_accepted", "delivered_pending")
+            not in (
+                "delivered_accepted",
+                "conditionally_accepted",
+                "delivered_pending",
+                "signed_pending",
+            )
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()

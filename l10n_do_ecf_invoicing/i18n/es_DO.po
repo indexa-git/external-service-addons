@@ -6,16 +6,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-12 01:25+0000\n"
-"PO-Revision-Date: 2021-11-11 21:25-0400\n"
+"POT-Creation-Date: 2022-03-07 17:33+0000\n"
+"PO-Revision-Date: 2022-03-07 13:33-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
+"Language: es_DO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: \n"
-"Language: es_DO\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #. module: l10n_do_ecf_invoicing
 #: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
@@ -37,6 +37,12 @@ msgstr "Compañías"
 #: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
 #, python-format
 msgid "Conditionally Accepted"
+msgstr "Aceptado Condicional"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Conditionally accepted"
 msgstr "Aceptado Condicional"
 
 #. module: l10n_do_ecf_invoicing
@@ -161,6 +167,11 @@ msgid "Go to Companies"
 msgstr "Ir a Compañías"
 
 #. module: l10n_do_ecf_invoicing
+#: model:ir.model,name:l10n_do_ecf_invoicing.model_account_journal
+msgid "Journal"
+msgstr "Diario"
+
+#. module: l10n_do_ecf_invoicing
 #: model:ir.model,name:l10n_do_ecf_invoicing.model_account_move
 msgid "Journal Entries"
 msgstr "Asientos contables"
@@ -195,8 +206,8 @@ msgstr "Producción"
 #. module: l10n_do_ecf_invoicing
 #: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
 #, python-format
-msgid "Resend a Delivered and Accepted e-CF is not allowed."
-msgstr "Reenviar un ECF Recibido y Aceptado no está permitido."
+msgid "Resend a Delivered e-CF is not allowed."
+msgstr "Reenviar un ECF recibido no está permitido."
 
 #. module: l10n_do_ecf_invoicing
 #: model:ir.model.fields,field_description:l10n_do_ecf_invoicing.field_res_company__l10n_do_send_ecf_on_payment
@@ -215,6 +226,12 @@ msgstr "Enviado, pero inválido"
 #, python-format
 msgid "Service unreachable"
 msgstr "Servicio inaccesible"
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid "Signed and pending"
+msgstr "Firmado y pendiente"
 
 #. module: l10n_do_ecf_invoicing
 #: model:ir.model.fields.selection,name:l10n_do_ecf_invoicing.selection__res_company__l10n_do_ecf_service_env__testecf
