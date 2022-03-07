@@ -31,6 +31,7 @@
                            'delivered_refused': 'danger',
                            'not_sent': 'warning',
                            'service_unreachable': 'warning',
+                           'signed_pending': 'warning',
                            }}"
                     />
                 </div>
