@@ -517,7 +517,7 @@ class AccountMove(models.Model):
             totals_data["MontoTotal"] = abs(round(self.amount_untaxed, 2))
 
         if l10n_do_ncf_type not in ("43", "44"):
-            if tax_data["itbis_withholding_amount"]:
+            if tax_data["itbis_withholding_amount"] or l10n_do_ncf_type == "41":
                 totals_data["TotalITBISRetenido"] = abs(
                     round(tax_data["itbis_withholding_amount"], 2)
                 )
@@ -644,7 +644,7 @@ class AccountMove(models.Model):
             )
         )
 
-        if itbis_withhold_amount:
+        if itbis_withhold_amount or self.get_l10n_do_ncf_type() == "41":
             withholding_vals["MontoITBISRetenido"] = itbis_withhold_amount
 
         withholding_vals["MontoISRRetenido"] = isr_withhold_amount
