@@ -422,6 +422,7 @@ class AccountMove(models.Model):
                 currency=line.currency_id,
                 product=line.product_id,
                 partner=line.move_id.partner_id,
+                handle_price_include=False,
             )
             for line in self.invoice_line_ids
         ]
@@ -759,9 +760,9 @@ class AccountMove(models.Model):
 
             line_dict["MontoItem"] = abs(
                 round(
-                    line.price_subtotal
+                    price_with_discount
                     if is_company_currency
-                    else line.price_subtotal * rate,
+                    else price_with_discount * rate,
                     2,
                 )
             )
