@@ -961,10 +961,17 @@ class AccountMove(models.Model):
 
     def _send_ecf_submit_request(self, ecf_data, api_url):
         self.ensure_one()
-        return requests.post(
+        response = requests.post(
             "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
             files={"data": json.dumps(ecf_data)},
-        )
+            )
+
+        try:
+            vals = safe_eval(str(response.text).replace("null", "None"))
+        except ValueError:  # could not parse a dict from response text
+            vals = {}
+
+        return response, vals
 
     def send_ecf_data(self):
 
@@ -984,19 +991,15 @@ class AccountMove(models.Model):
 
             try:
                 _logger.info(json.dumps(ecf_data, indent=4, default=str))
-                response = invoice._send_ecf_submit_request(
+                response, vals = invoice._send_ecf_submit_request(
                     ecf_data,
                     self.env["ir.config_parameter"].sudo().get_param("ecf.api.url"),
                 )
 
-                if response.status_code == 200:
+                status = vals.get("status", False)
+                response_text = str(response.text).replace("null", "None")
 
-                    # DGII return a 'null' as an empty message value. We convert it to
-                    # its python similar: None
-                    response_text = str(response.text).replace("null", "None")
-
-                    vals = ast.literal_eval(response_text)
-                    status = vals.get("status", False)
+                if response.status_code == 200 or status:
 
                     ecf_xml = b""
                     if "xml" in vals:
@@ -1054,7 +1057,6 @@ class AccountMove(models.Model):
 
                 elif response.status_code == 400:  # XSD validation failed
                     msg_body = _("External Service XSD Validation Error:\n\n")
-                    response_text = str(response.text).replace("null", "None")
                     error_message = safe_eval(response_text)
                     for msg in list(error_message.get("messages") or []):
                         msg_body += "%s\n" % msg
