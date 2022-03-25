@@ -1,7 +1,6 @@
 #  Copyright (c) 2020 - Indexa SRL. (https://www.indexa.do) <info@indexa.do>
 #  See LICENSE file for full licensing details.
 
-import ast
 import json
 import base64
 import logging
@@ -10,6 +9,7 @@ from datetime import datetime as dt
 from collections import OrderedDict as od
 
 from odoo import models, fields, api, _
+from odoo.tools.safe_eval import safe_eval
 from odoo.exceptions import ValidationError, RedirectWarning, UserError
 
 
@@ -931,7 +931,7 @@ class AccountMove(models.Model):
 
         msg_body = "<ul>"
         try:
-            error_message = ast.literal_eval(body)
+            error_message = safe_eval(body)
             for msg in list(error_message.get("messages") or []):
                 msg_body += "<li>%s</li>" % msg.get("valor")
         except SyntaxError:
@@ -1055,7 +1055,7 @@ class AccountMove(models.Model):
                 elif response.status_code == 400:  # XSD validation failed
                     msg_body = _("External Service XSD Validation Error:\n\n")
                     response_text = str(response.text).replace("null", "None")
-                    error_message = ast.literal_eval(response_text)
+                    error_message = safe_eval(response_text)
                     for msg in list(error_message.get("messages") or []):
                         msg_body += "%s\n" % msg
                     raise ValidationError(msg_body)
@@ -1093,7 +1093,7 @@ class AccountMove(models.Model):
                 response_text = str(response.text).replace("null", "None")
 
                 try:
-                    vals = ast.literal_eval(response_text)
+                    vals = safe_eval(response_text)
                     status = vals.get("estado", "EnProceso").replace(" ", "")
                     if status in ECF_STATE_MAP:
                         invoice.l10n_do_ecf_send_state = ECF_STATE_MAP[status]
