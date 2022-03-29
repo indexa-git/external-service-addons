@@ -248,14 +248,13 @@ class AccountMove(models.Model):
             {
                 "TipoeCF": self.get_l10n_do_ncf_type(),
                 "eNCF": self.l10n_do_fiscal_number,
-                "FechaVencimientoSecuencia": dt.strftime(
-                    self.l10n_do_ncf_expiration_date, "%d-%m-%Y"
-                ),
             }
         )
 
-        if l10n_do_ncf_type in ("32", "34"):
-            del id_doc_data["FechaVencimientoSecuencia"]
+        if l10n_do_ncf_type not in ("32", "34") and self.l10n_do_ncf_expiration_date:
+            id_doc_data["FechaVencimientoSecuencia"] = dt.strftime(
+                self.l10n_do_ncf_expiration_date, "%d-%m-%Y"
+            )
 
         if l10n_do_ncf_type == "34":
             credit_origin_id = self.search(
