@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 13.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-07 17:33+0000\n"
-"PO-Revision-Date: 2022-03-07 13:33-0400\n"
+"POT-Creation-Date: 2022-03-30 17:06+0000\n"
+"PO-Revision-Date: 2022-03-30 13:07-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_DO\n"
@@ -132,13 +132,6 @@ msgid "Electronic Invoice: check pending ecf"
 msgstr "Facturación electrónica: Actualizar ECF pendientes"
 
 #. module: l10n_do_ecf_invoicing
-#: model:ir.actions.server,name:l10n_do_ecf_invoicing.resend_contingency_ecf_ir_actions_server
-#: model:ir.cron,cron_name:l10n_do_ecf_invoicing.resend_contingency_ecf
-#: model:ir.cron,name:l10n_do_ecf_invoicing.resend_contingency_ecf
-msgid "Electronic Invoice: resend contingency invoices"
-msgstr "Facturación electrónica: reenviar facturas en contingencia"
-
-#. module: l10n_do_ecf_invoicing
 #: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
 #, python-format
 msgid "Error. A sent Electronic Invoice cannot be set to Draft"
@@ -246,6 +239,18 @@ msgid ""
 msgstr ""
 "El código del país ISO es de dos caracteres. \n"
 "Puede usar este campo para búsquedas rápidas."
+
+#. module: l10n_do_ecf_invoicing
+#: code:addons/l10n_do_ecf_invoicing/models/account_move.py:0
+#, python-format
+msgid ""
+"There was an unexpected error message from DGII.\n"
+"Status: %s\n"
+"Message: %s"
+msgstr ""
+"Hubo un error inesperado de la DGII.\n"
+"Status: %s\n"
+"Mensaje: %s"
 
 #. module: l10n_do_ecf_invoicing
 #: model_terms:ir.ui.view,arch_db:l10n_do_ecf_invoicing.res_config_settings_view_form
