@@ -21,6 +21,7 @@ ECF_STATE_MAP = {
     "EnProceso": "delivered_pending",
     "Rechazado": "delivered_refused",
     "FirmadoPendiente": "signed_pending",
+    "error": "signed_pending",
 }
 
 
@@ -964,7 +965,7 @@ class AccountMove(models.Model):
         response = requests.post(
             "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
             files={"data": json.dumps(ecf_data)},
-            )
+        )
 
         try:
             vals = safe_eval(str(response.text).replace("null", "None"))
@@ -1005,7 +1006,7 @@ class AccountMove(models.Model):
                     if "xml" in vals:
                         ecf_xml += str(vals["xml"]).encode("utf-8")
 
-                    if status:
+                    if status in ECF_STATE_MAP:
                         status = status.replace(" ", "")
                         sign_datetime = vals.get("signature_datetime", False)
                         try:
@@ -1042,8 +1043,14 @@ class AccountMove(models.Model):
                                 ).button_cancel()
 
                     else:
-                        # invoice.l10n_do_ecf_send_state = "service_unreachable"
-                        invoice._show_service_unreachable_message()
+                        raise ValidationError(
+                            _(
+                                "There was an unexpected error message from DGII.\n"
+                                "Status: %s\n"
+                                "Message: %s"
+                            )
+                            % (status, response_text)
+                        )
 
                 elif response.status_code == 408:  # API could not reach DGII
                     invoice.l10n_do_ecf_send_state = "signed_pending"
