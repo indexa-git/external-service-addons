@@ -581,9 +581,10 @@ class AccountMove(models.Model):
                     2,
                 )
 
-        if "MontoExento" in ecf_object_data["ECF"]["Encabezado"][
-            "Totales"
-        ] and l10n_do_ncf_type not in ("46", "47"):
+        if (
+            "MontoExento" in ecf_object_data["ECF"]["Encabezado"]["Totales"]
+            and l10n_do_ncf_type != "46"
+        ):
             currency_data["MontoExentoOtraMoneda"] = round(
                 ecf_object_data["ECF"]["Encabezado"]["Totales"]["MontoExento"] / rate, 2
             )
@@ -609,7 +610,13 @@ class AccountMove(models.Model):
                 2,
             )
 
-        currency_data["MontoTotalOtraMoneda"] = round(self.amount_total, 2)
+        currency_data["MontoTotalOtraMoneda"] = abs(
+            sum(
+                self.line_ids.filtered(lambda aml: aml.exclude_from_invoice_tab).mapped(
+                    "amount_currency"
+                )
+            )
+        )
 
         return currency_data
 
