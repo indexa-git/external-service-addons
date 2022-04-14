@@ -975,7 +975,11 @@ class AccountMove(models.Model):
 
         try:
             vals = safe_eval(str(response.text).replace("null", "None"))
-        except ValueError:  # could not parse a dict from response text
+        except (
+            ValueError,
+            TypeError,
+            SyntaxError,
+        ):  # could not parse a dict from response text
             vals = {}
 
         return response, vals
@@ -1124,7 +1128,7 @@ class AccountMove(models.Model):
                     else:
                         continue
 
-                except (ValueError, TypeError):
+                except (ValueError, TypeError, SyntaxError):
                     continue
 
             except requests.exceptions.ConnectionError:
