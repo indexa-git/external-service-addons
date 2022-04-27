@@ -6,7 +6,7 @@
     "author": "Indexa",
     "website": "https://www.indexa.do",
     "category": "Accounting",
-    "version": "14.0.2.1.0",
+    "version": "15.0.1.0.0",
     "depends": ["account"],
     "data": [
         "data/ir_cron_data.xml",
