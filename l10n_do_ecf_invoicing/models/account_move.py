@@ -104,7 +104,10 @@ class AccountMove(models.Model):
         (self - invoices).l10n_do_ecf_expecting_payment = False
 
     def is_l10n_do_partner(self):
-        return self.partner_id.country_id and self.partner_id.country_id.code == "DO"
+        return (
+            self.commercial_partner_id.country_id
+            and self.commercial_partner_id.country_id.code == "DO"
+        )
 
     def is_company_currency(self):
         return self.currency_id == self.company_id.currency_id
