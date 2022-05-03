@@ -531,7 +531,7 @@ class AccountMove(models.Model):
                     round(tax_data["isr_withholding_amount"], 2)
                 )
 
-        if not is_company_currency:
+        if not is_company_currency and self.amount_total:
             rate = abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
             totals_data = od(
                 {
@@ -549,8 +549,10 @@ class AccountMove(models.Model):
         currency_data = od({})
 
         currency_data["TipoMoneda"] = self.currency_id.name
-        currency_data["TipoCambio"] = abs(
-            round(1 / (self.amount_total / self.amount_total_signed), 2)
+        currency_data["TipoCambio"] = (
+            abs(round(1 / (self.amount_total / self.amount_total_signed), 2))
+            if self.amount_total
+            else 1
         )
 
         rate = currency_data["TipoCambio"]
