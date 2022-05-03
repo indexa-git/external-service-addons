@@ -1266,13 +1266,7 @@ class AccountMove(models.Model):
         fiscal_invoices = self.filtered(
             lambda i: not i.l10n_latam_manual_document_number
             and i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state
-            not in (
-                "delivered_accepted",
-                "conditionally_accepted",
-                "delivered_pending",
-                "signed_pending",
-            )
+            and i.l10n_do_ecf_send_state == "to_send"
             and i._do_immediate_send()
         )
         fiscal_invoices.send_ecf_data()
