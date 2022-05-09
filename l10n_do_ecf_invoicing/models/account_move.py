@@ -616,10 +616,13 @@ class AccountMove(models.Model):
             )
 
         currency_data["MontoTotalOtraMoneda"] = abs(
-            sum(
-                self.line_ids.filtered(lambda aml: aml.exclude_from_invoice_tab).mapped(
-                    "amount_currency"
-                )
+            round(
+                sum(
+                    self.line_ids.filtered(
+                        lambda aml: aml.exclude_from_invoice_tab
+                    ).mapped("amount_currency")
+                ),
+                2,
             )
         )
 
