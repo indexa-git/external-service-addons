@@ -5,7 +5,7 @@
     "author": "Indexa",
     "website": "https://www.indexa.do",
     "category": "Accounting",
-    "version": "14.0.1.10.17",
+    "version": "14.0.1.10.18",
     "depends": ["l10n_do_accounting"],
     "data": [
         "views/account_views.xml",
