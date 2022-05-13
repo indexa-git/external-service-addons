@@ -21,7 +21,6 @@ ECF_STATE_MAP = {
     "EnProceso": "delivered_pending",
     "Rechazado": "delivered_refused",
     "FirmadoPendiente": "signed_pending",
-    "error": "signed_pending",
 }
 
 
