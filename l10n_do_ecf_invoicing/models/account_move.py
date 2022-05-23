@@ -334,7 +334,7 @@ class AccountMove(models.Model):
         """Buyer (invoice partner) values """
         self.ensure_one()
         l10n_do_ncf_type = self.get_l10n_do_ncf_type()
-        partner_vat = self.partner_id.vat or ""
+        partner_vat = self.commercial_partner_id.vat or ""
         is_l10n_do_partner = self.is_l10n_do_partner()
 
         buyer_data = od({})
@@ -423,7 +423,7 @@ class AccountMove(models.Model):
                 price_unit=line.price_subtotal,
                 currency=line.currency_id,
                 product=line.product_id,
-                partner=line.move_id.partner_id,
+                partner=line.move_id.commercial_partner_id,
                 handle_price_include=False,
             )
             for line in self.invoice_line_ids
@@ -635,7 +635,7 @@ class AccountMove(models.Model):
             currency=invoice_line.currency_id,
             quantity=invoice_line.quantity,
             product=invoice_line.product_id,
-            partner=invoice_line.move_id.partner_id,
+            partner=invoice_line.move_id.commercial_partner_id,
             is_refund=True if invoice_line.move_id.move_type == "in_refund" else False,
         )
 
