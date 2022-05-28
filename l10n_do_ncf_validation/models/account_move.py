@@ -28,7 +28,7 @@ class AccountMove(models.Model):
         )
         check_rnc_format(rnc)
 
-        ncf = self.ref
+        ncf = self.l10n_do_fiscal_number
         if not ncf or len(ncf) not in (11, 13) or ncf[0] not in ("B", "E"):
             raise ValidationError(
                 _("NCF %s has a invalid format. Please fix it and try again." % ncf)
@@ -113,7 +113,7 @@ class AccountMove(models.Model):
                 raise ValidationError(
                     _(
                         "Cannot validate Fiscal Invoice "
-                        "because %s is not a valid NCF" % invoice.ref
+                        "because %s is not a valid NCF" % invoice.l10n_do_fiscal_number
                     )
                 )
 
