@@ -539,7 +539,7 @@ class AccountMove(models.Model):
                 totals_data["TotalITBISRetenido"] = abs(
                     round(tax_data["itbis_withholding_amount"], 2)
                 )
-            if tax_data["isr_withholding_amount"]:
+            if tax_data["isr_withholding_amount"] or l10n_do_ncf_type == "47":
                 totals_data["TotalISRRetencion"] = abs(
                     round(tax_data["isr_withholding_amount"], 2)
                 )
