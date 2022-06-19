@@ -9,4 +9,5 @@ class ResConfigSettings(models.TransientModel):
         readonly=False,
         required=True,
     )
+    ncf_validation_dgii = fields.Boolean(related="company_id.ncf_validation_dgii", readonly=False)
     validate_ecf = fields.Boolean(related="company_id.validate_ecf", readonly=False)
