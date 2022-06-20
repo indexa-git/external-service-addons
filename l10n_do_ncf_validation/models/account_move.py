@@ -1,5 +1,4 @@
 import requests
-import xmltodict
 
 from odoo.tools.safe_eval import safe_eval
 
@@ -10,42 +9,45 @@ from odoo.exceptions import ValidationError
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    def validate_ncf_dgii(self):
-        # client = Client('dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx')
-        url = "https://dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx"
+    # def validate_ncf_dgii(self):
+    #     # client = Client('dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx')
+    #     url = "https://dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx"
+    #
+    #     rnc = self.partner_id.vat
+    #     ncf = self.l10n_do_fiscal_number
+    #
+    #     payload = """"<?xml version="1.0" encoding="utf-8"?>
+    #                 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    #                   <soap:Body>
+    #                     <GetNCF xmlns="http://dgii.gov.do/">
+    #                       <RNC>rnc</RNC>
+    #                       <NCF>ncf</NCF>
+    #                       <IMEI>string</IMEI>
+    #                     </GetNCF>
+    #                   </soap:Body>
+    #                 </soap:Envelope>"""
+    #
+    #     headers = {
+    #         'Host': 'dgii.gov.do',
+    #         'Content-Type': 'text/xml; charset=utf-8',
+    #         'Content-Length': 'length',
+    #         'SOAPAction': 'http://dgii.gov.do/GetNCF'
+    #     }
 
-        payload = """<?xml version="1.0" encoding="utf-8"?>
-                    <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-                      <soap:Body>
-                        <GetNCF xmlns="http://dgii.gov.do/">
-                          <RNC>131469371</RNC>
-                          <NCF>B0100003500</NCF>
-                          <IMEI>string</IMEI>
-                        </GetNCF>
-                      </soap:Body>
-                    </soap:Envelope>"""
-
-        headers = {
-            'Host': 'dgii.gov.do',
-            'Content-Type': 'text/xml; charset=utf-8',
-            'Content-Length': 'length',
-            'SOAPAction': 'http://dgii.gov.do/GetNCF'
-        }
-
-        # POST request
-        response = requests.request("POST", url, headers=headers, data=payload)
+            # POST request
+            # response = requests.request("POST", url, headers=headers, data=payload)
 
         # prints the response
-        print(response.text)
-        print(response)
+        # print(response.text)
+        # print(response)
 
-        data_dgii = response.text
+        # data_dgii = response.text
         # print(data_dgii.)
 
         # with response.text as xml_file:
-        data_dict = xmltodict.parse(response.text)
+        # data_dict = xmltodict.parse(response.text)
 
-        ncf_result = data_dict['soap:Envelope']['soap:Body']['GetNCFResponse']['GetNCFResult']
+        # ncf_result = data_dict['soap:Envelope']['soap:Body']['GetNCFResponse']['GetNCFResult']
 
         # json_data = json.dumps(data_dict)
         # with open("data.json", "w") as json_file:
