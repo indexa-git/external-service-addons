@@ -260,10 +260,18 @@ class AccountMove(models.Model):
             )
 
         if l10n_do_ncf_type == "34":
-            credit_origin_id = self.search(
-                [("ref", "=", self.l10n_do_origin_ncf)], limit=1
+            credit_origin_id = (
+                self.search([("ref", "=", self.l10n_do_origin_ncf)], limit=1)
+                or self.reversed_entry_id
             )
-            delta = abs(self.invoice_date - credit_origin_id.invoice_date)
+
+            try:
+                delta = abs(self.invoice_date - credit_origin_id.invoice_date)
+            except TypeError:
+                raise ValidationError(
+                    _("A source invoice %s was not found for this Credit Note")
+                    % self.l10n_do_origin_ncf
+                )
             id_doc_data["IndicadorNotaCredito"] = int(delta.days > 30)
 
         if self.company_id.l10n_do_ecf_deferred_submissions:
