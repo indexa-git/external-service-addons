@@ -741,7 +741,7 @@ class AccountMove(models.Model):
                 else "1"
             )
             line_dict["DescripcionItem"] = line.name
-            line_dict["CantidadItem"] = ("%f" % line.quantity).rstrip("0").rstrip(".")
+            line_dict["CantidadItem"] = ("%.2f" % line.quantity).rstrip("0").rstrip(".")
 
             line_dict["PrecioUnitarioItem"] = abs(
                 round(
