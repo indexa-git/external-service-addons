@@ -261,7 +261,14 @@ class AccountMove(models.Model):
 
         if l10n_do_ncf_type == "34":
             credit_origin_id = (
-                self.search([("ref", "=", self.l10n_do_origin_ncf)], limit=1)
+                self.search(
+                    [
+                        ("ref", "=", self.l10n_do_origin_ncf),
+                        ("type", "!=", "entry"),
+                        ("state", "=", "posted"),
+                    ],
+                    limit=1,
+                )
                 or self.reversed_entry_id
             )
 
