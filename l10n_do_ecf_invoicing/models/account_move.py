@@ -810,7 +810,14 @@ class AccountMove(models.Model):
         reference_info_data = od({})
 
         origin_id = (
-            self.search([("ref", "=", self.l10n_do_origin_ncf)], limit=1)
+            self.search(
+                [
+                    ("ref", "=", self.l10n_do_origin_ncf),
+                    ("type", "!=", "entry"),
+                    ("state", "=", "posted"),
+                ],
+                limit=1,
+            )
             if self.get_l10n_do_ncf_type() == "34"
             else self.debit_origin_id
         )
