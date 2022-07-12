@@ -807,7 +807,12 @@ class AccountMove(models.Model):
 
         origin_id = (
             self.search(
-                [("l10n_do_fiscal_number", "=", self.l10n_do_origin_ncf)], limit=1
+                [
+                    ("l10n_do_fiscal_number", "=", self.l10n_do_origin_ncf),
+                    ("move_type", "!=", "entry"),
+                    ("state", "=", "posted"),
+                ],
+                limit=1,
             )
             if self.get_l10n_do_ncf_type() == "34"
             else self.debit_origin_id
