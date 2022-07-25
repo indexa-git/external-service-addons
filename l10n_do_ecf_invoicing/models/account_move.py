@@ -1241,7 +1241,7 @@ class AccountMove(models.Model):
                 move_lines += (
                     self.env["account.payment"]
                     .browse(payment_info["account_payment_id"])
-                    .move_line_ids
+                    .move_id.line_ids
                 )
             else:
                 move_lines += (
