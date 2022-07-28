@@ -998,12 +998,12 @@ class AccountMove(models.Model):
         )
         raise ValidationError(msg)
 
-    def _send_ecf_submit_request(self, ecf_data, api_url):
+    def _send_ecf_submit_request(self, ecf_data, service_url, **kwargs):
         self.ensure_one()
-        response = requests.post(
-            "%s?env=%s" % (api_url, self.company_id.l10n_do_ecf_service_env),
-            files={"data": json.dumps(ecf_data)},
-        )
+
+        files = {"data": json.dumps(ecf_data)}
+        files.update(kwargs)  # load additional data from extending modules
+        response = requests.post(service_url, files=files)
 
         try:
             vals = safe_eval(str(response.text).replace("null", "None"))
@@ -1034,10 +1034,12 @@ class AccountMove(models.Model):
 
             try:
                 _logger.info(json.dumps(ecf_data, indent=4, default=str))
-                response, vals = invoice._send_ecf_submit_request(
-                    ecf_data,
-                    self.env["ir.config_parameter"].sudo().get_param("ecf.api.url"),
+
+                service_url = (
+                    self.env["ir.config_parameter"].sudo().get_param("ecf.api.url")
                 )
+                service_url += "?env=%s" % self.company_id.l10n_do_ecf_service_env
+                response, vals = invoice._send_ecf_submit_request(ecf_data, service_url)
 
                 status = vals.get("status", False)
                 response_text = str(response.text).replace("null", "None")
