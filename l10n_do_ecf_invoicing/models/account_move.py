@@ -1020,6 +1020,9 @@ class AccountMove(models.Model):
 
         for invoice in self:
 
+            self.flush()
+            self.env["ir.sequence"].flush()
+
             if invoice.l10n_do_ecf_send_state in (
                 "delivered_accepted",
                 "conditionally_accepted",
@@ -1278,15 +1281,16 @@ class AccountMove(models.Model):
 
     def post(self):
 
-        res = super(AccountMove, self).post()
+        posted = super(AccountMove, self).post()
 
-        fiscal_invoices = self.filtered(
-            lambda i: i.is_l10n_do_internal_sequence
-            and i.is_ecf_invoice
-            and i.l10n_do_ecf_send_state == "to_send"
-            and i._do_immediate_send()
-        )
-        fiscal_invoices.send_ecf_data()
-        fiscal_invoices._compute_l10n_do_electronic_stamp()
+        if posted:
+            fiscal_invoices = self.filtered(
+                lambda i: i.is_l10n_do_internal_sequence
+                and i.is_ecf_invoice
+                and i.l10n_do_ecf_send_state == "to_send"
+                and i._do_immediate_send()
+            )
+            fiscal_invoices.send_ecf_data()
+            fiscal_invoices._compute_l10n_do_electronic_stamp()
 
-        return res
+        return posted
