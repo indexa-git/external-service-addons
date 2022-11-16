@@ -1,8 +1,4 @@
 import requests
-<<<<<<< HEAD
-
-=======
->>>>>>> 6d958a174b88b1fc5db797540831922cb3e15350
 from odoo.tools.safe_eval import safe_eval
 
 from odoo import models, _
@@ -12,7 +8,7 @@ from odoo.exceptions import ValidationError
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-<<<<<<< HEAD
+
     # def validate_ncf_dgii(self):
     #     # client = Client('dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx')
     #     url = "https://dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx"
@@ -58,8 +54,7 @@ class AccountMove(models.Model):
         #     json_file.write(json_data)
         #     json_file.close()
 
-=======
->>>>>>> 6d958a174b88b1fc5db797540831922cb3e15350
+
     def _has_valid_ncf(self):
         """
         Query external service to check NCF status
@@ -118,10 +113,7 @@ class AccountMove(models.Model):
                 payload,
                 headers={"x-access-token": get_param("ncf.api.token")},
             )
-<<<<<<< HEAD
-            print(response)
-=======
->>>>>>> 6d958a174b88b1fc5db797540831922cb3e15350
+
         except requests.exceptions.ConnectionError:
             raise ValidationError(
                 _(
