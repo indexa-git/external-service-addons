@@ -10,9 +10,6 @@
         "data/ir_config_parameter_data.xml",
         "views/res_config_settings_views.xml",
     ],
-<<<<<<< HEAD
     "installable": True,
-=======
     "installable": False,
->>>>>>> 6d958a174b88b1fc5db797540831922cb3e15350
 }
