@@ -59,9 +59,12 @@ class ResCompany(models.Model):
 
     def get_currency_rates(self, params, token):
         api_url = self.env["ir.config_parameter"].sudo().get_param("indexa.api.url")
+        token_name = self.env["ir.config_parameter"].sudo().get_param(
+            "indexa.api.token.name"
+            )
 
         try:
-            response = requests.get(api_url, params, headers={"x-access-token": token})
+            response = requests.get(api_url, params, headers={token_name: token})
         except requests.exceptions.ConnectionError as e:
             _logger.warning(_("API requests return the following error %s" % e))
             return {}

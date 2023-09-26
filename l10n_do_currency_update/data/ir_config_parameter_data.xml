@@ -9,5 +9,8 @@
         <field name="key">indexa.api.token</field>
         <field name="value">false</field>
     </record>
-
+    <record id="l10n_do_currency_update_api_token_name" model="ir.config_parameter">
+        <field name="key">indexa.api.token.name</field>
+        <field name="value">x-access-token</field>
+    </record>
 </odoo>
