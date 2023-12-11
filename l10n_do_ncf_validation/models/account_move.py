@@ -100,7 +100,7 @@ class AccountMove(models.Model):
 
                 if (
                     ncf_validation_target == "internal"
-                    and not invoice.is_l10n_do_internal_sequence
+                    and invoice.l10n_latam_manual_document_number
                 ):
                     continue
                 elif (
