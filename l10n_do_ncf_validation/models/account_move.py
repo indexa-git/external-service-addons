@@ -94,6 +94,9 @@ class AccountMove(models.Model):
             and inv.l10n_latam_use_documents
             and inv.company_id.ncf_validation_target != "none"
         )
+
+        result = super(AccountMove, self).action_post()
+
         for invoice in l10n_do_fiscal_invoice:
             ncf_validation_target = invoice.company_id.ncf_validation_target
             if ncf_validation_target != "both":
@@ -117,4 +120,4 @@ class AccountMove(models.Model):
                     )
                 )
 
-        return super(AccountMove, self).action_post()
+        return result
