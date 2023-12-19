@@ -94,13 +94,16 @@ class AccountMove(models.Model):
             and inv.l10n_latam_use_documents
             and inv.company_id.ncf_validation_target != "none"
         )
+
+        result = super(AccountMove, self).action_post()
+
         for invoice in l10n_do_fiscal_invoice:
             ncf_validation_target = invoice.company_id.ncf_validation_target
             if ncf_validation_target != "both":
 
                 if (
                     ncf_validation_target == "internal"
-                    and not invoice.is_l10n_do_internal_sequence
+                    and invoice.l10n_latam_manual_document_number
                 ):
                     continue
                 elif (
@@ -117,4 +120,4 @@ class AccountMove(models.Model):
                     )
                 )
 
-        return super(AccountMove, self).action_post()
+        return result
