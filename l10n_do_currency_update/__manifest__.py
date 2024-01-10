@@ -6,6 +6,7 @@
     "author": "Indexa",
     "website": "https://www.indexa.do",
     "category": "Accounting",
+    "license": "LGPL-3",
     "version": "15.0.1.0.0",
     "depends": ["account"],
     "data": [
