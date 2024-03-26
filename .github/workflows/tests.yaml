@@ -72,8 +72,7 @@ jobs:
         with:
           repository: indexa-git/l10n-dominicana
           path: l10n-dominicana
-          # TODO change this to ${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}
-          ref: '15.0-mig'
+          ref: '${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}'
 
       - name: Select Odoo modules to install
         id: get_modules
