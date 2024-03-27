@@ -1,6 +1,6 @@
 {
     "name": "Dominican NCF Validation",
-    "version": "15.0.1.0.1",
+    "version": "16.0.1.0.0",
     "summary": "Validate NCF from external service",
     "category": "Extra Tools",
     "license": "LGPL-3",
