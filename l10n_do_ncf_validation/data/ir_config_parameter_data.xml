@@ -9,5 +9,4 @@
         <field name="key">ncf.api.token</field>
         <field name="value">false</field>
     </record>
-
 </odoo>
