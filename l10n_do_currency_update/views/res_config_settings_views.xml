@@ -7,9 +7,8 @@
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="////field[@name='module_currency_rate_live']/../.." position="after">
-                <div class="col-12 col-lg-6 o_setting_box"
-                     attrs="{'invisible': [('group_multi_currency', '=', False)]}">
-                    <div class="o_setting_right_pane">
+                <setting class="col-12 col-lg-6"
+                     invisible="not group_multi_currency">
                         <label for="id" string="Dominican Banks Rates"/>
                         <field name="id"/>
 
@@ -40,12 +39,11 @@
                         </div>
                         <div class="row">
                             <label string="Last Sync Date" for="l10n_do_last_currency_sync_date" class="col-md-3 o_light_label"
-                                   attrs="{'invisible': [('l10n_do_last_currency_sync_date','=',False)]}"/>
+                                   invisible="not l10n_do_last_currency_sync_date"/>
                             <field name="l10n_do_last_currency_sync_date"
-                                   attrs="{'invisible': [('l10n_do_last_currency_sync_date','=',False)]}"/>
+                                   invisible="not l10n_do_last_currency_sync_date"/>
                         </div>
-                    </div>
-                </div>
+                </setting>
             </xpath>
         </field>
     </record>

@@ -58,7 +58,7 @@ class ResCompany(models.Model):
         string="Following Execution Date"
     )
     l10n_do_last_currency_sync_date = fields.Date(
-        string="Last Sync Date", readonly=True
+        string="Last Sync Date", readonly=False
     )
 
     def get_currency_rates(self, params, token):
