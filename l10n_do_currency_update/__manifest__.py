@@ -7,7 +7,7 @@
     "website": "https://www.indexa.do",
     "category": "Accounting",
     "license": "LGPL-3",
-    "version": "16.0.1.0.0",
+    "version": "17.0.1.0.0",
     "depends": ["account"],
     "data": [
         "data/ir_cron_data.xml",
@@ -17,5 +17,5 @@
     "demo": [
         "demo/res_company_demo.xml",
     ],
-    "installable": False,
+    "installable": True,
 }
