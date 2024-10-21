@@ -6,18 +6,18 @@
         <field name="priority" eval="1000"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@name='integration']" position="inside">
-                <div class="col-12 col-lg-6 o_setting_box">
-                    <div class="o_setting_left_pane">
+            <xpath expr="//block[@name='integration']" position="inside">
+                <setting class="col-12 col-lg-6">
+                    <div>
                         <field name="l10_do_can_validate_rnc"/>
                     </div>
-                    <div class="o_setting_right_pane">
+                    <div>
                         <label for="l10_do_can_validate_rnc" string="Indexa API RNC data"/>
                         <div class="text-muted">
                             Get Contact data from Indexa API
                         </div>
                     </div>
-                </div>
+                </setting>
             </xpath>
         </field>
     </record>
