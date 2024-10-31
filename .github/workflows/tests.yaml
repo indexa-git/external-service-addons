@@ -107,7 +107,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y zip && zip -r modules.zip .
 
       - name: Upload repository results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: modules
           path: modules.zip
@@ -192,7 +192,7 @@ jobs:
       - run: cat deployment.yaml
 
       - name: Upload deployment
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: deployment
           path: deployment.yaml
@@ -219,7 +219,7 @@ jobs:
           echo "$url" > url.txt
 
       - name: Upload repository results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}-${{ env.GITHUB_HEAD_REF_SLUG_URL }}.indexa.do
           path: url.txt
