@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Download Deployment.yaml
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v2.11.0
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: tests.yaml
           workflow_conclusion: success
