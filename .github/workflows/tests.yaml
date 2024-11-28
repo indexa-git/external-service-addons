@@ -22,6 +22,9 @@ jobs:
   test:
     name: Test Modules
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       get_modules: ${{ steps.get_modules.outputs.modules }}
     services:
@@ -45,7 +48,7 @@ jobs:
         uses: rlespinasse/github-slug-action@v4.x
 
       - name: INDEXA ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.GITHUB_REPOSITORY_SLUG_URL }}
 
@@ -53,14 +56,14 @@ jobs:
         run: curl https://raw.githubusercontent.com/iterativo-git/dockerdoo/${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}/resources/getaddons.py -o getaddons.py
 
       - name: CamptoCamp odoo-cloud-platform
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: camptocamp/odoo-cloud-platform
           path: odoo-cloud-platform
           ref: '${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}'
 
       - name: Odoo Enterprise
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: odoo/enterprise
           token: ${{ secrets.ACTIONS_PAT }}
@@ -68,7 +71,7 @@ jobs:
           ref: '${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}'
 
       - name: INDEXA l10n-dominicana
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: indexa-git/l10n-dominicana
           path: l10n-dominicana
@@ -87,12 +90,31 @@ jobs:
         run: |
           echo "WITHOUT_TEST_TAGS=1" >> $GITHUB_ENV
 
+
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2.1.3
+        with:
+          project_id: '${{ vars.ITERATIVO_GCP_PROJECT }}'
+          workload_identity_provider: '${{ vars.ITERATIVO_GCP_WORKLOAD_IDENTITY }}'
+          service_account: '${{ vars.ITERATIVO_GCP_ARTIFACTS_SA }}'
+          token_format: access_token
+
+
+      - name: Login to Google Artifact Registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
       - name: Run Odoo tests
         run: |
-          docker pull gcr.io/iterativo/dockerdoo:${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}
+          docker pull gcr.io/${{ vars.ITERATIVO_GCP_PROJECT }}/iterativo/dockerdoo:${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}
           docker run -e RUN_TESTS -e WITHOUT_TEST_TAGS -e PIP_AUTO_INSTALL -e LOG_LEVEL -e WITHOUT_DEMO -e EXTRA_MODULES -e ODOO_EXTRA_ADDONS -e PGHOST \
           -v $GITHUB_WORKSPACE:/github/workspace \
-          --network="host" --name odoo -t gcr.io/iterativo/dockerdoo:${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}
+          --network="host" --name odoo -t gcr.io/${{ vars.ITERATIVO_GCP_PROJECT }}/iterativo/dockerdoo:${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}
         env:
           RUN_TESTS: '1'
           WITHOUT_TEST_TAGS: ${{ env.WITHOUT_TEST_TAGS }}
@@ -102,124 +124,3 @@ jobs:
           EXTRA_MODULES: ${{ steps.get_modules.outputs.modules }},${{ env.REQUIRED_MODULES }}
           ODOO_EXTRA_ADDONS: /github/workspace
           PGHOST: localhost
-
-      - name: Zip modules for upload
-        run: sudo apt-get update && sudo apt-get install -y zip && zip -r modules.zip .
-
-      - name: Upload repository results
-        uses: actions/upload-artifact@v2
-        with:
-          name: modules
-          path: modules.zip
-          retention-days: 1
-
-  build-gcp:
-    name: Build & Push to GCR
-    needs: ['test']
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
-
-    steps:
-      - name: Download  repository results
-        uses: actions/download-artifact@v2
-        with:
-          name: modules
-
-      - run: unzip modules.zip
-
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4.x
-
-      - name: Push to Google Cloud Registry
-        uses: docker/build-push-action@v1
-        with:
-          dockerfile: ${{ env.GITHUB_REPOSITORY_SLUG_URL }}/Dockerfile
-          cache_froms: docker.pkg.github.com/${{ github.repository }}/${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}:${{ env.GITHUB_HEAD_REF_SLUG_URL }}
-          username: _json_key
-          password: ${{ secrets.GKE_SA_KEY }}
-          registry: gcr.io
-          repository: ${{ secrets.GKE_PROJECT }}/${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}
-          tags: ${{ env.GITHUB_SHA_SHORT }}
-
-  deploy:
-    name: GKE Deploy
-    needs: ['test', 'build-gcp']
-    runs-on: ubuntu-latest
-    env:
-      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-      GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
-      GKE_ZONE: ${{ secrets.GKE_ZONE }}
-    if: ${{ github.event_name == 'pull_request' }}
-    continue-on-error: true
-
-    steps:
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4.x
-
-      - name: K8s Template
-        uses: actions/checkout@v3
-        with:
-          repository: indexa-git/gke-dev-cluster.git
-          path: gke-dev-cluster
-          token: ${{ secrets.ACTIONS_PAT }}
-          ref: master
-
-      - name: Set up Kustomize
-        run: |
-          curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
-          chmod u+x ./kustomize
-          ./kustomize build gke-dev-cluster/deployments/odoo/${{ env.GITHUB_BASE_REF_SLUG || env.GITHUB_REF_SLUG }}/dev -o deployment.yaml.tmpl
-
-      - name: Render Deployment YAML
-        uses: nowactions/envsubst@v1
-        with:
-          input: ./deployment.yaml.tmpl
-          output: ./deployment.yaml
-        env:
-          ENV: dev
-          GKE_LOCATION: ${{ secrets.GKE_PROJECT }}
-          # Modules to Install
-          EXTRA_MODULES: ${{ needs.test.outputs.get_modules }},${{ env.REQUIRED_MODULES }}
-          # Image to Deploy
-          PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-          REPO_NAME: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}
-          BRANCH_NAME: ${{ env.GITHUB_SHA_SHORT }}
-          # URL to acccess
-          REPO_URL: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}
-          BRANCH_URL: ${{ env.GITHUB_HEAD_REF_SLUG_URL }}
-          SHORT_SHA: ${{ env.GITHUB_SHA_SHORT }}
-
-      - run: cat deployment.yaml
-
-      - name: Upload deployment
-        uses: actions/upload-artifact@v2
-        with:
-          name: deployment
-          path: deployment.yaml
-          retention-days: 10
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@main
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - name: Get Cluster & Docker credentials
-        run: |
-          gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE" --project "$PROJECT_ID"
-          gcloud --quiet auth configure-docker
-
-      # Deploy the Docker image to the GKE cluster
-      - name: Deploy
-        run: |
-          kubectl apply -f deployment.yaml
-          url=$(echo "${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}-${{ env.GITHUB_HEAD_REF_SLUG_URL }}.indexa.do")
-          echo "$url" > url.txt
-
-      - name: Upload repository results
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}-${{ env.GITHUB_HEAD_REF_SLUG_URL }}.indexa.do
-          path: url.txt
