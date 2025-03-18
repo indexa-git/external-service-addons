@@ -9,20 +9,12 @@
             <xpath expr="//block[@id='l10n_do_title']" position="attributes">
                 <attribute name="invisible">False</attribute>
             </xpath>
-            <xpath expr="//setting[@id='l10n_do_section']" position="inside">
-                <setting>
-                        <label for="ncf_validation_target"/>
-                        <div>
-                            Which type of NCF will be validated
-                        </div>
+            <xpath expr="//setting[@id='l10n_do_section']" position="before">
+                <setting help="Which type of NCF will be validated">
                         <field name="ncf_validation_target"/>
                 </setting>
-                <setting>
+                <setting help="Keep this option disabled until all issued ECF Printed Representation are standardized">
                         <field name="validate_ecf"/>
-                        <label for="validate_ecf"/>
-                        <div>
-                            Keep this option disabled until all issued ECF Printed Representation are standardized
-                        </div>
                 </setting>
             </xpath>
         </field>
